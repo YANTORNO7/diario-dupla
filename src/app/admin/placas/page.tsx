@@ -174,6 +174,14 @@ export default function PlacasPage() {
     saveState({ transferData: data })
   }, [])
 
+  function handleClear() {
+    if (cardType === "result") handleSetResultData({ ...defaultResult, matchDate: new Date().toISOString().slice(0, 10) })
+    if (cardType === "preview") handleSetPreviewData({ ...defaultPreview, matchDate: new Date().toISOString().slice(0, 10) })
+    if (cardType === "transfer") handleSetTransferData({ ...defaultTransfer })
+    setAiContext("")
+    setAiCaption("")
+  }
+
   async function handleDownload() {
     if (!cardRef.current) return
     setDownloading(true)
@@ -356,6 +364,12 @@ export default function PlacasPage() {
               className="bg-negro text-white px-6 py-3 rounded-md hover:bg-gray-800 transition-colors font-cuerpo text-sm disabled:opacity-50 flex-1"
             >
               {downloading ? "Generando..." : "Descargar PNG"}
+            </button>
+            <button
+              onClick={handleClear}
+              className="border border-gray-300 text-gray-500 px-4 py-3 rounded-md hover:bg-red-50 hover:border-red-300 hover:text-red-500 transition-colors font-cuerpo text-sm"
+            >
+              Limpiar
             </button>
           </div>
 
