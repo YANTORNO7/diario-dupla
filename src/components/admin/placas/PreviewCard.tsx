@@ -177,7 +177,7 @@ export default function PreviewCard({ data, league, leagues }: Props) {
         <p
           style={{
             fontFamily: "var(--font-anton), Anton, sans-serif",
-            fontSize: 32,
+            fontSize: 26,
             color: "#FFF",
             marginTop: 6,
             letterSpacing: 2,
