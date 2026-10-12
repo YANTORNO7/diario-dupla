@@ -17,12 +17,11 @@ function formatDate(dateStr: string) {
   })
 }
 
-function autoFontSize(text: string, maxWidth: number): number {
-  const baseSize = 56
-  const charWidth = baseSize * 0.55
+function autoFontSize(text: string, maxWidth: number, base: number = 48): number {
+  const charWidth = base * 0.55
   const totalWidth = text.length * charWidth
-  if (totalWidth <= maxWidth) return baseSize
-  return Math.max(30, Math.floor((maxWidth / totalWidth) * baseSize))
+  if (totalWidth <= maxWidth) return base
+  return Math.max(26, Math.floor((maxWidth / totalWidth) * base))
 }
 
 export default function PreviewCard({ data, league }: Props) {
@@ -72,7 +71,7 @@ export default function PreviewCard({ data, league }: Props) {
         style={{
           position: "relative",
           width: "100%",
-          height: hasPhoto ? 480 : 120,
+          height: hasPhoto ? 400 : 100,
           flexShrink: 0,
         }}
       >
@@ -104,8 +103,8 @@ export default function PreviewCard({ data, league }: Props) {
         <div
           style={{
             position: "absolute",
-            top: 40,
-            left: 60,
+            top: 36,
+            left: 50,
             zIndex: 2,
           }}
         >
@@ -119,7 +118,7 @@ export default function PreviewCard({ data, league }: Props) {
             <span
               style={{
                 fontFamily: "var(--font-anton), Anton, sans-serif",
-                fontSize: 32,
+                fontSize: 30,
                 color: "#111",
                 letterSpacing: 2,
               }}
@@ -145,19 +144,19 @@ export default function PreviewCard({ data, league }: Props) {
         </div>
       </div>
 
-      {/* Competition, round & PREVIA label */}
+      {/* Competition & round */}
       <div
         style={{
           textAlign: "center",
-          paddingTop: hasPhoto ? 20 : 40,
-          paddingBottom: 10,
+          paddingTop: hasPhoto ? 15 : 30,
+          paddingBottom: 4,
         }}
       >
         <p
           style={{
             fontFamily: "var(--font-archivo), Archivo, sans-serif",
-            fontSize: 24,
-            color: "#DDD",
+            fontSize: 22,
+            color: "#FFF",
             textTransform: "uppercase",
             letterSpacing: 3,
             fontWeight: 700,
@@ -168,9 +167,9 @@ export default function PreviewCard({ data, league }: Props) {
         <p
           style={{
             fontFamily: "var(--font-archivo), Archivo, sans-serif",
-            fontSize: 20,
-            color: "#AAA",
-            marginTop: 6,
+            fontSize: 18,
+            color: "#CCC",
+            marginTop: 4,
           }}
         >
           {roundLabel}
@@ -182,14 +181,14 @@ export default function PreviewCard({ data, league }: Props) {
         style={{
           display: "flex",
           justifyContent: "center",
-          paddingTop: 10,
-          paddingBottom: 20,
+          paddingTop: 6,
+          paddingBottom: 10,
         }}
       >
         <span
           style={{
             fontFamily: "var(--font-anton), Anton, sans-serif",
-            fontSize: 64,
+            fontSize: 56,
             color: "#FFDF00",
             letterSpacing: 8,
             textTransform: "uppercase",
@@ -199,43 +198,42 @@ export default function PreviewCard({ data, league }: Props) {
         </span>
       </div>
 
-      {/* Teams */}
+      {/* Teams - horizontal layout to save vertical space */}
       <div
         style={{
           flex: 1,
           display: "flex",
-          flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          gap: 30,
-          padding: "0 60px",
+          gap: 40,
+          padding: "0 50px",
         }}
       >
         {/* Home team */}
-        <div style={{ textAlign: "center" }}>
+        <div style={{ textAlign: "center", flex: 1 }}>
           <div
             style={{
-              width: 120,
-              height: 120,
+              width: 100,
+              height: 100,
               borderRadius: "50%",
               backgroundColor: home.primaryColor,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              margin: "0 auto 16px",
+              margin: "0 auto 12px",
             }}
           >
             {home.crestUrl ? (
               <img
                 src={home.crestUrl}
                 alt=""
-                style={{ width: 86, height: 86, objectFit: "contain" }}
+                style={{ width: 72, height: 72, objectFit: "contain" }}
               />
             ) : (
               <span
                 style={{
                   fontFamily: "var(--font-anton), Anton, sans-serif",
-                  fontSize: 40,
+                  fontSize: 34,
                   color: "#FFF",
                 }}
               >
@@ -246,7 +244,7 @@ export default function PreviewCard({ data, league }: Props) {
           <span
             style={{
               fontFamily: "var(--font-anton), Anton, sans-serif",
-              fontSize: autoFontSize(home.shortName, 800),
+              fontSize: autoFontSize(home.shortName, 380, 42),
               color: "#FFF",
               textTransform: "uppercase",
             }}
@@ -259,38 +257,39 @@ export default function PreviewCard({ data, league }: Props) {
         <span
           style={{
             fontFamily: "var(--font-anton), Anton, sans-serif",
-            fontSize: 72,
+            fontSize: 60,
             color: accentColor,
+            flexShrink: 0,
           }}
         >
           VS
         </span>
 
         {/* Away team */}
-        <div style={{ textAlign: "center" }}>
+        <div style={{ textAlign: "center", flex: 1 }}>
           <div
             style={{
-              width: 120,
-              height: 120,
+              width: 100,
+              height: 100,
               borderRadius: "50%",
               backgroundColor: away.primaryColor,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              margin: "0 auto 16px",
+              margin: "0 auto 12px",
             }}
           >
             {away.crestUrl ? (
               <img
                 src={away.crestUrl}
                 alt=""
-                style={{ width: 86, height: 86, objectFit: "contain" }}
+                style={{ width: 72, height: 72, objectFit: "contain" }}
               />
             ) : (
               <span
                 style={{
                   fontFamily: "var(--font-anton), Anton, sans-serif",
-                  fontSize: 40,
+                  fontSize: 34,
                   color: "#FFF",
                 }}
               >
@@ -301,7 +300,7 @@ export default function PreviewCard({ data, league }: Props) {
           <span
             style={{
               fontFamily: "var(--font-anton), Anton, sans-serif",
-              fontSize: autoFontSize(away.shortName, 800),
+              fontSize: autoFontSize(away.shortName, 380, 42),
               color: "#FFF",
               textTransform: "uppercase",
             }}
@@ -312,12 +311,12 @@ export default function PreviewCard({ data, league }: Props) {
       </div>
 
       {/* Match info */}
-      <div style={{ textAlign: "center", padding: "0 60px 20px" }}>
+      <div style={{ textAlign: "center", padding: "0 60px 15px" }}>
         <p
           style={{
             fontFamily: "var(--font-archivo), Archivo, sans-serif",
-            fontSize: 28,
-            color: "#CCC",
+            fontSize: 26,
+            color: "#FFF",
             textTransform: "capitalize",
           }}
         >
@@ -326,8 +325,8 @@ export default function PreviewCard({ data, league }: Props) {
         <p
           style={{
             fontFamily: "var(--font-anton), Anton, sans-serif",
-            fontSize: 64,
-            color: "#FFF",
+            fontSize: 56,
+            color: "#FFDF00",
             marginTop: 4,
           }}
         >
@@ -337,8 +336,8 @@ export default function PreviewCard({ data, league }: Props) {
           <p
             style={{
               fontFamily: "var(--font-archivo), Archivo, sans-serif",
-              fontSize: 24,
-              color: "#888",
+              fontSize: 22,
+              color: "#DDD",
               marginTop: 4,
             }}
           >
@@ -348,14 +347,14 @@ export default function PreviewCard({ data, league }: Props) {
       </div>
 
       {/* Footer */}
-      <div style={{ padding: "0 60px 45px" }}>
+      <div style={{ padding: "0 60px 40px" }}>
         <p
           style={{
             fontFamily: "var(--font-archivo), Archivo, sans-serif",
-            fontSize: 24,
+            fontSize: 22,
             color: "#999",
             textAlign: "center",
-            marginBottom: 20,
+            marginBottom: 16,
           }}
         >
           @diariodupla.ar
