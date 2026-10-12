@@ -1,0 +1,264 @@
+"use client"
+
+import { useState } from "react"
+import ResultCard from "@/components/admin/placas/ResultCard"
+import PreviewCard from "@/components/admin/placas/PreviewCard"
+import TransferCard from "@/components/admin/placas/TransferCard"
+import ResultForm from "@/components/admin/placas/ResultForm"
+import PreviewForm from "@/components/admin/placas/PreviewForm"
+import TransferForm from "@/components/admin/placas/TransferForm"
+import { toPng } from "html-to-image"
+import { useRef } from "react"
+
+export type Club = {
+  id: string
+  name: string
+  shortName: string
+  initials: string
+  primaryColor: string
+  secondaryColor: string
+  league: string
+  crestUrl: string | null
+}
+
+export type ResultData = {
+  homeClub: Club | null
+  awayClub: Club | null
+  homeScore: number
+  awayScore: number
+  competition: string
+  matchDate: string
+  homeScorers: string
+  awayScorers: string
+}
+
+export type PreviewData = {
+  homeClub: Club | null
+  awayClub: Club | null
+  competition: string
+  matchDate: string
+  matchTime: string
+  stadium: string
+}
+
+export type TransferData = {
+  playerName: string
+  fromClub: Club | null
+  toClub: Club | null
+  transferType: "COMPRA" | "PRESTAMO" | "LIBRE"
+  details: string
+}
+
+const CARD_TYPES = [
+  { id: "result", label: "Resultado" },
+  { id: "preview", label: "Previa" },
+  { id: "transfer", label: "Fichaje" },
+] as const
+
+type CardType = (typeof CARD_TYPES)[number]["id"]
+
+export default function PlacasPage() {
+  const [cardType, setCardType] = useState<CardType>("result")
+  const cardRef = useRef<HTMLDivElement>(null)
+  const [downloading, setDownloading] = useState(false)
+
+  const [resultData, setResultData] = useState<ResultData>({
+    homeClub: null,
+    awayClub: null,
+    homeScore: 0,
+    awayScore: 0,
+    competition: "Liga Profesional",
+    matchDate: new Date().toISOString().slice(0, 10),
+    homeScorers: "",
+    awayScorers: "",
+  })
+
+  const [previewData, setPreviewData] = useState<PreviewData>({
+    homeClub: null,
+    awayClub: null,
+    competition: "Liga Profesional",
+    matchDate: new Date().toISOString().slice(0, 10),
+    matchTime: "21:00",
+    stadium: "",
+  })
+
+  const [transferData, setTransferData] = useState<TransferData>({
+    playerName: "",
+    fromClub: null,
+    toClub: null,
+    transferType: "COMPRA",
+    details: "",
+  })
+
+  async function handleDownload() {
+    if (!cardRef.current) return
+    setDownloading(true)
+    try {
+      const dataUrl = await toPng(cardRef.current, {
+        width: 1080,
+        height: 1350,
+        pixelRatio: 1,
+        cacheBust: true,
+      })
+      const link = document.createElement("a")
+      link.download = `dupla-${cardType}-${Date.now()}.png`
+      link.href = dataUrl
+      link.click()
+    } catch (err) {
+      console.error("Error generating image:", err)
+    } finally {
+      setDownloading(false)
+    }
+  }
+
+  function getCaption(): string {
+    if (cardType === "result" && resultData.homeClub && resultData.awayClub) {
+      const winner =
+        resultData.homeScore > resultData.awayScore
+          ? resultData.homeClub.shortName
+          : resultData.awayScore > resultData.homeScore
+            ? resultData.awayClub.shortName
+            : null
+      const score = `${resultData.homeClub.shortName} ${resultData.homeScore} - ${resultData.awayScore} ${resultData.awayClub.shortName}`
+      const result = winner ? `Victoria de ${winner}` : "Empate"
+      return `${result} | ${score}\n${resultData.competition}\n\n#futbol #${resultData.homeClub.shortName.replace(/\s/g, "")} #${resultData.awayClub.shortName.replace(/\s/g, "")}\n\n@diariodupla.ar`
+    }
+    if (cardType === "preview" && previewData.homeClub && previewData.awayClub) {
+      return `${previewData.homeClub.shortName} vs ${previewData.awayClub.shortName}\n${previewData.competition} | ${previewData.matchDate} ${previewData.matchTime}hs\n${previewData.stadium ? `Estadio: ${previewData.stadium}` : ""}\n\n#futbol #${previewData.homeClub.shortName.replace(/\s/g, "")} #${previewData.awayClub.shortName.replace(/\s/g, "")}\n\n@diariodupla.ar`
+    }
+    if (cardType === "transfer" && transferData.playerName) {
+      const type =
+        transferData.transferType === "COMPRA"
+          ? "Nuevo refuerzo"
+          : transferData.transferType === "PRESTAMO"
+            ? "Llega a préstamo"
+            : "Llega como agente libre"
+      return `${type}: ${transferData.playerName}\n${transferData.toClub ? `Se suma a ${transferData.toClub.shortName}` : ""}${transferData.fromClub ? ` desde ${transferData.fromClub.shortName}` : ""}\n${transferData.details}\n\n#fichaje #futbol\n\n@diariodupla.ar`
+    }
+    return ""
+  }
+
+  function copyCaption() {
+    navigator.clipboard.writeText(getCaption())
+  }
+
+  function getLeagueForCard(): string {
+    if (cardType === "result") {
+      return resultData.homeClub?.league || resultData.awayClub?.league || "ARGENTINA"
+    }
+    if (cardType === "preview") {
+      return previewData.homeClub?.league || previewData.awayClub?.league || "ARGENTINA"
+    }
+    return transferData.toClub?.league || transferData.fromClub?.league || "ARGENTINA"
+  }
+
+  return (
+    <div>
+      <h1 className="text-2xl font-bold font-cuerpo mb-6">
+        Placas para Instagram
+      </h1>
+
+      <div className="flex gap-2 mb-6">
+        {CARD_TYPES.map((type) => (
+          <button
+            key={type.id}
+            onClick={() => setCardType(type.id)}
+            className={`px-4 py-2 rounded-md text-sm font-cuerpo transition-colors ${
+              cardType === type.id
+                ? "bg-negro text-white"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+            }`}
+          >
+            {type.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Form */}
+        <div className="space-y-4">
+          {cardType === "result" && (
+            <ResultForm data={resultData} onChange={setResultData} />
+          )}
+          {cardType === "preview" && (
+            <PreviewForm data={previewData} onChange={setPreviewData} />
+          )}
+          {cardType === "transfer" && (
+            <TransferForm data={transferData} onChange={setTransferData} />
+          )}
+
+          <div className="flex gap-3 pt-4">
+            <button
+              onClick={handleDownload}
+              disabled={downloading}
+              className="bg-negro text-white px-6 py-3 rounded-md hover:bg-gray-800 transition-colors font-cuerpo text-sm disabled:opacity-50 flex-1"
+            >
+              {downloading ? "Generando..." : "Descargar PNG"}
+            </button>
+          </div>
+
+          {getCaption() && (
+            <div className="border rounded-lg p-4 mt-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-cuerpo font-bold text-gray-600">
+                  Caption sugerido
+                </span>
+                <button
+                  onClick={copyCaption}
+                  className="text-xs font-cuerpo text-celeste hover:underline"
+                >
+                  Copiar
+                </button>
+              </div>
+              <pre className="text-sm font-cuerpo text-gray-700 whitespace-pre-wrap">
+                {getCaption()}
+              </pre>
+            </div>
+          )}
+        </div>
+
+        {/* Preview */}
+        <div>
+          <p className="text-sm font-cuerpo text-gray-500 mb-3">
+            Vista previa (1080 × 1350)
+          </p>
+          <div
+            className="border rounded-lg overflow-hidden bg-gray-100"
+            style={{
+              width: Math.round(1080 * 0.333),
+              height: Math.round(1350 * 0.333),
+              position: "relative",
+            }}
+          >
+            <div
+              style={{
+                width: 1080,
+                height: 1350,
+                transform: "scale(0.333)",
+                transformOrigin: "top left",
+                position: "absolute",
+                top: 0,
+                left: 0,
+              }}
+            >
+              <div
+                ref={cardRef}
+                style={{ width: 1080, height: 1350 }}
+              >
+                {cardType === "result" && (
+                  <ResultCard data={resultData} league={getLeagueForCard()} />
+                )}
+                {cardType === "preview" && (
+                  <PreviewCard data={previewData} league={getLeagueForCard()} />
+                )}
+                {cardType === "transfer" && (
+                  <TransferCard data={transferData} league={getLeagueForCard()} />
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

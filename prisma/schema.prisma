@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  username  String   @unique
+  password  String
+  name      String
+  role      String   @default("EDITOR") // ADMIN | EDITOR
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  articles  Article[]
+
+  @@map("users")
+}
+
+model Article {
+  id            String   @id @default(cuid())
+  title         String
+  subtitle      String?
+  slug          String   @unique
+  body          String
+  heroImageUrl  String?
+  heroImageAlt  String?
+  heroCredit    String?
+  section       String   // ARGENTINA | BRASIL
+  status        String   @default("DRAFT") // DRAFT | PUBLISHED
+  featured      Boolean  @default(false)
+  publishedAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  author   User   @relation(fields: [authorId], references: [id])
+  authorId String
+
+  tags Tag[] @relation("ArticleTags")
+
+  @@index([section, status])
+  @@index([featured, status])
+  @@map("articles")
+}
+
+model Tag {
+  id       String    @id @default(cuid())
+  name     String    @unique
+  slug     String    @unique
+  articles Article[] @relation("ArticleTags")
+
+  @@map("tags")
+}
+
+model Club {
+  id             String  @id @default(cuid())
+  name           String
+  shortName      String
+  initials       String
+  primaryColor   String  @default("#000000")
+  secondaryColor String  @default("#FFFFFF")
+  league         String  // ARGENTINA | BRASIL
+  crestUrl       String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([name, league])
+  @@map("clubs")
+}
+
+model Image {
+  id         String   @id @default(cuid())
+  url        String
+  filename   String
+  width      Int?
+  height     Int?
+  sizeBytes  Int?
+  mimeType   String?
+  uploadedAt DateTime @default(now())
+
+  @@map("images")
+}
