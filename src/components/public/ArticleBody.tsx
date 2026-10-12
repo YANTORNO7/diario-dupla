@@ -1,10 +1,17 @@
-import DOMPurify from "isomorphic-dompurify"
+"use client"
+
+import { useMemo } from "react"
+import DOMPurify from "dompurify"
 
 export default function ArticleBody({ html }: { html: string }) {
-  const clean = DOMPurify.sanitize(html, {
-    ADD_TAGS: ["iframe"],
-    ADD_ATTR: ["allow", "allowfullscreen", "frameborder", "scrolling", "src"],
-  })
+  const clean = useMemo(
+    () =>
+      DOMPurify.sanitize(html, {
+        ADD_TAGS: ["iframe"],
+        ADD_ATTR: ["allow", "allowfullscreen", "frameborder", "scrolling", "src"],
+      }),
+    [html]
+  )
 
   return (
     <div
