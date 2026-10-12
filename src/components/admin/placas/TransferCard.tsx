@@ -27,6 +27,12 @@ export default function TransferCard({ data, league }: Props) {
   const fromClub = data.fromClub
   const toClub = data.toClub
 
+  const stripeColor = league === "BRASIL"
+    ? { a: "#009C3B", b: "#FFDF00" }
+    : { a: "#75AADB", b: "#FFFFFF" }
+
+  const hasPhoto = !!data.photoUrl
+
   return (
     <div
       style={{
@@ -39,63 +45,135 @@ export default function TransferCard({ data, league }: Props) {
         flexDirection: "column",
       }}
     >
-      {/* Header */}
+      {/* Top section: Photo + DUPLA logo overlay */}
       <div
         style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          padding: "50px 60px 0",
+          position: "relative",
+          width: "100%",
+          height: hasPhoto ? 520 : 120,
+          flexShrink: 0,
         }}
       >
+        {/* Photo background */}
+        {hasPhoto && (
+          <>
+            <img
+              src={data.photoUrl}
+              alt=""
+              style={{
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+              }}
+            />
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                background: "linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, transparent 30%, transparent 50%, #111111 100%)",
+              }}
+            />
+          </>
+        )}
+
+        {/* DUPLA logo - always on top */}
         <div
           style={{
-            backgroundColor: "#FFF",
-            padding: "8px 16px",
-            borderRadius: 6,
-            transform: "skewX(-6deg)",
+            position: "absolute",
+            top: 40,
+            left: 60,
+            zIndex: 2,
           }}
         >
-          <span
+          <div
             style={{
-              fontFamily: "var(--font-anton), Anton, sans-serif",
-              fontSize: 32,
-              color: "#111",
-              letterSpacing: 2,
+              backgroundColor: "#FFF",
+              padding: "8px 16px",
+              transform: "skewX(-6deg)",
             }}
           >
-            DUPLA
-          </span>
-        </div>
-        <div style={{ textAlign: "right" }}>
-          <p
+            <span
+              style={{
+                fontFamily: "var(--font-anton), Anton, sans-serif",
+                fontSize: 32,
+                color: "#111",
+                letterSpacing: 2,
+              }}
+            >
+              DUPLA
+            </span>
+          </div>
+          {/* Rajitas */}
+          <div
             style={{
-              fontFamily: "var(--font-archivo), Archivo, sans-serif",
-              fontSize: 22,
-              color: "#888",
-              textTransform: "uppercase",
-              letterSpacing: 2,
+              display: "flex",
+              gap: 3,
+              marginTop: 4,
+              transform: "skewX(-6deg)",
             }}
           >
-            MERCADO DE PASES
-          </p>
+            <div style={{ display: "flex", flex: 1, gap: 1 }}>
+              <div style={{ flex: 1, height: 5, backgroundColor: stripeColor.a }} />
+              <div style={{ flex: 0.5, height: 5, backgroundColor: stripeColor.b }} />
+              <div style={{ flex: 1, height: 5, backgroundColor: stripeColor.a }} />
+            </div>
+          </div>
         </div>
+
+        {/* MERCADO DE PASES label on header */}
+        {!hasPhoto && (
+          <div
+            style={{
+              position: "absolute",
+              top: 50,
+              right: 60,
+              textAlign: "right",
+            }}
+          >
+            <p
+              style={{
+                fontFamily: "var(--font-archivo), Archivo, sans-serif",
+                fontSize: 22,
+                color: "#888",
+                textTransform: "uppercase",
+                letterSpacing: 2,
+              }}
+            >
+              MERCADO DE PASES
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Transfer type label */}
       <div
         style={{
           display: "flex",
-          justifyContent: "center",
-          paddingTop: 80,
-          paddingBottom: 30,
+          flexDirection: "column",
+          alignItems: "center",
+          paddingTop: hasPhoto ? 20 : 40,
+          paddingBottom: 10,
         }}
       >
+        <p
+          style={{
+            fontFamily: "var(--font-archivo), Archivo, sans-serif",
+            fontSize: 22,
+            color: "#888",
+            textTransform: "uppercase",
+            letterSpacing: 2,
+            marginBottom: 10,
+          }}
+        >
+          MERCADO DE PASES
+        </p>
         <span
           style={{
             fontFamily: "var(--font-anton), Anton, sans-serif",
             fontSize: 52,
-            color: accentColor,
+            color: "#FFDF00",
             letterSpacing: 6,
             textTransform: "uppercase",
           }}
@@ -105,7 +183,7 @@ export default function TransferCard({ data, league }: Props) {
       </div>
 
       {/* Player name */}
-      <div style={{ textAlign: "center", padding: "0 60px 40px" }}>
+      <div style={{ textAlign: "center", padding: "20px 60px 30px" }}>
         <span
           style={{
             fontFamily: "var(--font-anton), Anton, sans-serif",
@@ -283,32 +361,23 @@ export default function TransferCard({ data, league }: Props) {
       )}
 
       {/* Footer */}
-      <div style={{ padding: "0 60px 50px" }}>
+      <div style={{ padding: "0 60px 45px" }}>
         <p
           style={{
             fontFamily: "var(--font-archivo), Archivo, sans-serif",
             fontSize: 24,
-            color: "#666",
+            color: "#999",
             textAlign: "center",
             marginBottom: 20,
           }}
         >
           @diariodupla.ar
         </p>
+        {/* Color stripe */}
         <div style={{ display: "flex", height: 8, borderRadius: 4, overflow: "hidden" }}>
-          {league === "ARGENTINA" ? (
-            <>
-              <div style={{ flex: 1, backgroundColor: "#75AADB" }} />
-              <div style={{ flex: 1, backgroundColor: "#FFFFFF" }} />
-              <div style={{ flex: 1, backgroundColor: "#75AADB" }} />
-            </>
-          ) : (
-            <>
-              <div style={{ flex: 1, backgroundColor: "#009C3B" }} />
-              <div style={{ flex: 1, backgroundColor: "#FFDF00" }} />
-              <div style={{ flex: 1, backgroundColor: "#009C3B" }} />
-            </>
-          )}
+          <div style={{ flex: 1, backgroundColor: stripeColor.a }} />
+          <div style={{ flex: 1, backgroundColor: stripeColor.b }} />
+          <div style={{ flex: 1, backgroundColor: stripeColor.a }} />
         </div>
       </div>
     </div>

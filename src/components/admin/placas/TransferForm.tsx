@@ -2,6 +2,7 @@
 
 import type { TransferData } from "@/app/admin/placas/page"
 import ClubSearch from "./ClubSearch"
+import ImageUploader from "@/components/admin/ImageUploader"
 
 type Props = {
   data: TransferData
@@ -67,6 +68,16 @@ export default function TransferForm({ data, onChange }: Props) {
           placeholder="Contrato por 3 años"
           rows={2}
           className="w-full border rounded-md px-3 py-2 font-cuerpo text-sm resize-none"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-cuerpo text-gray-600 mb-1">
+          Foto del jugador (opcional)
+        </label>
+        <ImageUploader
+          currentUrl={data.photoUrl || undefined}
+          onUpload={(url) => onChange({ ...data, photoUrl: url })}
         />
       </div>
     </div>

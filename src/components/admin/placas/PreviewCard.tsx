@@ -1,6 +1,6 @@
 "use client"
 
-import type { PreviewData } from "@/app/admin/placas/page"
+import { type PreviewData, COMPETITIONS, ROUNDS } from "@/app/admin/placas/page"
 
 type Props = {
   data: PreviewData
@@ -44,6 +44,17 @@ export default function PreviewCard({ data, league }: Props) {
   const home = data.homeClub || homePlaceholder
   const away = data.awayClub || awayPlaceholder
 
+  const stripeColor = league === "BRASIL"
+    ? { a: "#009C3B", b: "#FFDF00" }
+    : { a: "#75AADB", b: "#FFFFFF" }
+
+  const hasPhoto = !!data.photoUrl
+
+  const competitionLabel = COMPETITIONS.find((c) => c.id === data.competition)?.label || data.competition
+  const roundLabel = data.round === "fecha"
+    ? `Fecha ${data.matchday}`
+    : ROUNDS.find((r) => r.id === data.round)?.label || data.round
+
   return (
     <div
       style={{
@@ -56,47 +67,114 @@ export default function PreviewCard({ data, league }: Props) {
         flexDirection: "column",
       }}
     >
-      {/* Header */}
+      {/* Top section: Photo + DUPLA logo overlay */}
       <div
         style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          padding: "50px 60px 0",
+          position: "relative",
+          width: "100%",
+          height: hasPhoto ? 480 : 120,
+          flexShrink: 0,
         }}
       >
+        {/* Photo background */}
+        {hasPhoto && (
+          <>
+            <img
+              src={data.photoUrl}
+              alt=""
+              style={{
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+              }}
+            />
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                background: "linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, transparent 30%, transparent 50%, #111111 100%)",
+              }}
+            />
+          </>
+        )}
+
+        {/* DUPLA logo - always on top */}
         <div
           style={{
-            backgroundColor: "#FFF",
-            padding: "8px 16px",
-            borderRadius: 6,
-            transform: "skewX(-6deg)",
+            position: "absolute",
+            top: 40,
+            left: 60,
+            zIndex: 2,
           }}
         >
-          <span
+          <div
             style={{
-              fontFamily: "var(--font-anton), Anton, sans-serif",
-              fontSize: 32,
-              color: "#111",
-              letterSpacing: 2,
+              backgroundColor: "#FFF",
+              padding: "8px 16px",
+              transform: "skewX(-6deg)",
             }}
           >
-            DUPLA
-          </span>
-        </div>
-        <div style={{ textAlign: "right" }}>
-          <p
+            <span
+              style={{
+                fontFamily: "var(--font-anton), Anton, sans-serif",
+                fontSize: 32,
+                color: "#111",
+                letterSpacing: 2,
+              }}
+            >
+              DUPLA
+            </span>
+          </div>
+          {/* Rajitas */}
+          <div
             style={{
-              fontFamily: "var(--font-archivo), Archivo, sans-serif",
-              fontSize: 22,
-              color: "#888",
-              textTransform: "uppercase",
-              letterSpacing: 2,
+              display: "flex",
+              gap: 3,
+              marginTop: 4,
+              transform: "skewX(-6deg)",
             }}
           >
-            {data.competition}
-          </p>
+            <div style={{ display: "flex", flex: 1, gap: 1 }}>
+              <div style={{ flex: 1, height: 5, backgroundColor: stripeColor.a }} />
+              <div style={{ flex: 0.5, height: 5, backgroundColor: stripeColor.b }} />
+              <div style={{ flex: 1, height: 5, backgroundColor: stripeColor.a }} />
+            </div>
+          </div>
         </div>
+      </div>
+
+      {/* Competition, round & PREVIA label */}
+      <div
+        style={{
+          textAlign: "center",
+          paddingTop: hasPhoto ? 20 : 40,
+          paddingBottom: 10,
+        }}
+      >
+        <p
+          style={{
+            fontFamily: "var(--font-archivo), Archivo, sans-serif",
+            fontSize: 24,
+            color: "#DDD",
+            textTransform: "uppercase",
+            letterSpacing: 3,
+            fontWeight: 700,
+          }}
+        >
+          {competitionLabel}
+        </p>
+        <p
+          style={{
+            fontFamily: "var(--font-archivo), Archivo, sans-serif",
+            fontSize: 20,
+            color: "#AAA",
+            marginTop: 6,
+          }}
+        >
+          {roundLabel}
+        </p>
       </div>
 
       {/* PREVIA label */}
@@ -104,15 +182,15 @@ export default function PreviewCard({ data, league }: Props) {
         style={{
           display: "flex",
           justifyContent: "center",
-          paddingTop: 60,
+          paddingTop: 10,
           paddingBottom: 20,
         }}
       >
         <span
           style={{
             fontFamily: "var(--font-anton), Anton, sans-serif",
-            fontSize: 48,
-            color: accentColor,
+            fontSize: 64,
+            color: "#FFDF00",
             letterSpacing: 8,
             textTransform: "uppercase",
           }}
@@ -129,7 +207,7 @@ export default function PreviewCard({ data, league }: Props) {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          gap: 40,
+          gap: 30,
           padding: "0 60px",
         }}
       >
@@ -137,27 +215,27 @@ export default function PreviewCard({ data, league }: Props) {
         <div style={{ textAlign: "center" }}>
           <div
             style={{
-              width: 140,
-              height: 140,
+              width: 120,
+              height: 120,
               borderRadius: "50%",
               backgroundColor: home.primaryColor,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              margin: "0 auto 20px",
+              margin: "0 auto 16px",
             }}
           >
             {home.crestUrl ? (
               <img
                 src={home.crestUrl}
                 alt=""
-                style={{ width: 100, height: 100, objectFit: "contain" }}
+                style={{ width: 86, height: 86, objectFit: "contain" }}
               />
             ) : (
               <span
                 style={{
                   fontFamily: "var(--font-anton), Anton, sans-serif",
-                  fontSize: 48,
+                  fontSize: 40,
                   color: "#FFF",
                 }}
               >
@@ -181,7 +259,7 @@ export default function PreviewCard({ data, league }: Props) {
         <span
           style={{
             fontFamily: "var(--font-anton), Anton, sans-serif",
-            fontSize: 80,
+            fontSize: 72,
             color: accentColor,
           }}
         >
@@ -192,27 +270,27 @@ export default function PreviewCard({ data, league }: Props) {
         <div style={{ textAlign: "center" }}>
           <div
             style={{
-              width: 140,
-              height: 140,
+              width: 120,
+              height: 120,
               borderRadius: "50%",
               backgroundColor: away.primaryColor,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              margin: "0 auto 20px",
+              margin: "0 auto 16px",
             }}
           >
             {away.crestUrl ? (
               <img
                 src={away.crestUrl}
                 alt=""
-                style={{ width: 100, height: 100, objectFit: "contain" }}
+                style={{ width: 86, height: 86, objectFit: "contain" }}
               />
             ) : (
               <span
                 style={{
                   fontFamily: "var(--font-anton), Anton, sans-serif",
-                  fontSize: 48,
+                  fontSize: 40,
                   color: "#FFF",
                 }}
               >
@@ -270,32 +348,23 @@ export default function PreviewCard({ data, league }: Props) {
       </div>
 
       {/* Footer */}
-      <div style={{ padding: "0 60px 50px" }}>
+      <div style={{ padding: "0 60px 45px" }}>
         <p
           style={{
             fontFamily: "var(--font-archivo), Archivo, sans-serif",
             fontSize: 24,
-            color: "#666",
+            color: "#999",
             textAlign: "center",
             marginBottom: 20,
           }}
         >
           @diariodupla.ar
         </p>
+        {/* Color stripe */}
         <div style={{ display: "flex", height: 8, borderRadius: 4, overflow: "hidden" }}>
-          {league === "ARGENTINA" ? (
-            <>
-              <div style={{ flex: 1, backgroundColor: "#75AADB" }} />
-              <div style={{ flex: 1, backgroundColor: "#FFFFFF" }} />
-              <div style={{ flex: 1, backgroundColor: "#75AADB" }} />
-            </>
-          ) : (
-            <>
-              <div style={{ flex: 1, backgroundColor: "#009C3B" }} />
-              <div style={{ flex: 1, backgroundColor: "#FFDF00" }} />
-              <div style={{ flex: 1, backgroundColor: "#009C3B" }} />
-            </>
-          )}
+          <div style={{ flex: 1, backgroundColor: stripeColor.a }} />
+          <div style={{ flex: 1, backgroundColor: stripeColor.b }} />
+          <div style={{ flex: 1, backgroundColor: stripeColor.a }} />
         </div>
       </div>
     </div>

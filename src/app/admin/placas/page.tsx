@@ -60,9 +60,12 @@ export type PreviewData = {
   homeClub: Club | null
   awayClub: Club | null
   competition: string
+  round: string
+  matchday: string
   matchDate: string
   matchTime: string
   stadium: string
+  photoUrl: string
 }
 
 export type TransferData = {
@@ -71,6 +74,7 @@ export type TransferData = {
   toClub: Club | null
   transferType: "COMPRA" | "PRESTAMO" | "LIBRE"
   details: string
+  photoUrl: string
 }
 
 const CARD_TYPES = [
@@ -106,10 +110,13 @@ export default function PlacasPage() {
   const [previewData, setPreviewData] = useState<PreviewData>({
     homeClub: null,
     awayClub: null,
-    competition: "Liga Profesional",
+    competition: "lpa",
+    round: "fecha",
+    matchday: "1",
     matchDate: new Date().toISOString().slice(0, 10),
     matchTime: "21:00",
     stadium: "",
+    photoUrl: "",
   })
 
   const [transferData, setTransferData] = useState<TransferData>({
@@ -118,6 +125,7 @@ export default function PlacasPage() {
     toClub: null,
     transferType: "COMPRA",
     details: "",
+    photoUrl: "",
   })
 
   async function handleDownload() {
@@ -154,7 +162,8 @@ export default function PlacasPage() {
       return `${result} | ${score}\n${resultData.competition}\n\n#futbol #${resultData.homeClub.shortName.replace(/\s/g, "")} #${resultData.awayClub.shortName.replace(/\s/g, "")}\n\n@diariodupla.ar`
     }
     if (cardType === "preview" && previewData.homeClub && previewData.awayClub) {
-      return `${previewData.homeClub.shortName} vs ${previewData.awayClub.shortName}\n${previewData.competition} | ${previewData.matchDate} ${previewData.matchTime}hs\n${previewData.stadium ? `Estadio: ${previewData.stadium}` : ""}\n\n#futbol #${previewData.homeClub.shortName.replace(/\s/g, "")} #${previewData.awayClub.shortName.replace(/\s/g, "")}\n\n@diariodupla.ar`
+      const compLabel = COMPETITIONS.find((c) => c.id === previewData.competition)?.label || previewData.competition
+      return `${previewData.homeClub.shortName} vs ${previewData.awayClub.shortName}\n${compLabel} | ${previewData.matchDate} ${previewData.matchTime}hs\n${previewData.stadium ? `Estadio: ${previewData.stadium}` : ""}\n\n#futbol #${previewData.homeClub.shortName.replace(/\s/g, "")} #${previewData.awayClub.shortName.replace(/\s/g, "")}\n\n@diariodupla.ar`
     }
     if (cardType === "transfer" && transferData.playerName) {
       const type =
@@ -176,27 +185,51 @@ export default function PlacasPage() {
     setGeneratingCaption(true)
     setAiCaption("")
 
-    const competitionLabel = COMPETITIONS.find((c) => c.id === resultData.competition)?.label || resultData.competition
-    const roundLabel = resultData.round === "fecha"
-      ? `Fecha ${resultData.matchday}`
-      : ROUNDS.find((r) => r.id === resultData.round)?.label || resultData.round
+    let body: Record<string, unknown> = { context: aiContext, type: cardType }
+
+    if (cardType === "result") {
+      const competitionLabel = COMPETITIONS.find((c) => c.id === resultData.competition)?.label || resultData.competition
+      const roundLabel = resultData.round === "fecha"
+        ? `Fecha ${resultData.matchday}`
+        : ROUNDS.find((r) => r.id === resultData.round)?.label || resultData.round
+      body.matchData = {
+        homeTeam: resultData.homeClub?.shortName || "Local",
+        awayTeam: resultData.awayClub?.shortName || "Visitante",
+        homeScore: resultData.homeScore,
+        awayScore: resultData.awayScore,
+        competition: competitionLabel,
+        round: roundLabel,
+        matchDate: resultData.matchDate,
+      }
+    } else if (cardType === "preview") {
+      const competitionLabel = COMPETITIONS.find((c) => c.id === previewData.competition)?.label || previewData.competition
+      const roundLabel = previewData.round === "fecha"
+        ? `Fecha ${previewData.matchday}`
+        : ROUNDS.find((r) => r.id === previewData.round)?.label || previewData.round
+      body.matchData = {
+        homeTeam: previewData.homeClub?.shortName || "Local",
+        awayTeam: previewData.awayClub?.shortName || "Visitante",
+        competition: competitionLabel,
+        round: roundLabel,
+        matchDate: previewData.matchDate,
+        matchTime: previewData.matchTime,
+        stadium: previewData.stadium,
+      }
+    } else if (cardType === "transfer") {
+      body.transferData = {
+        playerName: transferData.playerName,
+        fromClub: transferData.fromClub?.shortName || "",
+        toClub: transferData.toClub?.shortName || "",
+        transferType: transferData.transferType,
+        details: transferData.details,
+      }
+    }
 
     try {
       const res = await fetch("/api/generate-caption", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          matchData: {
-            homeTeam: resultData.homeClub?.shortName || "Local",
-            awayTeam: resultData.awayClub?.shortName || "Visitante",
-            homeScore: resultData.homeScore,
-            awayScore: resultData.awayScore,
-            competition: competitionLabel,
-            round: roundLabel,
-            matchDate: resultData.matchDate,
-          },
-          context: aiContext,
-        }),
+        body: JSON.stringify(body),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -267,7 +300,9 @@ export default function PlacasPage() {
           </div>
 
           {/* AI Caption generator */}
-          {cardType === "result" && resultData.homeClub && resultData.awayClub && (
+          {((cardType === "result" && resultData.homeClub && resultData.awayClub) ||
+            (cardType === "preview" && previewData.homeClub && previewData.awayClub) ||
+            (cardType === "transfer" && transferData.playerName && transferData.toClub)) && (
             <div className="border rounded-lg p-4 mt-4 space-y-3">
               <span className="text-sm font-cuerpo font-bold text-gray-600">
                 Caption con IA
@@ -275,7 +310,13 @@ export default function PlacasPage() {
               <textarea
                 value={aiContext}
                 onChange={(e) => setAiContext(e.target.value)}
-                placeholder="Contame sobre el partido... ej: gol en el último minuto, remontada épica, clásico muy peleado (opcional)"
+                placeholder={
+                  cardType === "result"
+                    ? "Contame sobre el partido... ej: gol en el último minuto, remontada épica (opcional)"
+                    : cardType === "preview"
+                      ? "Contame algo sobre la previa... ej: clásico histórico, partido clave (opcional)"
+                      : "Contame algo sobre el fichaje... ej: gran refuerzo, pedido del DT (opcional)"
+                }
                 rows={2}
                 className="w-full border rounded-md px-3 py-2 font-cuerpo text-sm resize-none"
               />
