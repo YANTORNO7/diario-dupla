@@ -5,6 +5,7 @@ import type { TransferData } from "@/app/admin/placas/page"
 type Props = {
   data: TransferData
   league: string
+  leagues: { home: string; away: string }
 }
 
 function autoFontSize(text: string, maxWidth: number, base: number = 64): number {
@@ -14,7 +15,8 @@ function autoFontSize(text: string, maxWidth: number, base: number = 64): number
   return Math.max(28, Math.floor((maxWidth / totalWidth) * base))
 }
 
-export default function TransferCard({ data, league }: Props) {
+export default function TransferCard({ data, league, leagues }: Props) {
+  const isMixed = leagues.home !== leagues.away
   const accentColor = league === "BRASIL" ? "#009C3B" : "#75AADB"
 
   const transferLabel =
@@ -114,11 +116,20 @@ export default function TransferCard({ data, league }: Props) {
               transform: "skewX(-6deg)",
             }}
           >
-            <div style={{ display: "flex", flex: 1, gap: 1 }}>
-              <div style={{ flex: 1, height: 5, backgroundColor: stripeColor.a }} />
-              <div style={{ flex: 0.5, height: 5, backgroundColor: stripeColor.b }} />
-              <div style={{ flex: 1, height: 5, backgroundColor: stripeColor.a }} />
-            </div>
+            {isMixed ? (
+              <div style={{ display: "flex", flex: 1, gap: 1 }}>
+                <div style={{ flex: 1, height: 5, backgroundColor: "#75AADB" }} />
+                <div style={{ flex: 1, height: 5, backgroundColor: "#FFFFFF" }} />
+                <div style={{ flex: 1, height: 5, backgroundColor: "#009C3B" }} />
+                <div style={{ flex: 1, height: 5, backgroundColor: "#FFDF00" }} />
+              </div>
+            ) : (
+              <div style={{ display: "flex", flex: 1, gap: 1 }}>
+                <div style={{ flex: 1, height: 5, backgroundColor: stripeColor.a }} />
+                <div style={{ flex: 0.5, height: 5, backgroundColor: stripeColor.b }} />
+                <div style={{ flex: 1, height: 5, backgroundColor: stripeColor.a }} />
+              </div>
+            )}
           </div>
         </div>
 
@@ -375,9 +386,20 @@ export default function TransferCard({ data, league }: Props) {
         </p>
         {/* Color stripe */}
         <div style={{ display: "flex", height: 8, borderRadius: 4, overflow: "hidden" }}>
-          <div style={{ flex: 1, backgroundColor: stripeColor.a }} />
-          <div style={{ flex: 1, backgroundColor: stripeColor.b }} />
-          <div style={{ flex: 1, backgroundColor: stripeColor.a }} />
+          {isMixed ? (
+            <>
+              <div style={{ flex: 1, backgroundColor: "#75AADB" }} />
+              <div style={{ flex: 1, backgroundColor: "#FFFFFF" }} />
+              <div style={{ flex: 1, backgroundColor: "#009C3B" }} />
+              <div style={{ flex: 1, backgroundColor: "#FFDF00" }} />
+            </>
+          ) : (
+            <>
+              <div style={{ flex: 1, backgroundColor: stripeColor.a }} />
+              <div style={{ flex: 1, backgroundColor: stripeColor.b }} />
+              <div style={{ flex: 1, backgroundColor: stripeColor.a }} />
+            </>
+          )}
         </div>
       </div>
     </div>

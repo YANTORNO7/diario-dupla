@@ -244,14 +244,28 @@ export default function PlacasPage() {
     }
   }
 
-  function getLeagueForCard(): string {
+  function getLeaguesForCard(): { home: string; away: string } {
     if (cardType === "result") {
-      return resultData.homeClub?.league || resultData.awayClub?.league || "ARGENTINA"
+      return {
+        home: resultData.homeClub?.league || "ARGENTINA",
+        away: resultData.awayClub?.league || "ARGENTINA",
+      }
     }
     if (cardType === "preview") {
-      return previewData.homeClub?.league || previewData.awayClub?.league || "ARGENTINA"
+      return {
+        home: previewData.homeClub?.league || "ARGENTINA",
+        away: previewData.awayClub?.league || "ARGENTINA",
+      }
     }
-    return transferData.toClub?.league || transferData.fromClub?.league || "ARGENTINA"
+    return {
+      home: transferData.fromClub?.league || transferData.toClub?.league || "ARGENTINA",
+      away: transferData.toClub?.league || transferData.fromClub?.league || "ARGENTINA",
+    }
+  }
+
+  function getLeagueForCard(): string {
+    const { home } = getLeaguesForCard()
+    return home
   }
 
   return (
@@ -401,13 +415,13 @@ export default function PlacasPage() {
                 style={{ width: 1080, height: 1350 }}
               >
                 {cardType === "result" && (
-                  <ResultCard data={resultData} league={getLeagueForCard()} />
+                  <ResultCard data={resultData} league={getLeagueForCard()} leagues={getLeaguesForCard()} />
                 )}
                 {cardType === "preview" && (
-                  <PreviewCard data={previewData} league={getLeagueForCard()} />
+                  <PreviewCard data={previewData} league={getLeagueForCard()} leagues={getLeaguesForCard()} />
                 )}
                 {cardType === "transfer" && (
-                  <TransferCard data={transferData} league={getLeagueForCard()} />
+                  <TransferCard data={transferData} league={getLeagueForCard()} leagues={getLeaguesForCard()} />
                 )}
               </div>
             </div>

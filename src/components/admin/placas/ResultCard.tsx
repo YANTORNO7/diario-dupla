@@ -5,6 +5,7 @@ import { type ResultData, COMPETITIONS, ROUNDS } from "@/app/admin/placas/page"
 type Props = {
   data: ResultData
   league: string
+  leagues: { home: string; away: string }
 }
 
 function formatDate(dateStr: string) {
@@ -155,7 +156,8 @@ function TeamRow({
   )
 }
 
-export default function ResultCard({ data, league }: Props) {
+export default function ResultCard({ data, league, leagues }: Props) {
+  const isMixed = leagues.home !== leagues.away
   const accentColor = league === "BRASIL" ? "#009C3B" : "#75AADB"
   const isDraw = data.homeScore === data.awayScore
   const homeWins = data.homeScore > data.awayScore
@@ -264,11 +266,20 @@ export default function ResultCard({ data, league }: Props) {
               transform: "skewX(-6deg)",
             }}
           >
-            <div style={{ display: "flex", flex: 1, gap: 1 }}>
-              <div style={{ flex: 1, height: 5, backgroundColor: stripeColor.a }} />
-              <div style={{ flex: 0.5, height: 5, backgroundColor: stripeColor.b }} />
-              <div style={{ flex: 1, height: 5, backgroundColor: stripeColor.a }} />
-            </div>
+            {isMixed ? (
+              <div style={{ display: "flex", flex: 1, gap: 1 }}>
+                <div style={{ flex: 1, height: 5, backgroundColor: "#75AADB" }} />
+                <div style={{ flex: 1, height: 5, backgroundColor: "#FFFFFF" }} />
+                <div style={{ flex: 1, height: 5, backgroundColor: "#009C3B" }} />
+                <div style={{ flex: 1, height: 5, backgroundColor: "#FFDF00" }} />
+              </div>
+            ) : (
+              <div style={{ display: "flex", flex: 1, gap: 1 }}>
+                <div style={{ flex: 1, height: 5, backgroundColor: stripeColor.a }} />
+                <div style={{ flex: 0.5, height: 5, backgroundColor: stripeColor.b }} />
+                <div style={{ flex: 1, height: 5, backgroundColor: stripeColor.a }} />
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -377,9 +388,20 @@ export default function ResultCard({ data, league }: Props) {
         </p>
         {/* Color stripe */}
         <div style={{ display: "flex", height: 8, borderRadius: 4, overflow: "hidden" }}>
-          <div style={{ flex: 1, backgroundColor: stripeColor.a }} />
-          <div style={{ flex: 1, backgroundColor: stripeColor.b }} />
-          <div style={{ flex: 1, backgroundColor: stripeColor.a }} />
+          {isMixed ? (
+            <>
+              <div style={{ flex: 1, backgroundColor: "#75AADB" }} />
+              <div style={{ flex: 1, backgroundColor: "#FFFFFF" }} />
+              <div style={{ flex: 1, backgroundColor: "#009C3B" }} />
+              <div style={{ flex: 1, backgroundColor: "#FFDF00" }} />
+            </>
+          ) : (
+            <>
+              <div style={{ flex: 1, backgroundColor: stripeColor.a }} />
+              <div style={{ flex: 1, backgroundColor: stripeColor.b }} />
+              <div style={{ flex: 1, backgroundColor: stripeColor.a }} />
+            </>
+          )}
         </div>
       </div>
     </div>
