@@ -11,9 +11,9 @@ export async function GET(request: NextRequest) {
   if (league) where.league = league
   if (q) {
     where.OR = [
-      { name: { contains: q } },
-      { shortName: { contains: q } },
-      { initials: { contains: q } },
+      { name: { contains: q, mode: "insensitive" } },
+      { shortName: { contains: q, mode: "insensitive" } },
+      { initials: { contains: q, mode: "insensitive" } },
     ]
   }
 
