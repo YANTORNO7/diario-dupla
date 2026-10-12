@@ -176,10 +176,12 @@ export default function PreviewCard({ data, league, leagues }: Props) {
         </p>
         <p
           style={{
-            fontFamily: "var(--font-archivo), Archivo, sans-serif",
-            fontSize: 22,
-            color: "#CCC",
-            marginTop: 4,
+            fontFamily: "var(--font-anton), Anton, sans-serif",
+            fontSize: 32,
+            color: "#FFF",
+            marginTop: 6,
+            letterSpacing: 2,
+            textTransform: "uppercase",
           }}
         >
           {roundLabel}

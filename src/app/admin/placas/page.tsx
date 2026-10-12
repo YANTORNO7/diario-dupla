@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import ResultCard from "@/components/admin/placas/ResultCard"
 import PreviewCard from "@/components/admin/placas/PreviewCard"
 import TransferCard from "@/components/admin/placas/TransferCard"
@@ -9,6 +9,27 @@ import PreviewForm from "@/components/admin/placas/PreviewForm"
 import TransferForm from "@/components/admin/placas/TransferForm"
 import { toPng } from "html-to-image"
 import { useRef } from "react"
+
+const STORAGE_KEY = "dupla-placas-state"
+
+function loadSaved<T>(key: string, fallback: T): T {
+  if (typeof window === "undefined") return fallback
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return fallback
+    const parsed = JSON.parse(raw)
+    return parsed[key] ?? fallback
+  } catch {
+    return fallback
+  }
+}
+
+function saveState(data: Record<string, unknown>) {
+  try {
+    const existing = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}")
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...existing, ...data }))
+  } catch { /* ignore */ }
+}
 
 export type Club = {
   id: string
@@ -86,14 +107,14 @@ const CARD_TYPES = [
 type CardType = (typeof CARD_TYPES)[number]["id"]
 
 export default function PlacasPage() {
-  const [cardType, setCardType] = useState<CardType>("result")
+  const [cardType, setCardType] = useState<CardType>(() => loadSaved("cardType", "result" as CardType))
   const cardRef = useRef<HTMLDivElement>(null)
   const [downloading, setDownloading] = useState(false)
   const [aiContext, setAiContext] = useState("")
   const [aiCaption, setAiCaption] = useState("")
   const [generatingCaption, setGeneratingCaption] = useState(false)
 
-  const [resultData, setResultData] = useState<ResultData>({
+  const defaultResult: ResultData = {
     homeClub: null,
     awayClub: null,
     homeScore: 0,
@@ -105,9 +126,9 @@ export default function PlacasPage() {
     homeScorers: "",
     awayScorers: "",
     photoUrl: "",
-  })
+  }
 
-  const [previewData, setPreviewData] = useState<PreviewData>({
+  const defaultPreview: PreviewData = {
     homeClub: null,
     awayClub: null,
     competition: "lpa",
@@ -117,16 +138,41 @@ export default function PlacasPage() {
     matchTime: "21:00",
     stadium: "",
     photoUrl: "",
-  })
+  }
 
-  const [transferData, setTransferData] = useState<TransferData>({
+  const defaultTransfer: TransferData = {
     playerName: "",
     fromClub: null,
     toClub: null,
     transferType: "COMPRA",
     details: "",
     photoUrl: "",
-  })
+  }
+
+  const [resultData, setResultData] = useState<ResultData>(() => loadSaved("resultData", defaultResult))
+  const [previewData, setPreviewData] = useState<PreviewData>(() => loadSaved("previewData", defaultPreview))
+  const [transferData, setTransferData] = useState<TransferData>(() => loadSaved("transferData", defaultTransfer))
+
+  // Persist state to localStorage
+  const handleSetCardType = useCallback((type: CardType) => {
+    setCardType(type)
+    saveState({ cardType: type })
+  }, [])
+
+  const handleSetResultData = useCallback((data: ResultData) => {
+    setResultData(data)
+    saveState({ resultData: data })
+  }, [])
+
+  const handleSetPreviewData = useCallback((data: PreviewData) => {
+    setPreviewData(data)
+    saveState({ previewData: data })
+  }, [])
+
+  const handleSetTransferData = useCallback((data: TransferData) => {
+    setTransferData(data)
+    saveState({ transferData: data })
+  }, [])
 
   async function handleDownload() {
     if (!cardRef.current) return
@@ -278,7 +324,7 @@ export default function PlacasPage() {
         {CARD_TYPES.map((type) => (
           <button
             key={type.id}
-            onClick={() => setCardType(type.id)}
+            onClick={() => handleSetCardType(type.id)}
             className={`px-4 py-2 rounded-md text-sm font-cuerpo transition-colors ${
               cardType === type.id
                 ? "bg-negro text-white"
@@ -294,13 +340,13 @@ export default function PlacasPage() {
         {/* Form */}
         <div className="space-y-4">
           {cardType === "result" && (
-            <ResultForm data={resultData} onChange={setResultData} />
+            <ResultForm data={resultData} onChange={handleSetResultData} />
           )}
           {cardType === "preview" && (
-            <PreviewForm data={previewData} onChange={setPreviewData} />
+            <PreviewForm data={previewData} onChange={handleSetPreviewData} />
           )}
           {cardType === "transfer" && (
-            <TransferForm data={transferData} onChange={setTransferData} />
+            <TransferForm data={transferData} onChange={handleSetTransferData} />
           )}
 
           <div className="flex gap-3 pt-4">
