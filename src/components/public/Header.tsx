@@ -16,7 +16,7 @@ export default function Header() {
 
   return (
     <header className="bg-[#111111] sticky top-0 z-50">
-      <div className="max-w-6xl mx-auto px-4">
+      <div className="max-w-6xl mx-auto px-4 md:max-w-full md:px-10">
         <div className="flex items-center justify-between h-16">
           <Logo size="small" />
           <nav className="hidden md:flex items-center gap-1">
