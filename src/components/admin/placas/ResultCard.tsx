@@ -181,6 +181,8 @@ export default function ResultCard({ data, league }: Props) {
     ? { a: "#009C3B", b: "#FFDF00" }
     : { a: "#75AADB", b: "#FFFFFF" }
 
+  const hasPhoto = !!data.photoUrl
+
   return (
     <div
       style={{
@@ -193,54 +195,53 @@ export default function ResultCard({ data, league }: Props) {
         flexDirection: "column",
       }}
     >
-      {/* Photo (if provided) */}
-      {data.photoUrl && (
-        <div
-          style={{
-            position: "relative",
-            width: "100%",
-            height: 500,
-            flexShrink: 0,
-          }}
-        >
-          <img
-            src={data.photoUrl}
-            alt=""
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-            }}
-          />
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              background: "linear-gradient(to top, #111111 0%, transparent 50%)",
-            }}
-          />
-        </div>
-      )}
-
-      {/* Header */}
+      {/* Top section: Photo + DUPLA logo overlay */}
       <div
         style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          padding: data.photoUrl ? "0 60px 0" : "50px 60px 0",
-          marginTop: data.photoUrl ? -60 : 0,
           position: "relative",
-          zIndex: 2,
+          width: "100%",
+          height: hasPhoto ? 580 : 120,
+          flexShrink: 0,
         }}
       >
-        {/* DUPLA logo with stripes */}
-        <div>
+        {/* Photo background */}
+        {hasPhoto && (
+          <>
+            <img
+              src={data.photoUrl}
+              alt=""
+              crossOrigin="anonymous"
+              style={{
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+              }}
+            />
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                background: "linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, transparent 30%, transparent 50%, #111111 100%)",
+              }}
+            />
+          </>
+        )}
+
+        {/* DUPLA logo - always on top */}
+        <div
+          style={{
+            position: "absolute",
+            top: 40,
+            left: 60,
+            zIndex: 2,
+          }}
+        >
           <div
             style={{
               backgroundColor: "#FFF",
               padding: "8px 16px",
-              borderRadius: 6,
               transform: "skewX(-6deg)",
             }}
           >
@@ -271,16 +272,32 @@ export default function ResultCard({ data, league }: Props) {
             </div>
           </div>
         </div>
+      </div>
 
+      {/* Bottom section: competition, FINAL, scoreboard */}
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          padding: "0 60px",
+        }}
+      >
         {/* Competition & date */}
-        <div style={{ textAlign: "right" }}>
+        <div
+          style={{
+            textAlign: "center",
+            paddingTop: hasPhoto ? 20 : 40,
+            paddingBottom: 10,
+          }}
+        >
           <p
             style={{
               fontFamily: "var(--font-archivo), Archivo, sans-serif",
-              fontSize: 22,
+              fontSize: 24,
               color: "#DDD",
               textTransform: "uppercase",
-              letterSpacing: 2,
+              letterSpacing: 3,
               fontWeight: 700,
             }}
           >
@@ -291,58 +308,59 @@ export default function ResultCard({ data, league }: Props) {
               fontFamily: "var(--font-archivo), Archivo, sans-serif",
               fontSize: 20,
               color: "#AAA",
+              marginTop: 4,
             }}
           >
             {formatDate(data.matchDate)}
           </p>
         </div>
-      </div>
 
-      {/* FINAL label */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          paddingTop: data.photoUrl ? 30 : 80,
-          paddingBottom: data.photoUrl ? 25 : 50,
-        }}
-      >
-        <span
+        {/* FINAL label */}
+        <div
           style={{
-            fontFamily: "var(--font-anton), Anton, sans-serif",
-            fontSize: 72,
-            color: "#FFDF00",
-            letterSpacing: 8,
-            textTransform: "uppercase",
+            display: "flex",
+            justifyContent: "center",
+            paddingTop: 15,
+            paddingBottom: 25,
           }}
         >
-          FINAL
-        </span>
-      </div>
+          <span
+            style={{
+              fontFamily: "var(--font-anton), Anton, sans-serif",
+              fontSize: 72,
+              color: "#FFDF00",
+              letterSpacing: 8,
+              textTransform: "uppercase",
+            }}
+          >
+            FINAL
+          </span>
+        </div>
 
-      {/* Scoreboard */}
-      <div style={{ padding: "0 60px", flex: 1 }}>
-        <TeamRow
-          club={home}
-          score={data.homeScore}
-          isWinner={homeWins}
-          isDraw={isDraw}
-          scorers={data.homeScorers}
-        />
+        {/* Scoreboard */}
+        <div style={{ flex: 1 }}>
+          <TeamRow
+            club={home}
+            score={data.homeScore}
+            isWinner={homeWins}
+            isDraw={isDraw}
+            scorers={data.homeScorers}
+          />
 
-        <div style={{ height: 30 }} />
+          <div style={{ height: 25 }} />
 
-        <TeamRow
-          club={away}
-          score={data.awayScore}
-          isWinner={awayWins}
-          isDraw={isDraw}
-          scorers={data.awayScorers}
-        />
+          <TeamRow
+            club={away}
+            score={data.awayScore}
+            isWinner={awayWins}
+            isDraw={isDraw}
+            scorers={data.awayScorers}
+          />
+        </div>
       </div>
 
       {/* Footer */}
-      <div style={{ padding: "0 60px 50px" }}>
+      <div style={{ padding: "0 60px 45px" }}>
         <p
           style={{
             fontFamily: "var(--font-archivo), Archivo, sans-serif",
