@@ -1,6 +1,6 @@
 "use client"
 
-import type { ResultData } from "@/app/admin/placas/page"
+import { type ResultData, COMPETITIONS, ROUNDS } from "@/app/admin/placas/page"
 
 type Props = {
   data: ResultData
@@ -282,7 +282,7 @@ export default function ResultCard({ data, league }: Props) {
           padding: "0 60px",
         }}
       >
-        {/* Competition & date */}
+        {/* Competition, round & date */}
         <div
           style={{
             textAlign: "center",
@@ -300,16 +300,20 @@ export default function ResultCard({ data, league }: Props) {
               fontWeight: 700,
             }}
           >
-            {data.competition}
+            {COMPETITIONS.find((c) => c.id === data.competition)?.label || data.competition}
           </p>
           <p
             style={{
               fontFamily: "var(--font-archivo), Archivo, sans-serif",
               fontSize: 20,
               color: "#AAA",
-              marginTop: 4,
+              marginTop: 6,
             }}
           >
+            {data.round === "fecha"
+              ? `Fecha ${data.matchday}`
+              : ROUNDS.find((r) => r.id === data.round)?.label || data.round}
+            {" · "}
             {formatDate(data.matchDate)}
           </p>
         </div>

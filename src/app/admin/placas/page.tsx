@@ -21,12 +21,35 @@ export type Club = {
   crestUrl: string | null
 }
 
+export const COMPETITIONS = [
+  { id: "lpa", label: "Liga Profesional Argentina" },
+  { id: "brasileirao", label: "Brasileirão" },
+  { id: "libertadores", label: "Copa Libertadores" },
+  { id: "sudamericana", label: "Copa Sudamericana" },
+  { id: "copa-arg", label: "Copa Argentina" },
+  { id: "copa-bra", label: "Copa do Brasil" },
+] as const
+
+export const ROUNDS = [
+  { id: "fecha", label: "Fecha" },
+  { id: "grupos", label: "Fase de grupos" },
+  { id: "16avos", label: "16avos de final" },
+  { id: "octavos", label: "Octavos de final" },
+  { id: "cuartos", label: "Cuartos de final" },
+  { id: "semi-ida", label: "Semifinal - Ida" },
+  { id: "semi-vuelta", label: "Semifinal - Vuelta" },
+  { id: "semi", label: "Semifinal" },
+  { id: "final", label: "Final" },
+] as const
+
 export type ResultData = {
   homeClub: Club | null
   awayClub: Club | null
   homeScore: number
   awayScore: number
   competition: string
+  round: string
+  matchday: string
   matchDate: string
   homeScorers: string
   awayScorers: string
@@ -68,7 +91,9 @@ export default function PlacasPage() {
     awayClub: null,
     homeScore: 0,
     awayScore: 0,
-    competition: "Liga Profesional",
+    competition: "lpa",
+    round: "fecha",
+    matchday: "1",
     matchDate: new Date().toISOString().slice(0, 10),
     homeScorers: "",
     awayScorers: "",

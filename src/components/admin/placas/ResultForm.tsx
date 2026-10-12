@@ -1,6 +1,6 @@
 "use client"
 
-import type { ResultData } from "@/app/admin/placas/page"
+import { type ResultData, COMPETITIONS, ROUNDS } from "@/app/admin/placas/page"
 import ClubSearch from "./ClubSearch"
 import ImageUploader from "@/components/admin/ImageUploader"
 
@@ -85,32 +85,63 @@ export default function ResultForm({ data, onChange }: Props) {
         </div>
       </div>
 
+      <div>
+        <label className="block text-sm font-cuerpo text-gray-600 mb-1">
+          Competencia
+        </label>
+        <select
+          value={data.competition}
+          onChange={(e) => onChange({ ...data, competition: e.target.value })}
+          className="w-full border rounded-md px-3 py-2 font-cuerpo text-sm"
+        >
+          {COMPETITIONS.map((c) => (
+            <option key={c.id} value={c.id}>{c.label}</option>
+          ))}
+        </select>
+      </div>
+
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-cuerpo text-gray-600 mb-1">
-            Competencia
+            Instancia
           </label>
-          <input
-            type="text"
-            value={data.competition}
-            onChange={(e) =>
-              onChange({ ...data, competition: e.target.value })
-            }
-            placeholder="Liga Profesional"
+          <select
+            value={data.round}
+            onChange={(e) => onChange({ ...data, round: e.target.value })}
             className="w-full border rounded-md px-3 py-2 font-cuerpo text-sm"
-          />
+          >
+            {ROUNDS.map((r) => (
+              <option key={r.id} value={r.id}>{r.label}</option>
+            ))}
+          </select>
         </div>
-        <div>
-          <label className="block text-sm font-cuerpo text-gray-600 mb-1">
-            Fecha del partido
-          </label>
-          <input
-            type="date"
-            value={data.matchDate}
-            onChange={(e) => onChange({ ...data, matchDate: e.target.value })}
-            className="w-full border rounded-md px-3 py-2 font-cuerpo text-sm"
-          />
-        </div>
+        {data.round === "fecha" && (
+          <div>
+            <label className="block text-sm font-cuerpo text-gray-600 mb-1">
+              N° de fecha
+            </label>
+            <input
+              type="number"
+              min={1}
+              max={99}
+              value={data.matchday}
+              onChange={(e) => onChange({ ...data, matchday: e.target.value })}
+              className="w-full border rounded-md px-3 py-2 font-cuerpo text-sm"
+            />
+          </div>
+        )}
+      </div>
+
+      <div>
+        <label className="block text-sm font-cuerpo text-gray-600 mb-1">
+          Fecha del partido
+        </label>
+        <input
+          type="date"
+          value={data.matchDate}
+          onChange={(e) => onChange({ ...data, matchDate: e.target.value })}
+          className="w-full border rounded-md px-3 py-2 font-cuerpo text-sm"
+        />
       </div>
 
       <div>
