@@ -1,4 +1,6 @@
-export const SECTIONS = {
+export type Section = "ARGENTINA" | "BRASIL"
+
+export const SECTIONS: Record<Section, { label: string; slug: string; color: string }> = {
   ARGENTINA: {
     label: "Argentina",
     slug: "argentina",

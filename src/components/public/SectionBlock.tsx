@@ -1,18 +1,18 @@
 import Link from "next/link"
 import ArticleCard from "./ArticleCard"
-import { SECTIONS } from "@/lib/constants"
+import { SECTIONS, type Section } from "@/lib/constants"
 
 type Article = {
   title: string
   subtitle?: string | null
   slug: string
-  section: "ARGENTINA" | "BRASIL"
+  section: string
   heroImageUrl?: string | null
   publishedAt?: string | Date | null
 }
 
-export default function SectionBlock({ section, articles }: { section: "ARGENTINA" | "BRASIL"; articles: Article[] }) {
-  const sectionInfo = SECTIONS[section]
+export default function SectionBlock({ section, articles }: { section: string; articles: Article[] }) {
+  const sectionInfo = SECTIONS[section as Section]
   if (articles.length === 0) return null
 
   return (

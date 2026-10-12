@@ -1,19 +1,19 @@
 import Link from "next/link"
-import { SECTIONS } from "@/lib/constants"
+import { SECTIONS, type Section } from "@/lib/constants"
 import { formatDateShort } from "@/lib/utils"
 
 type Props = {
   title: string
   subtitle?: string | null
   slug: string
-  section: "ARGENTINA" | "BRASIL"
+  section: string
   heroImageUrl?: string | null
   publishedAt?: string | Date | null
   showSection?: boolean
 }
 
 export default function ArticleCard({ title, subtitle, slug, section, heroImageUrl, publishedAt, showSection = true }: Props) {
-  const sectionInfo = SECTIONS[section]
+  const sectionInfo = SECTIONS[section as Section]
   const href = `/${sectionInfo.slug}/${slug}`
 
   return (

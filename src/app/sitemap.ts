@@ -1,6 +1,6 @@
 import { MetadataRoute } from "next"
 import { prisma } from "@/lib/prisma"
-import { SECTIONS } from "@/lib/constants"
+import { SECTIONS, type Section } from "@/lib/constants"
 
 const BASE_URL = process.env.NEXTAUTH_URL || "http://localhost:3000"
 
@@ -21,7 +21,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]
 
   const articlePages: MetadataRoute.Sitemap = articles.map((article) => ({
-    url: `${BASE_URL}/${SECTIONS[article.section].slug}/${article.slug}`,
+    url: `${BASE_URL}/${SECTIONS[article.section as Section].slug}/${article.slug}`,
     lastModified: article.updatedAt,
     changeFrequency: "daily" as const,
     priority: 0.8,

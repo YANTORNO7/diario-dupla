@@ -1,17 +1,17 @@
 import Link from "next/link"
-import { SECTIONS } from "@/lib/constants"
+import { SECTIONS, type Section } from "@/lib/constants"
 
 type Props = {
   title: string
   subtitle?: string | null
   slug: string
-  section: "ARGENTINA" | "BRASIL"
+  section: string
   heroImageUrl?: string | null
   publishedAt?: string | Date | null
 }
 
 export default function HeroArticle({ title, subtitle, slug, section, heroImageUrl }: Props) {
-  const sectionInfo = SECTIONS[section]
+  const sectionInfo = SECTIONS[section as Section]
   const href = `/${sectionInfo.slug}/${slug}`
 
   return (
