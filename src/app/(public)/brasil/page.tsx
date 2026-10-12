@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic"
+
 import { prisma } from "@/lib/prisma"
 import ArticleCard from "@/components/public/ArticleCard"
 import type { Metadata } from "next"
