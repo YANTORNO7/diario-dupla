@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { requireAuthAPI } from "@/lib/auth-guard"
 import { optimizeImage } from "@/lib/image"
 import { prisma } from "@/lib/prisma"
+import { put } from "@vercel/blob"
 import { writeFile, mkdir } from "fs/promises"
 import path from "path"
 
@@ -192,7 +193,6 @@ async function saveImage(buffer: Buffer, mimeType: string, skipOptimize: boolean
   if (mimeType === "image/svg+xml" || skipOptimize) {
     fileData = buffer
     ext = mimeType === "image/svg+xml" ? "svg" : "png"
-    // keep original mimeType
   } else {
     const optimized = await optimizeImage(buffer)
     fileData = optimized.data
@@ -203,11 +203,22 @@ async function saveImage(buffer: Buffer, mimeType: string, skipOptimize: boolean
   }
 
   const filename = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`
+  let url: string
 
-  const uploadsDir = path.join(process.cwd(), "public", "uploads")
-  await mkdir(uploadsDir, { recursive: true })
-  await writeFile(path.join(uploadsDir, filename), fileData)
-  const url = `/uploads/${filename}`
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    // Production: use Vercel Blob
+    const blob = await put(filename, fileData, {
+      access: "public",
+      contentType: mimeType,
+    })
+    url = blob.url
+  } else {
+    // Development: save to local filesystem
+    const uploadsDir = path.join(process.cwd(), "public", "uploads")
+    await mkdir(uploadsDir, { recursive: true })
+    await writeFile(path.join(uploadsDir, filename), fileData)
+    url = `/uploads/${filename}`
+  }
 
   const image = await prisma.image.create({
     data: {
