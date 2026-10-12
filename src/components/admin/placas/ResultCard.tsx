@@ -210,7 +210,6 @@ export default function ResultCard({ data, league }: Props) {
             <img
               src={data.photoUrl}
               alt=""
-              crossOrigin="anonymous"
               style={{
                 position: "absolute",
                 inset: 0,
