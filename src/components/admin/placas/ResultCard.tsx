@@ -177,6 +177,10 @@ export default function ResultCard({ data, league }: Props) {
   const home = data.homeClub || homePlaceholder
   const away = data.awayClub || awayPlaceholder
 
+  const stripeColor = league === "BRASIL"
+    ? { a: "#009C3B", b: "#FFDF00" }
+    : { a: "#75AADB", b: "#FFFFFF" }
+
   return (
     <div
       style={{
@@ -189,34 +193,83 @@ export default function ResultCard({ data, league }: Props) {
         flexDirection: "column",
       }}
     >
+      {/* Photo (if provided) */}
+      {data.photoUrl && (
+        <div
+          style={{
+            position: "relative",
+            width: "100%",
+            height: 500,
+            flexShrink: 0,
+          }}
+        >
+          <img
+            src={data.photoUrl}
+            alt=""
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background: "linear-gradient(to top, #111111 0%, transparent 50%)",
+            }}
+          />
+        </div>
+      )}
+
       {/* Header */}
       <div
         style={{
           display: "flex",
           justifyContent: "space-between",
           alignItems: "flex-start",
-          padding: "50px 60px 0",
+          padding: data.photoUrl ? "0 60px 0" : "50px 60px 0",
+          marginTop: data.photoUrl ? -60 : 0,
+          position: "relative",
+          zIndex: 2,
         }}
       >
-        {/* DUPLA logo inverted */}
-        <div
-          style={{
-            backgroundColor: "#FFF",
-            padding: "8px 16px",
-            borderRadius: 6,
-            transform: "skewX(-6deg)",
-          }}
-        >
-          <span
+        {/* DUPLA logo with stripes */}
+        <div>
+          <div
             style={{
-              fontFamily: "var(--font-anton), Anton, sans-serif",
-              fontSize: 32,
-              color: "#111",
-              letterSpacing: 2,
+              backgroundColor: "#FFF",
+              padding: "8px 16px",
+              borderRadius: 6,
+              transform: "skewX(-6deg)",
             }}
           >
-            DUPLA
-          </span>
+            <span
+              style={{
+                fontFamily: "var(--font-anton), Anton, sans-serif",
+                fontSize: 32,
+                color: "#111",
+                letterSpacing: 2,
+              }}
+            >
+              DUPLA
+            </span>
+          </div>
+          {/* Rajitas */}
+          <div
+            style={{
+              display: "flex",
+              gap: 3,
+              marginTop: 4,
+              transform: "skewX(-6deg)",
+            }}
+          >
+            <div style={{ display: "flex", flex: 1, gap: 1 }}>
+              <div style={{ flex: 1, height: 5, backgroundColor: stripeColor.a }} />
+              <div style={{ flex: 0.5, height: 5, backgroundColor: stripeColor.b }} />
+              <div style={{ flex: 1, height: 5, backgroundColor: stripeColor.a }} />
+            </div>
+          </div>
         </div>
 
         {/* Competition & date */}
@@ -225,9 +278,10 @@ export default function ResultCard({ data, league }: Props) {
             style={{
               fontFamily: "var(--font-archivo), Archivo, sans-serif",
               fontSize: 22,
-              color: "#888",
+              color: "#DDD",
               textTransform: "uppercase",
               letterSpacing: 2,
+              fontWeight: 700,
             }}
           >
             {data.competition}
@@ -236,7 +290,7 @@ export default function ResultCard({ data, league }: Props) {
             style={{
               fontFamily: "var(--font-archivo), Archivo, sans-serif",
               fontSize: 20,
-              color: "#666",
+              color: "#AAA",
             }}
           >
             {formatDate(data.matchDate)}
@@ -249,8 +303,8 @@ export default function ResultCard({ data, league }: Props) {
         style={{
           display: "flex",
           justifyContent: "center",
-          paddingTop: 80,
-          paddingBottom: 50,
+          paddingTop: data.photoUrl ? 30 : 80,
+          paddingBottom: data.photoUrl ? 25 : 50,
         }}
       >
         <span
@@ -293,7 +347,7 @@ export default function ResultCard({ data, league }: Props) {
           style={{
             fontFamily: "var(--font-archivo), Archivo, sans-serif",
             fontSize: 24,
-            color: "#666",
+            color: "#999",
             textAlign: "center",
             marginBottom: 20,
           }}
@@ -302,19 +356,9 @@ export default function ResultCard({ data, league }: Props) {
         </p>
         {/* Color stripe */}
         <div style={{ display: "flex", height: 8, borderRadius: 4, overflow: "hidden" }}>
-          {league === "ARGENTINA" ? (
-            <>
-              <div style={{ flex: 1, backgroundColor: "#75AADB" }} />
-              <div style={{ flex: 1, backgroundColor: "#FFFFFF" }} />
-              <div style={{ flex: 1, backgroundColor: "#75AADB" }} />
-            </>
-          ) : (
-            <>
-              <div style={{ flex: 1, backgroundColor: "#009C3B" }} />
-              <div style={{ flex: 1, backgroundColor: "#FFDF00" }} />
-              <div style={{ flex: 1, backgroundColor: "#009C3B" }} />
-            </>
-          )}
+          <div style={{ flex: 1, backgroundColor: stripeColor.a }} />
+          <div style={{ flex: 1, backgroundColor: stripeColor.b }} />
+          <div style={{ flex: 1, backgroundColor: stripeColor.a }} />
         </div>
       </div>
     </div>

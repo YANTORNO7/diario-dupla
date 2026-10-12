@@ -30,6 +30,7 @@ export type ResultData = {
   matchDate: string
   homeScorers: string
   awayScorers: string
+  photoUrl: string
 }
 
 export type PreviewData = {
@@ -71,6 +72,7 @@ export default function PlacasPage() {
     matchDate: new Date().toISOString().slice(0, 10),
     homeScorers: "",
     awayScorers: "",
+    photoUrl: "",
   })
 
   const [previewData, setPreviewData] = useState<PreviewData>({

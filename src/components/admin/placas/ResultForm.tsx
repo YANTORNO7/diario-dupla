@@ -111,6 +111,19 @@ export default function ResultForm({ data, onChange }: Props) {
           />
         </div>
       </div>
+
+      <div>
+        <label className="block text-sm font-cuerpo text-gray-600 mb-1">
+          Foto (URL, opcional)
+        </label>
+        <input
+          type="text"
+          value={data.photoUrl}
+          onChange={(e) => onChange({ ...data, photoUrl: e.target.value })}
+          placeholder="https://ejemplo.com/foto.jpg"
+          className="w-full border rounded-md px-3 py-2 font-cuerpo text-sm"
+        />
+      </div>
     </div>
   )
 }
