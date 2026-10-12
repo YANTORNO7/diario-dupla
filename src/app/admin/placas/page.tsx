@@ -85,6 +85,9 @@ export default function PlacasPage() {
   const [cardType, setCardType] = useState<CardType>("result")
   const cardRef = useRef<HTMLDivElement>(null)
   const [downloading, setDownloading] = useState(false)
+  const [aiContext, setAiContext] = useState("")
+  const [aiCaption, setAiCaption] = useState("")
+  const [generatingCaption, setGeneratingCaption] = useState(false)
 
   const [resultData, setResultData] = useState<ResultData>({
     homeClub: null,
@@ -165,8 +168,47 @@ export default function PlacasPage() {
     return ""
   }
 
-  function copyCaption() {
-    navigator.clipboard.writeText(getCaption())
+  function copyCaption(text?: string) {
+    navigator.clipboard.writeText(text || getCaption())
+  }
+
+  async function handleGenerateCaption() {
+    setGeneratingCaption(true)
+    setAiCaption("")
+
+    const competitionLabel = COMPETITIONS.find((c) => c.id === resultData.competition)?.label || resultData.competition
+    const roundLabel = resultData.round === "fecha"
+      ? `Fecha ${resultData.matchday}`
+      : ROUNDS.find((r) => r.id === resultData.round)?.label || resultData.round
+
+    try {
+      const res = await fetch("/api/generate-caption", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          matchData: {
+            homeTeam: resultData.homeClub?.shortName || "Local",
+            awayTeam: resultData.awayClub?.shortName || "Visitante",
+            homeScore: resultData.homeScore,
+            awayScore: resultData.awayScore,
+            competition: competitionLabel,
+            round: roundLabel,
+            matchDate: resultData.matchDate,
+          },
+          context: aiContext,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setAiCaption(`Error: ${data.error}`)
+      } else {
+        setAiCaption(data.caption)
+      }
+    } catch {
+      setAiCaption("Error de conexión al generar el caption")
+    } finally {
+      setGeneratingCaption(false)
+    }
   }
 
   function getLeagueForCard(): string {
@@ -224,14 +266,59 @@ export default function PlacasPage() {
             </button>
           </div>
 
+          {/* AI Caption generator */}
+          {cardType === "result" && resultData.homeClub && resultData.awayClub && (
+            <div className="border rounded-lg p-4 mt-4 space-y-3">
+              <span className="text-sm font-cuerpo font-bold text-gray-600">
+                Caption con IA
+              </span>
+              <textarea
+                value={aiContext}
+                onChange={(e) => setAiContext(e.target.value)}
+                placeholder="Contame sobre el partido... ej: gol en el último minuto, remontada épica, clásico muy peleado (opcional)"
+                rows={2}
+                className="w-full border rounded-md px-3 py-2 font-cuerpo text-sm resize-none"
+              />
+              <button
+                onClick={handleGenerateCaption}
+                disabled={generatingCaption}
+                className="w-full bg-verde text-white px-4 py-2 rounded-md text-sm font-cuerpo font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
+              >
+                {generatingCaption ? "Generando..." : "Generar caption con IA"}
+              </button>
+              {aiCaption && (
+                <div className="bg-gray-50 rounded-md p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-cuerpo font-bold text-verde">
+                      Caption generado
+                    </span>
+                    <button
+                      onClick={() => copyCaption(aiCaption)}
+                      className="text-xs font-cuerpo text-verde hover:underline"
+                    >
+                      Copiar
+                    </button>
+                  </div>
+                  <textarea
+                    value={aiCaption}
+                    onChange={(e) => setAiCaption(e.target.value)}
+                    rows={6}
+                    className="w-full border rounded-md px-3 py-2 font-cuerpo text-sm resize-none"
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Caption básico */}
           {getCaption() && (
             <div className="border rounded-lg p-4 mt-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-cuerpo font-bold text-gray-600">
-                  Caption sugerido
+                  Caption básico
                 </span>
                 <button
-                  onClick={copyCaption}
+                  onClick={() => copyCaption()}
                   className="text-xs font-cuerpo text-celeste hover:underline"
                 >
                   Copiar
