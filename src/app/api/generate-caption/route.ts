@@ -36,19 +36,23 @@ REGLAS:
 - NO uses comillas alrededor del texto
 - Sé creativo y variado, no siempre uses la misma estructura`
 
-  try {
-    const genAI = new GoogleGenerativeAI(apiKey)
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" })
+  const models = ["gemini-3.5-flash", "gemini-3.8-flash", "gemini-2.5-flash"]
+  const genAI = new GoogleGenerativeAI(apiKey)
 
-    const result = await model.generateContent(prompt)
-    const caption = result.response.text().trim()
-
-    return NextResponse.json({ caption })
-  } catch (err) {
-    console.error("[generate-caption] Error:", err)
-    return NextResponse.json(
-      { error: "Error al generar el caption" },
-      { status: 500 }
-    )
+  for (const modelName of models) {
+    try {
+      const model = genAI.getGenerativeModel({ model: modelName })
+      const result = await model.generateContent(prompt)
+      const caption = result.response.text().trim()
+      return NextResponse.json({ caption })
+    } catch (err) {
+      console.error(`[generate-caption] ${modelName} failed:`, err)
+      continue
+    }
   }
+
+  return NextResponse.json(
+    { error: "Error al generar el caption. Intentá de nuevo en unos segundos." },
+    { status: 500 }
+  )
 }
