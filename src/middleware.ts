@@ -2,6 +2,8 @@ import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 import { getToken } from "next-auth/jwt"
 
+const adminOnlyPaths = ["/admin/pendientes", "/admin/estadisticas", "/admin/usuarios"]
+
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
   const secret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET
@@ -22,6 +24,11 @@ export async function middleware(req: NextRequest) {
     }
     if (userRole !== "ADMIN" && userRole !== "EDITOR") {
       return NextResponse.redirect(new URL("/admin/login", req.url))
+    }
+
+    // EDITOR não pode acessar rotas exclusivas de ADMIN
+    if (userRole === "EDITOR" && adminOnlyPaths.some((p) => pathname.startsWith(p))) {
+      return NextResponse.redirect(new URL("/admin", req.url))
     }
   }
 

@@ -2,19 +2,28 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { signOut } from "next-auth/react"
+import { signOut, useSession } from "next-auth/react"
 import { useState } from "react"
 
 export default function AdminSidebar() {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
+  const { data: session } = useSession()
+  const userRole = (session?.user as any)?.role as string | undefined
 
   const links = [
-    { href: "/admin", label: "Artículos" },
-    { href: "/admin/articulos/nuevo", label: "Nuevo artículo" },
-    { href: "/admin/clubes", label: "Clubes" },
-    { href: "/admin/placas", label: "Placas IG" },
+    { href: "/admin", label: "Artículos", adminOnly: false },
+    { href: "/admin/articulos/nuevo", label: "Nuevo artículo", adminOnly: false },
+    { href: "/admin/clubes", label: "Clubes", adminOnly: false },
+    { href: "/admin/placas", label: "Placas IG", adminOnly: false },
+    { href: "/admin/pendientes", label: "Pendientes", adminOnly: true },
+    { href: "/admin/estadisticas", label: "Estadísticas", adminOnly: true },
+    { href: "/admin/usuarios", label: "Usuarios", adminOnly: true },
   ]
+
+  const visibleLinks = links.filter(
+    (link) => !link.adminOnly || userRole === "ADMIN"
+  )
 
   return (
     <>
@@ -43,7 +52,7 @@ export default function AdminSidebar() {
             <p className="text-gray-400 text-xs font-cuerpo">Admin</p>
           </Link>
           <nav className="space-y-1">
-            {links.map((link) => (
+            {visibleLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}

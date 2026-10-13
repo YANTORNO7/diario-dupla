@@ -37,6 +37,8 @@ export async function PUT(
   if (session instanceof NextResponse) return session
 
   const { id } = await params
+  const userId = (session.user as Record<string, string>).id
+  const userRole = (session.user as Record<string, string>).role
   const body = await request.json()
   const {
     title,
@@ -60,6 +62,26 @@ export async function PUT(
       { error: "Artículo no encontrado" },
       { status: 404 }
     )
+  }
+
+  // EDITOR só pode editar artigos próprios
+  if (userRole === "EDITOR" && existing.authorId !== userId) {
+    return NextResponse.json(
+      { error: "Sin permisos para editar este artículo" },
+      { status: 403 }
+    )
+  }
+
+  // EDITOR não pode mudar status de PENDING para outro valor (exceto via conteúdo)
+  // EDITOR não pode publicar direto — converte para PENDING
+  let finalStatus = status as string | undefined
+  if (userRole === "EDITOR" && finalStatus !== undefined) {
+    if (existing.status === "PENDING" && finalStatus !== "PENDING") {
+      // EDITOR não pode mudar status de artigo PENDING
+      finalStatus = undefined // ignora a mudança de status
+    } else if (finalStatus === "PUBLISHED") {
+      finalStatus = "PENDING"
+    }
   }
 
   let slug = existing.slug
@@ -91,8 +113,9 @@ export async function PUT(
     await prisma.user.update({ where: { id: existing.authorId }, data: { name: authorName } })
   }
 
+  const resolvedStatus = finalStatus ?? existing.status
   const wasPublished = existing.status === "PUBLISHED"
-  const isPublishing = status === "PUBLISHED" && !wasPublished
+  const isPublishing = resolvedStatus === "PUBLISHED" && !wasPublished
 
   const article = await prisma.article.update({
     where: { id },
@@ -106,10 +129,12 @@ export async function PUT(
       ...(heroCredit !== undefined && { heroCredit: heroCredit || null }),
       ...(section !== undefined && { section: section as string }),
       ...(sectionId !== undefined && { sectionId }),
-      ...(status !== undefined && { status: status as string }),
+      ...(finalStatus !== undefined && { status: finalStatus }),
       ...(featured !== undefined && { featured }),
       ...(isPublishing && { publishedAt: new Date() }),
-      ...(status === "DRAFT" && wasPublished && { publishedAt: null }),
+      ...(resolvedStatus === "DRAFT" && wasPublished && { publishedAt: null }),
+      // Limpar rejectionNote quando vai para PENDING
+      ...(resolvedStatus === "PENDING" && { rejectionNote: null }),
       ...(tagConnections && {
         tags: { set: tagConnections.map((t) => ({ id: t.id })) },
       }),
@@ -125,7 +150,7 @@ export async function PUT(
     },
   })
 
-  // Disparar newsletter assincronamente ao publicar
+  // Disparar newsletter assincronamente só se realmente publicado
   if (isPublishing) {
     sendNewsletter(article.id).catch(console.error)
   }
@@ -141,12 +166,22 @@ export async function DELETE(
   if (session instanceof NextResponse) return session
 
   const { id } = await params
+  const userId = (session.user as Record<string, string>).id
+  const userRole = (session.user as Record<string, string>).role
 
   const existing = await prisma.article.findUnique({ where: { id } })
   if (!existing) {
     return NextResponse.json(
       { error: "Artículo no encontrado" },
       { status: 404 }
+    )
+  }
+
+  // EDITOR só pode deletar artigos próprios
+  if (userRole === "EDITOR" && existing.authorId !== userId) {
+    return NextResponse.json(
+      { error: "Sin permisos para eliminar este artículo" },
+      { status: 403 }
     )
   }
 

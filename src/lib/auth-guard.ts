@@ -24,3 +24,14 @@ export async function requireAdmin() {
   }
   return session
 }
+
+export async function requireAdminAPI() {
+  const session = await auth()
+  if (!session?.user) {
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 })
+  }
+  if ((session.user as any).role !== "ADMIN") {
+    return NextResponse.json({ error: "Sin permisos" }, { status: 403 })
+  }
+  return session
+}

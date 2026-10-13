@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { requireAuthAPI } from "@/lib/auth-guard"
+import { requireAuth, requireAuthAPI } from "@/lib/auth-guard"
 import { slugify } from "@/lib/slugify"
 import { sendNewsletter } from "@/lib/newsletter"
 
@@ -13,10 +13,25 @@ export async function GET(request: NextRequest) {
   const limit = parseInt(searchParams.get("limit") || "20")
   const cursor = searchParams.get("cursor")
 
+  // Verificar se é requisição autenticada (admin)
+  const session = await requireAuth()
+
   const where: Record<string, unknown> = {}
   if (section) where.section = section
   if (sectionId) where.sectionId = sectionId
-  if (status) where.status = status
+
+  if (status) {
+    // Só admin/editor autenticado pode ver artigos não-publicados
+    if (session) {
+      where.status = status
+    } else {
+      where.status = "PUBLISHED"
+    }
+  } else if (!session) {
+    // Sem autenticação e sem filtro de status → só publicados
+    where.status = "PUBLISHED"
+  }
+
   if (featured === "true") where.featured = true
 
   const articles = await prisma.article.findMany({
@@ -99,8 +114,15 @@ export async function POST(request: NextRequest) {
     : []
 
   const userId = (session.user as Record<string, string>).id
+  const userRole = (session.user as Record<string, string>).role
   if (authorName) {
     await prisma.user.update({ where: { id: userId }, data: { name: authorName } })
+  }
+
+  // EDITOR não pode publicar direto — converte para PENDING
+  let finalStatus = (status as string) || "DRAFT"
+  if (userRole === "EDITOR" && finalStatus === "PUBLISHED") {
+    finalStatus = "PENDING"
   }
 
   const article = await prisma.article.create({
@@ -114,9 +136,9 @@ export async function POST(request: NextRequest) {
       heroCredit: heroCredit || null,
       section: legacySection,
       sectionId: sectionId || null,
-      status: (status as string) || "DRAFT",
+      status: finalStatus,
       featured: featured || false,
-      publishedAt: status === "PUBLISHED" ? new Date() : null,
+      publishedAt: finalStatus === "PUBLISHED" ? new Date() : null,
       authorId: userId,
       tags: { connect: tagConnections.map((t) => ({ id: t.id })) },
       ...(secondarySectionIds?.length && {
@@ -131,8 +153,8 @@ export async function POST(request: NextRequest) {
     },
   })
 
-  // Disparar newsletter assincronamente se publicado
-  if (status === "PUBLISHED") {
+  // Disparar newsletter assincronamente só se realmente publicado (ADMIN)
+  if (finalStatus === "PUBLISHED") {
     sendNewsletter(article.id).catch(console.error)
   }
 

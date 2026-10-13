@@ -2,17 +2,33 @@ import { auth } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import ArticleList from "@/components/admin/ArticleList"
+import SectionHomepageToggles from "@/components/admin/SectionHomepageToggles"
 
 export default async function AdminDashboard() {
   const session = await auth()
   if (!session?.user) redirect("/admin/login")
 
+  const userId = (session.user as any).id as string
+  const userRole = (session.user as any).role as string
+
+  // EDITOR só vê os próprios artigos
+  const where = userRole === "EDITOR" ? { authorId: userId } : {}
+
   const articles = await prisma.article.findMany({
+    where,
     include: {
       author: { select: { id: true, name: true } },
       tags: true,
+      primarySection: { include: { parent: true } },
+      secondarySections: true,
     },
     orderBy: { createdAt: "desc" },
+  })
+
+  const sections = await prisma.section.findMany({
+    where: { parentId: null },
+    include: { children: { orderBy: { order: "asc" } } },
+    orderBy: { order: "asc" },
   })
 
   return (
@@ -26,7 +42,8 @@ export default async function AdminDashboard() {
           + Nuevo artículo
         </a>
       </div>
-      <ArticleList articles={articles} />
+      <SectionHomepageToggles sections={sections} />
+      <ArticleList articles={articles} userRole={userRole} />
     </div>
   )
 }
