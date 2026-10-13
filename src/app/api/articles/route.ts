@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { requireAuthAPI } from "@/lib/auth-guard"
 import { slugify } from "@/lib/slugify"
+import { sendNewsletter } from "@/lib/newsletter"
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const section = searchParams.get("section") as string | null
+  const sectionId = searchParams.get("sectionId") as string | null
   const status = searchParams.get("status") as string | null
   const featured = searchParams.get("featured")
   const limit = parseInt(searchParams.get("limit") || "20")
@@ -13,6 +15,7 @@ export async function GET(request: NextRequest) {
 
   const where: Record<string, unknown> = {}
   if (section) where.section = section
+  if (sectionId) where.sectionId = sectionId
   if (status) where.status = status
   if (featured === "true") where.featured = true
 
@@ -20,6 +23,8 @@ export async function GET(request: NextRequest) {
     where,
     include: {
       author: { select: { id: true, name: true } },
+      primarySection: { include: { parent: true } },
+      secondarySections: true,
       tags: true,
     },
     orderBy: { publishedAt: "desc" },
@@ -49,16 +54,29 @@ export async function POST(request: NextRequest) {
     heroImageAlt,
     heroCredit,
     section,
+    sectionId,
+    secondarySectionIds,
     status,
     featured,
     tags,
+    authorName,
   } = body
 
-  if (!title || !articleBody || !section) {
+  if (!title || !articleBody || (!section && !sectionId)) {
     return NextResponse.json(
       { error: "Título, cuerpo y sección son obligatorios" },
       { status: 400 }
     )
+  }
+
+  // Derive legacy section from sectionId if needed
+  let legacySection = section || "ARGENTINA"
+  if (sectionId && !section) {
+    const sec = await prisma.section.findUnique({ where: { id: sectionId }, include: { parent: true } })
+    if (sec) {
+      const slug = (sec.parent?.slug || sec.slug).toUpperCase()
+      legacySection = slug === "ARGENTINA" || slug === "BRASIL" ? slug : "ARGENTINA"
+    }
   }
 
   let slug = slugify(title)
@@ -80,6 +98,11 @@ export async function POST(request: NextRequest) {
       )
     : []
 
+  const userId = (session.user as Record<string, string>).id
+  if (authorName) {
+    await prisma.user.update({ where: { id: userId }, data: { name: authorName } })
+  }
+
   const article = await prisma.article.create({
     data: {
       title,
@@ -89,18 +112,29 @@ export async function POST(request: NextRequest) {
       heroImageUrl: heroImageUrl || null,
       heroImageAlt: heroImageAlt || null,
       heroCredit: heroCredit || null,
-      section: section as string,
+      section: legacySection,
+      sectionId: sectionId || null,
       status: (status as string) || "DRAFT",
       featured: featured || false,
       publishedAt: status === "PUBLISHED" ? new Date() : null,
-      authorId: (session.user as Record<string, string>).id,
+      authorId: userId,
       tags: { connect: tagConnections.map((t) => ({ id: t.id })) },
+      ...(secondarySectionIds?.length && {
+        secondarySections: { connect: secondarySectionIds.map((id: string) => ({ id })) },
+      }),
     },
     include: {
       author: { select: { id: true, name: true } },
+      primarySection: { include: { parent: true } },
+      secondarySections: true,
       tags: true,
     },
   })
+
+  // Disparar newsletter assincronamente se publicado
+  if (status === "PUBLISHED") {
+    sendNewsletter(article.id).catch(console.error)
+  }
 
   return NextResponse.json(article, { status: 201 })
 }

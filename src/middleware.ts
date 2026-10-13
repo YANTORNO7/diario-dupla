@@ -4,7 +4,13 @@ import { getToken } from "next-auth/jwt"
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
-  const token = await getToken({ req, secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET })
+  const secret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET
+
+  // NextAuth v5 uses "authjs" cookie prefix instead of "next-auth"
+  const isSecure = req.nextUrl.protocol === "https:"
+  const cookieName = isSecure ? "__Secure-authjs.session-token" : "authjs.session-token"
+
+  const token = await getToken({ req, secret, cookieName })
 
   const isLoggedIn = !!token
   const userRole = token?.role as string | undefined
@@ -26,8 +32,9 @@ export async function middleware(req: NextRequest) {
 
   // Protect write API routes (POST, PUT, DELETE)
   if (pathname.startsWith("/api/") && req.method !== "GET") {
-    // Allow NextAuth endpoints
+    // Allow NextAuth and subscriber endpoints
     if (pathname.startsWith("/api/auth/")) return NextResponse.next()
+    if (pathname.startsWith("/api/subscriber/")) return NextResponse.next()
 
     if (!isLoggedIn) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })

@@ -21,6 +21,25 @@ model User {
   @@map("users")
 }
 
+model Section {
+  id             String    @id @default(cuid())
+  name           String
+  slug           String    @unique
+  color          String    @default("#888888")
+  order          Int       @default(0)
+  showOnHomepage Boolean   @default(true)
+  parentId       String?
+  parent         Section?  @relation("SectionTree", fields: [parentId], references: [id])
+  children       Section[] @relation("SectionTree")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  primaryArticles   Article[] @relation("PrimarySection")
+  secondaryArticles Article[] @relation("SecondarySections")
+
+  @@map("sections")
+}
+
 model Article {
   id            String   @id @default(cuid())
   title         String
@@ -30,7 +49,7 @@ model Article {
   heroImageUrl  String?
   heroImageAlt  String?
   heroCredit    String?
-  section       String   // ARGENTINA | BRASIL
+  section       String   // legado — ARGENTINA | BRASIL
   status        String   @default("DRAFT") // DRAFT | PUBLISHED
   featured      Boolean  @default(false)
   publishedAt   DateTime?
@@ -40,8 +59,15 @@ model Article {
   author   User   @relation(fields: [authorId], references: [id])
   authorId String
 
+  sectionId         String?
+  primarySection    Section?  @relation("PrimarySection", fields: [sectionId], references: [id])
+  secondarySections Section[] @relation("SecondarySections")
+
   tags Tag[] @relation("ArticleTags")
 
+  newsletterLog NewsletterLog?
+
+  @@index([sectionId, status])
   @@index([section, status])
   @@index([featured, status])
   @@map("articles")
@@ -83,4 +109,28 @@ model Image {
   uploadedAt DateTime @default(now())
 
   @@map("images")
+}
+
+model Subscriber {
+  id                String    @id @default(cuid())
+  email             String    @unique
+  password          String
+  name              String
+  newsletterOptIn   Boolean   @default(true)
+  emailVerified     Boolean   @default(false)
+  verificationToken String?   @unique
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@map("subscribers")
+}
+
+model NewsletterLog {
+  id        String   @id @default(cuid())
+  articleId String   @unique
+  article   Article  @relation(fields: [articleId], references: [id])
+  sentAt    DateTime @default(now())
+  sentCount Int      @default(0)
+
+  @@map("newsletter_logs")
 }

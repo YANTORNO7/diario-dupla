@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { requireAuthAPI } from "@/lib/auth-guard"
 import { slugify } from "@/lib/slugify"
+import { sendNewsletter } from "@/lib/newsletter"
 
 export async function GET(
   request: NextRequest,
@@ -12,6 +13,8 @@ export async function GET(
     where: { id },
     include: {
       author: { select: { id: true, name: true } },
+      primarySection: { include: { parent: true } },
+      secondarySections: true,
       tags: true,
     },
   })
@@ -43,9 +46,12 @@ export async function PUT(
     heroImageAlt,
     heroCredit,
     section,
+    sectionId,
+    secondarySectionIds,
     status,
     featured,
     tags,
+    authorName,
   } = body
 
   const existing = await prisma.article.findUnique({ where: { id } })
@@ -81,6 +87,10 @@ export async function PUT(
     )
   }
 
+  if (authorName) {
+    await prisma.user.update({ where: { id: existing.authorId }, data: { name: authorName } })
+  }
+
   const wasPublished = existing.status === "PUBLISHED"
   const isPublishing = status === "PUBLISHED" && !wasPublished
 
@@ -95,6 +105,7 @@ export async function PUT(
       ...(heroImageAlt !== undefined && { heroImageAlt: heroImageAlt || null }),
       ...(heroCredit !== undefined && { heroCredit: heroCredit || null }),
       ...(section !== undefined && { section: section as string }),
+      ...(sectionId !== undefined && { sectionId }),
       ...(status !== undefined && { status: status as string }),
       ...(featured !== undefined && { featured }),
       ...(isPublishing && { publishedAt: new Date() }),
@@ -102,12 +113,22 @@ export async function PUT(
       ...(tagConnections && {
         tags: { set: tagConnections.map((t) => ({ id: t.id })) },
       }),
+      ...(secondarySectionIds !== undefined && {
+        secondarySections: { set: secondarySectionIds.map((id: string) => ({ id })) },
+      }),
     },
     include: {
       author: { select: { id: true, name: true } },
+      primarySection: { include: { parent: true } },
+      secondarySections: true,
       tags: true,
     },
   })
+
+  // Disparar newsletter assincronamente ao publicar
+  if (isPublishing) {
+    sendNewsletter(article.id).catch(console.error)
+  }
 
   return NextResponse.json(article)
 }
