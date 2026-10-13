@@ -11,6 +11,7 @@ export default function RegistroForm() {
   const [newsletterOptIn, setNewsletterOptIn] = useState(true)
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  const [success, setSuccess] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -31,13 +32,28 @@ export default function RegistroForm() {
         return
       }
 
-      router.push("/cuenta")
-      router.refresh()
+      setSuccess(true)
     } catch {
       setError("Error de conexión")
     } finally {
       setLoading(false)
     }
+  }
+
+  if (success) {
+    return (
+      <div className="text-center py-6">
+        <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M22 2L11 13" /><path d="M22 2L15 22L11 13L2 9L22 2Z" />
+          </svg>
+        </div>
+        <h2 className="font-titular text-xl mb-2">¡Cuenta creada!</h2>
+        <p className="font-cuerpo text-gray-600 text-sm">
+          Te enviamos un email a <strong>{email}</strong>. Revisá tu bandeja de entrada y hacé clic en el link para verificar tu cuenta.
+        </p>
+      </div>
+    )
   }
 
   return (

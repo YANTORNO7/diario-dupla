@@ -27,5 +27,5 @@ export async function GET(req: Request) {
     data: { emailVerified: true, verificationToken: null },
   })
 
-  return NextResponse.redirect(`${SITE_URL}/verificar?status=success`)
+  return NextResponse.redirect(SITE_URL)
 }
