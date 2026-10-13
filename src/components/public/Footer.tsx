@@ -13,7 +13,7 @@ export default function Footer() {
           <nav className="flex gap-6">
             <a href="/argentina" className="text-sm text-gray-400 hover:text-[#75AADB] font-cuerpo transition-colors">Argentina</a>
             <a href="/brasil" className="text-sm text-gray-400 hover:text-[#009C3B] font-cuerpo transition-colors">Brasil</a>
-            <a href="/registro" className="text-sm text-gray-400 hover:text-white font-cuerpo transition-colors">Newsletter</a>
+
           </nav>
         </div>
         <div className="mt-8 pt-6 border-t border-gray-800 text-center">
