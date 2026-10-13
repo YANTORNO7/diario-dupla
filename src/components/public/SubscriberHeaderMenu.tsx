@@ -28,10 +28,10 @@ export default function SubscriberHeaderMenu() {
     return (
       <Link
         href="/cuenta"
-        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-cuerpo font-semibold text-gray-400 hover:text-white transition-colors"
+        className="flex items-center gap-1 px-2 py-1 text-[10px] font-cuerpo text-gray-500 hover:text-white transition-colors"
         title="Mi cuenta"
       >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
           <circle cx="12" cy="7" r="4" />
         </svg>
@@ -43,7 +43,7 @@ export default function SubscriberHeaderMenu() {
   return (
     <Link
       href="/ingresar"
-      className="px-3 py-1.5 text-xs font-cuerpo font-semibold text-gray-400 hover:text-white transition-colors"
+      className="px-2 py-1 text-[10px] font-cuerpo text-gray-500 hover:text-white transition-colors"
     >
       Ingresar
     </Link>

@@ -64,16 +64,14 @@ export default function Header({ sections }: Props) {
                 </div>
               )
             })}
+            <SubscriberHeaderMenu />
           </nav>
 
-          <div className="flex items-center gap-2">
-            <SubscriberHeaderMenu />
-            <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden text-white p-2" aria-label="Menu">
+          <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden text-white p-2" aria-label="Menu">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               {menuOpen ? <path d="M6 18L18 6M6 6l12 12" /> : <path d="M3 12h18M3 6h18M3 18h18" />}
             </svg>
           </button>
-          </div>
         </div>
 
         {/* Mobile nav */}
