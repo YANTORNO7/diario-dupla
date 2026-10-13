@@ -49,7 +49,7 @@ export default function AdminSidebar() {
         <div className="p-6">
           <Link href="/" className="block mb-8">
             <h2 className="font-titular text-2xl tracking-tight">DUPLA</h2>
-            <p className="text-gray-400 text-xs font-cuerpo">Admin</p>
+            <p className="text-gray-400 text-xs font-cuerpo">{userRole === "ADMIN" ? "Admin" : "Colaborador"}</p>
           </Link>
           <nav className="space-y-1">
             {visibleLinks.map((link) => (
