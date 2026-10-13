@@ -1,8 +1,9 @@
-export const dynamic = "force-dynamic"
+export const revalidate = 60
 
 import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation"
 import ArticleCard from "@/components/public/ArticleCard"
+import { getSectionPath } from "@/lib/sections"
 import type { Metadata } from "next"
 
 type Props = { params: Promise<{ tag: string }> }
@@ -25,7 +26,7 @@ export default async function TagPage({ params }: Props) {
       articles: {
         where: { status: "PUBLISHED" },
         orderBy: { publishedAt: "desc" },
-        include: { tags: true },
+        include: { tags: true, author: { select: { name: true } }, primarySection: { include: { parent: true } } },
       },
     },
   })
@@ -47,17 +48,27 @@ export default async function TagPage({ params }: Props) {
         </p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {tag.articles.map((article) => (
-            <ArticleCard
-              key={article.id}
-              title={article.title}
-              subtitle={article.subtitle}
-              slug={article.slug}
-              section={article.section}
-              heroImageUrl={article.heroImageUrl}
-              publishedAt={article.publishedAt}
-            />
-          ))}
+          {tag.articles.map((article) => {
+            const sectionPath = article.primarySection
+              ? getSectionPath(article.primarySection)
+              : `/${article.section.toLowerCase()}`
+            const sectionLabel = article.primarySection?.name || article.section
+            const sectionColor = article.primarySection?.color || "#888888"
+            return (
+              <ArticleCard
+                key={article.id}
+                title={article.title}
+                subtitle={article.subtitle}
+                slug={article.slug}
+                sectionPath={sectionPath}
+                sectionLabel={sectionLabel}
+                sectionColor={sectionColor}
+                heroImageUrl={article.heroImageUrl}
+                publishedAt={article.publishedAt}
+                authorName={article.author.name}
+              />
+            )
+          })}
         </div>
       )}
     </div>
