@@ -25,6 +25,7 @@ async function main() {
   const colaboradores = [
     { username: "bartjyantorno", email: "bartjyantorno@gmail.com", name: "Bart J Yantorno" },
     { username: "fabripileggi", email: "fabripileggi@gmail.com", name: "Fabri Pileggi" },
+    { username: "kevinfolino", email: "kevinfolino9@gmail.com", name: "Kevin Folino" },
   ]
 
   for (const colab of colaboradores) {
