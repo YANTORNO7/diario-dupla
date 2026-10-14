@@ -28,6 +28,10 @@ export const metadata: Metadata = {
     locale: "es_AR",
     siteName: "Diario Dupla",
   },
+  icons: {
+    icon: "/icon.png",
+    apple: "/icon.png",
+  },
 }
 
 export default function RootLayout({

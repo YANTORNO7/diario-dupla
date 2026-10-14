@@ -6,7 +6,8 @@ import ArticleBody from "@/components/public/ArticleBody"
 import ArticleCard from "@/components/public/ArticleCard"
 import TagBadge from "@/components/public/TagBadge"
 import { formatDate, formatDateShort } from "@/lib/utils"
-import { getSectionPath } from "@/lib/sections"
+import { getSectionPath, getArticlePath } from "@/lib/sections"
+import { SITE_URL } from "@/lib/constants"
 import type { Metadata } from "next"
 
 type Props = { params: Promise<{ sectionPath: string[] }> }
@@ -99,13 +100,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const childIds = parent.children?.map((c: { id: string }) => c.id) ?? []
     const article = await findArticleInSection(parent.id, childIds, sectionPath[1])
     if (!article) return {}
+    const articleUrl = `${SITE_URL}${getArticlePath(article)}`
     return {
       title: article.title,
       description: article.subtitle || article.title,
+      alternates: { canonical: articleUrl },
       openGraph: {
         title: article.title,
         description: article.subtitle || article.title,
         type: "article",
+        url: articleUrl,
         ...(article.heroImageUrl ? { images: [article.heroImageUrl] } : {}),
       },
     }
@@ -116,13 +120,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     if (!section) return {}
     const article = await findArticleInSection(section.id, [], sectionPath[2])
     if (!article) return {}
+    const articleUrl = `${SITE_URL}${getArticlePath(article)}`
     return {
       title: article.title,
       description: article.subtitle || article.title,
+      alternates: { canonical: articleUrl },
       openGraph: {
         title: article.title,
         description: article.subtitle || article.title,
         type: "article",
+        url: articleUrl,
         ...(article.heroImageUrl ? { images: [article.heroImageUrl] } : {}),
       },
     }
