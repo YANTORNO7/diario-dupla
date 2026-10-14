@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import Script from "next/script"
 import { Anton, Archivo } from "next/font/google"
 import "./globals.css"
 
@@ -36,6 +37,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es" className={`${anton.variable} ${archivo.variable}`}>
+      <head>
+        <Script src="https://www.googletagmanager.com/gtag/js?id=G-CB0Q0FG74L" strategy="afterInteractive" />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-CB0Q0FG74L');`}
+        </Script>
+      </head>
       <body className="min-h-screen flex flex-col antialiased">{children}</body>
     </html>
   )
