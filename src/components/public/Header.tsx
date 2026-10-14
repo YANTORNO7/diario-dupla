@@ -31,7 +31,7 @@ export default function Header({ sections }: Props) {
                 <div key={section.id} className="relative group">
                   <Link
                     href={section.path}
-                    className={`px-3 py-2 text-xs font-cuerpo font-semibold uppercase tracking-wide transition-colors whitespace-nowrap ${
+                    className={`px-2 py-2 text-xs font-cuerpo font-semibold uppercase tracking-wide transition-colors whitespace-nowrap ${
                       isActive ? "text-white" : "text-gray-400 hover:text-white"
                     }`}
                     style={isActive ? { borderBottom: `2px solid ${section.color}` } : undefined}

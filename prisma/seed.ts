@@ -66,7 +66,17 @@ async function main() {
     update: {},
     create: { name: "Sudamericana", slug: "sudamericana", color: "#E8425E", order: 2, showOnHomepage: false, parentId: copas.id },
   })
-  console.log("Secciones OK: Fútbol Argentino, Fútbol Brasileño, Copas (Libertadores, Sudamericana)")
+  const automovilismo = await prisma.section.upsert({
+    where: { slug: "automovilismo" },
+    update: { showOnHomepage: true },
+    create: { name: "Automovilismo", slug: "automovilismo", color: "#DC2626", order: 4, showOnHomepage: true },
+  })
+  await prisma.section.upsert({
+    where: { slug: "f1" },
+    update: {},
+    create: { name: "F1", slug: "f1", color: "#DC2626", order: 1, showOnHomepage: false, parentId: automovilismo.id },
+  })
+  console.log("Secciones OK: Fútbol Argentino, Fútbol Brasileño, Copas (Libertadores, Sudamericana), Automovilismo (F1)")
 
   // Migrate existing articles without sectionId
   const articlesArgentina = await prisma.article.updateMany({
