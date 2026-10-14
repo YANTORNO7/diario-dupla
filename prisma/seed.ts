@@ -24,6 +24,7 @@ async function main() {
   // --- Colaboradores (EDITOR) ---
   const colaboradores = [
     { username: "bartjyantorno", email: "bartjyantorno@gmail.com", name: "Bart J Yantorno" },
+    { username: "fabripileggi", email: "fabripileggi@gmail.com", name: "Fabri Pileggi" },
   ]
 
   for (const colab of colaboradores) {
