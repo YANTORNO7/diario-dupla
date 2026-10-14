@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma"
 import { requireAuth, requireAuthAPI } from "@/lib/auth-guard"
 import { slugify } from "@/lib/slugify"
 import { sendNewsletter } from "@/lib/newsletter"
+import { pingGoogle } from "@/lib/ping-google"
+import { getArticlePath } from "@/lib/sections"
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
@@ -156,6 +158,7 @@ export async function POST(request: NextRequest) {
   // Disparar newsletter assincronamente só se realmente publicado (ADMIN)
   if (finalStatus === "PUBLISHED") {
     sendNewsletter(article.id).catch(console.error)
+    pingGoogle(getArticlePath(article)).catch(console.error)
   }
 
   return NextResponse.json(article, { status: 201 })

@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma"
 import { requireAdminAPI } from "@/lib/auth-guard"
 import { sendNewsletter } from "@/lib/newsletter"
 import { notifyAuthor } from "@/lib/notify-author"
+import { pingGoogle } from "@/lib/ping-google"
+import { getArticlePath } from "@/lib/sections"
 
 export async function PUT(
   request: NextRequest,
@@ -65,6 +67,9 @@ export async function PUT(
 
     // Notificar autor por email
     notifyAuthor(existing.author.email, existing.title, "approve").catch(console.error)
+
+    // Pingar Google para indexar o artigo
+    pingGoogle(getArticlePath(article)).catch(console.error)
 
     return NextResponse.json(article)
   }
