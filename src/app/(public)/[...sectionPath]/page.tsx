@@ -266,45 +266,26 @@ function renderArticle(article: ArticleWithRelations, section: SectionWithParent
   const sectionColor = article.primarySection?.color ?? section.color
   const sectionName = article.primarySection?.name ?? section.name
   const articleUrl = `${SITE_URL}${getArticlePath(article)}`
+  const pubDate = new Date(article.publishedAt || article.createdAt).toISOString()
 
-  const jsonLd = {
+  const jsonLd = JSON.stringify({
     "@context": "https://schema.org",
     "@type": "NewsArticle",
     headline: article.title,
     description: article.subtitle || article.title,
     url: articleUrl,
-    datePublished: (article.publishedAt || article.createdAt).toISOString(),
-    dateModified: (article.publishedAt || article.createdAt).toISOString(),
-    author: {
-      "@type": "Person",
-      name: article.author.name,
-    },
-    publisher: {
-      "@type": "Organization",
-      name: SITE_NAME,
-      url: SITE_URL,
-    },
-    mainEntityOfPage: {
-      "@type": "WebPage",
-      "@id": articleUrl,
-    },
-    ...(article.heroImageUrl
-      ? {
-          image: {
-            "@type": "ImageObject",
-            url: article.heroImageUrl,
-          },
-        }
-      : {}),
+    datePublished: pubDate,
+    dateModified: pubDate,
+    author: { "@type": "Person", name: article.author?.name || "Diario Dupla" },
+    publisher: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
+    mainEntityOfPage: { "@type": "WebPage", "@id": articleUrl },
+    ...(article.heroImageUrl ? { image: { "@type": "ImageObject", url: article.heroImageUrl } } : {}),
     articleSection: sectionName,
-  }
+  })
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd }} />
       <article className="max-w-4xl mx-auto px-4 py-8">
       <div className="mb-6">
         <span
