@@ -4,14 +4,15 @@ import { useMemo } from "react"
 import DOMPurify from "dompurify"
 
 export default function ArticleBody({ html }: { html: string }) {
-  const clean = useMemo(
-    () =>
-      DOMPurify.sanitize(html, {
-        ADD_TAGS: ["iframe"],
-        ADD_ATTR: ["allow", "allowfullscreen", "frameborder", "scrolling", "src"],
-      }),
-    [html]
-  )
+  const clean = useMemo(() => {
+    if (typeof window === "undefined" || typeof DOMPurify.sanitize !== "function") {
+      return html
+    }
+    return DOMPurify.sanitize(html, {
+      ADD_TAGS: ["iframe"],
+      ADD_ATTR: ["allow", "allowfullscreen", "frameborder", "scrolling", "src"],
+    })
+  }, [html])
 
   return (
     <div
