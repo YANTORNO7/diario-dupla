@@ -7,7 +7,7 @@ import ArticleCard from "@/components/public/ArticleCard"
 import TagBadge from "@/components/public/TagBadge"
 import { formatDate, formatDateShort } from "@/lib/utils"
 import { getSectionPath, getArticlePath } from "@/lib/sections"
-import { SITE_URL } from "@/lib/constants"
+import { SITE_URL, SITE_NAME } from "@/lib/constants"
 import type { Metadata } from "next"
 
 type Props = { params: Promise<{ sectionPath: string[] }> }
@@ -265,9 +265,47 @@ function renderSectionListing(
 function renderArticle(article: ArticleWithRelations, section: SectionWithParent) {
   const sectionColor = article.primarySection?.color ?? section.color
   const sectionName = article.primarySection?.name ?? section.name
+  const articleUrl = `${SITE_URL}${getArticlePath(article)}`
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    headline: article.title,
+    description: article.subtitle || article.title,
+    url: articleUrl,
+    datePublished: (article.publishedAt || article.createdAt).toISOString(),
+    dateModified: (article.publishedAt || article.createdAt).toISOString(),
+    author: {
+      "@type": "Person",
+      name: article.author.name,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      url: SITE_URL,
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": articleUrl,
+    },
+    ...(article.heroImageUrl
+      ? {
+          image: {
+            "@type": "ImageObject",
+            url: article.heroImageUrl,
+          },
+        }
+      : {}),
+    articleSection: sectionName,
+  }
 
   return (
-    <article className="max-w-4xl mx-auto px-4 py-8">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <article className="max-w-4xl mx-auto px-4 py-8">
       <div className="mb-6">
         <span
           className="inline-block text-xs font-cuerpo font-bold uppercase tracking-wider px-2 py-1 rounded text-white mb-3"
@@ -315,5 +353,6 @@ function renderArticle(article: ArticleWithRelations, section: SectionWithParent
         </div>
       )}
     </article>
+    </>
   )
 }
