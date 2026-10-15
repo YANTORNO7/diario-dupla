@@ -54,6 +54,23 @@ async function findArticleInSection(sectionId: string, childIds: string[], artic
   })
 }
 
+async function relatedArticles(excludeId: string, sectionId: string) {
+  return prisma.article.findMany({
+    where: {
+      status: "PUBLISHED",
+      id: { not: excludeId },
+      sectionId,
+    },
+    orderBy: { publishedAt: "desc" },
+    take: 3,
+    include: {
+      author: { select: { name: true } },
+      primarySection: { include: { parent: true } },
+      tags: true,
+    },
+  })
+}
+
 async function sectionArticles(sectionId: string, childIds: string[]) {
   return prisma.article.findMany({
     where: {
@@ -179,7 +196,8 @@ export default async function SectionCatchAllPage({ params }: Props) {
     const childIds = parentSection.children?.map((c: { id: string }) => c.id) ?? []
     const article = await findArticleInSection(parentSection.id, childIds, sectionPath[1])
     if (!article) notFound()
-    return renderArticle(article, parentSection)
+    const related = await relatedArticles(article.id, article.sectionId || parentSection.id)
+    return renderArticle(article, parentSection, related)
   }
 
   /* --- 3 segments: article in child section --- */
@@ -188,7 +206,8 @@ export default async function SectionCatchAllPage({ params }: Props) {
     if (!section) notFound()
     const article = await findArticleInSection(section.id, [], sectionPath[2])
     if (!article) notFound()
-    return renderArticle(article, section)
+    const related = await relatedArticles(article.id, article.sectionId || section.id)
+    return renderArticle(article, section, related)
   }
 
   notFound()
@@ -211,6 +230,7 @@ type ArticleWithRelations = {
   subtitle: string | null
   slug: string
   body: string
+  sectionId?: string | null
   heroImageUrl: string | null
   heroImageAlt: string | null
   heroCredit: string | null
@@ -305,7 +325,7 @@ function renderSectionListing(
   )
 }
 
-function renderArticle(article: ArticleWithRelations, section: SectionWithParent) {
+function renderArticle(article: ArticleWithRelations, section: SectionWithParent, related: ArticleWithRelations[] = []) {
   const sectionColor = article.primarySection?.color ?? section.color
   const sectionName = article.primarySection?.name ?? section.name
   const sectionPath = article.primarySection ? getSectionPath(article.primarySection) : `/${section.slug}`
@@ -417,6 +437,36 @@ function renderArticle(article: ArticleWithRelations, section: SectionWithParent
         <ShareButtons url={articleUrl} title={article.title} />
       </div>
     </article>
+
+    {related.length > 0 && (
+      <section className="max-w-4xl mx-auto px-4 pb-12">
+        <h2 className="font-titular text-2xl md:text-3xl mb-6 flex items-center gap-2">
+          <span className="w-1 h-6 rounded-full inline-block" style={{ backgroundColor: sectionColor }} />
+          Más de {sectionName}
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          {related.map((rel) => {
+            const ps = rel.primarySection
+            const relPath = ps ? getSectionPath(ps) : `/${section.slug}`
+            return (
+              <ArticleCard
+                key={rel.id}
+                title={rel.title}
+                subtitle={rel.subtitle}
+                slug={rel.slug}
+                sectionPath={relPath}
+                sectionLabel={ps?.name ?? sectionName}
+                sectionColor={ps?.color ?? sectionColor}
+                heroImageUrl={rel.heroImageUrl}
+                publishedAt={rel.publishedAt}
+                authorName={rel.author.name}
+                showSection={false}
+              />
+            )
+          })}
+        </div>
+      </section>
+    )}
     </>
   )
 }
