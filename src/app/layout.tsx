@@ -40,6 +40,9 @@ export const metadata: Metadata = {
       "application/rss+xml": `${BASE_URL}/feed.xml`,
     },
   },
+  verification: {
+    google: "google16ac96cb8fe68292",
+  },
   icons: {
     icon: "/icon.png",
     apple: "/icon.png",
