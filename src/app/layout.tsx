@@ -57,8 +57,8 @@ export default function RootLayout({
   return (
     <html lang="es" className={`${anton.variable} ${archivo.variable}`}>
       <head>
-        <Script src="https://www.googletagmanager.com/gtag/js?id=G-CB0Q0FG74L" strategy="afterInteractive" />
-        <Script id="google-analytics" strategy="afterInteractive">
+        <Script src="https://www.googletagmanager.com/gtag/js?id=G-CB0Q0FG74L" strategy="beforeInteractive" />
+        <Script id="google-analytics" strategy="beforeInteractive">
           {`window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
