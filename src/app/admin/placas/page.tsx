@@ -213,11 +213,11 @@ export default function PlacasPage() {
             : null
       const score = `${resultData.homeClub.shortName} ${resultData.homeScore} - ${resultData.awayScore} ${resultData.awayClub.shortName}`
       const result = winner ? `Victoria de ${winner}` : "Empate"
-      return `${result} | ${score}\n${resultData.competition}\n\n#futbol #${resultData.homeClub.shortName.replace(/\s/g, "")} #${resultData.awayClub.shortName.replace(/\s/g, "")}\n\n@diariodupla.ar`
+      return `${result} | ${score}\n${resultData.competition}\n\n#futbol #${resultData.homeClub.shortName.replace(/\s/g, "")} #${resultData.awayClub.shortName.replace(/\s/g, "")}\n\n@diariodupla`
     }
     if (cardType === "preview" && previewData.homeClub && previewData.awayClub) {
       const compLabel = COMPETITIONS.find((c) => c.id === previewData.competition)?.label || previewData.competition
-      return `${previewData.homeClub.shortName} vs ${previewData.awayClub.shortName}\n${compLabel} | ${previewData.matchDate} ${previewData.matchTime}hs\n${previewData.stadium ? `Estadio: ${previewData.stadium}` : ""}\n\n#futbol #${previewData.homeClub.shortName.replace(/\s/g, "")} #${previewData.awayClub.shortName.replace(/\s/g, "")}\n\n@diariodupla.ar`
+      return `${previewData.homeClub.shortName} vs ${previewData.awayClub.shortName}\n${compLabel} | ${previewData.matchDate} ${previewData.matchTime}hs\n${previewData.stadium ? `Estadio: ${previewData.stadium}` : ""}\n\n#futbol #${previewData.homeClub.shortName.replace(/\s/g, "")} #${previewData.awayClub.shortName.replace(/\s/g, "")}\n\n@diariodupla`
     }
     if (cardType === "transfer" && transferData.playerName) {
       const type =
@@ -226,7 +226,7 @@ export default function PlacasPage() {
           : transferData.transferType === "PRESTAMO"
             ? "Llega a préstamo"
             : "Llega como agente libre"
-      return `${type}: ${transferData.playerName}\n${transferData.toClub ? `Se suma a ${transferData.toClub.shortName}` : ""}${transferData.fromClub ? ` desde ${transferData.fromClub.shortName}` : ""}\n${transferData.details}\n\n#fichaje #futbol\n\n@diariodupla.ar`
+      return `${type}: ${transferData.playerName}\n${transferData.toClub ? `Se suma a ${transferData.toClub.shortName}` : ""}${transferData.fromClub ? ` desde ${transferData.fromClub.shortName}` : ""}\n${transferData.details}\n\n#fichaje #futbol\n\n@diariodupla`
     }
     return ""
   }

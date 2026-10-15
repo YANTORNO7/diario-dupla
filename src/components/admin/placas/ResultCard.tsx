@@ -384,7 +384,7 @@ export default function ResultCard({ data, league, leagues }: Props) {
             marginBottom: 20,
           }}
         >
-          @diariodupla.ar
+          @diariodupla
         </p>
         {/* Color stripe */}
         <div style={{ display: "flex", height: 8, borderRadius: 4, overflow: "hidden" }}>

@@ -100,7 +100,7 @@ export default async function HomePage() {
       height: 512,
     },
     sameAs: [
-      "https://www.instagram.com/diariodupla.ar",
+      "https://www.instagram.com/diariodupla",
     ],
     description: "El diario del fútbol argentino y brasileño, y de los deportes que nos unen",
   })

@@ -10,13 +10,13 @@ function buildPrompt(body: Record<string, unknown>): string {
   const rules = `REGLAS:
 - Escribí en español rioplatense (usá "vos", "che", etc. si queda natural, pero no fuerces)
 - Incluí emojis relevantes (⚽🔥💪 etc.)
-- La última línea SIEMPRE tiene que ser: @diariodupla.ar
+- La última línea SIEMPRE tiene que ser: @diariodupla
 - NO uses comillas alrededor del texto
 - Sé creativo y variado, no siempre uses la misma estructura`
 
   if (type === "preview") {
     const m = body.matchData as Record<string, unknown>
-    return `Sos un community manager de un medio deportivo de fútbol argentino y brasileño llamado "Diario Dupla" (@diariodupla.ar en Instagram).
+    return `Sos un community manager de un medio deportivo de fútbol argentino y brasileño llamado "Diario Dupla" (@diariodupla en Instagram).
 
 Generá un caption para Instagram sobre la PREVIA de este partido. Tiene que ser en español rioplatense, enganchante, generando expectativa. Máximo 3-4 oraciones cortas.
 
@@ -37,7 +37,7 @@ ${rules}
   if (type === "transfer") {
     const t = body.transferData as Record<string, unknown>
     const typeLabel = t.transferType === "COMPRA" ? "compra" : t.transferType === "PRESTAMO" ? "préstamo" : "agente libre"
-    return `Sos un community manager de un medio deportivo de fútbol argentino y brasileño llamado "Diario Dupla" (@diariodupla.ar en Instagram).
+    return `Sos un community manager de un medio deportivo de fútbol argentino y brasileño llamado "Diario Dupla" (@diariodupla en Instagram).
 
 Generá un caption para Instagram sobre este FICHAJE. Tiene que ser en español rioplatense, enganchante, con emoción por el refuerzo. Máximo 3-4 oraciones cortas.
 
@@ -55,7 +55,7 @@ ${rules}
 
   // Default: result
   const m = body.matchData as Record<string, unknown>
-  return `Sos un community manager de un medio deportivo de fútbol argentino y brasileño llamado "Diario Dupla" (@diariodupla.ar en Instagram).
+  return `Sos un community manager de un medio deportivo de fútbol argentino y brasileño llamado "Diario Dupla" (@diariodupla en Instagram).
 
 Generá un caption para Instagram sobre este resultado de partido. Tiene que ser en español rioplatense, enganchante, con emoción futbolera. Máximo 3-4 oraciones cortas.
 

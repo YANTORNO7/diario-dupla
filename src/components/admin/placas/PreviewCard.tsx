@@ -359,7 +359,7 @@ export default function PreviewCard({ data, league, leagues }: Props) {
             marginBottom: 14,
           }}
         >
-          @diariodupla.ar
+          @diariodupla
         </p>
         {/* Color stripe */}
         <div style={{ display: "flex", height: 8, borderRadius: 4, overflow: "hidden" }}>
