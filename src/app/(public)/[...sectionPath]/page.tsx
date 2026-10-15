@@ -5,6 +5,7 @@ import { notFound } from "next/navigation"
 import ArticleBody from "@/components/public/ArticleBody"
 import ArticleCard from "@/components/public/ArticleCard"
 import TagBadge from "@/components/public/TagBadge"
+import ShareButtons from "@/components/public/ShareButtons"
 import { formatDate, formatDateShort } from "@/lib/utils"
 import { getSectionPath, getArticlePath } from "@/lib/sections"
 import { SITE_URL, SITE_NAME } from "@/lib/constants"
@@ -377,10 +378,13 @@ function renderArticle(article: ArticleWithRelations, section: SectionWithParent
             {article.subtitle}
           </p>
         )}
-        <div className="flex items-center gap-3 mt-4 text-sm text-gray-500 font-cuerpo">
-          <span>Por {article.author.name}</span>
-          <span>&middot;</span>
-          <time>{formatDate(article.publishedAt || article.createdAt)}</time>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-4">
+          <div className="flex items-center gap-3 text-sm text-gray-500 font-cuerpo">
+            <span>Por {article.author.name}</span>
+            <span>&middot;</span>
+            <time>{formatDate(article.publishedAt || article.createdAt)}</time>
+          </div>
+          <ShareButtons url={articleUrl} title={article.title} />
         </div>
       </div>
 
@@ -408,6 +412,10 @@ function renderArticle(article: ArticleWithRelations, section: SectionWithParent
           ))}
         </div>
       )}
+
+      <div className="mt-8 pt-6 border-t">
+        <ShareButtons url={articleUrl} title={article.title} />
+      </div>
     </article>
     </>
   )
