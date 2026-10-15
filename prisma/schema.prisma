@@ -25,6 +25,7 @@ model Section {
   id             String    @id @default(cuid())
   name           String
   slug           String    @unique
+  description    String?
   color          String    @default("#888888")
   order          Int       @default(0)
   showOnHomepage Boolean   @default(true)

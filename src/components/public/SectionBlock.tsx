@@ -30,7 +30,16 @@ export default function SectionBlock({ sectionLabel, sectionPath, sectionColor, 
     <section>
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-titular text-2xl md:text-3xl flex items-center gap-2">
-          <span className="w-1 h-6 rounded-full inline-block" style={{ backgroundColor: sectionColor }} />
+          {sectionPath === "/la-dupla" ? (
+            <span className="flex rounded-full overflow-hidden w-1.5 h-6">
+              <span className="flex-1" style={{ backgroundColor: "#75AADB" }} />
+              <span className="flex-1" style={{ backgroundColor: "#FFFFFF" }} />
+              <span className="flex-1" style={{ backgroundColor: "#009C3B" }} />
+              <span className="flex-1" style={{ backgroundColor: "#FFDF00" }} />
+            </span>
+          ) : (
+            <span className="w-1 h-6 rounded-full inline-block" style={{ backgroundColor: sectionColor }} />
+          )}
           {sectionLabel}
         </h2>
         <Link href={sectionPath} className="text-sm font-cuerpo font-medium hover:underline" style={{ color: sectionColor }}>

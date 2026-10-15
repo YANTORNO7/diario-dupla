@@ -42,19 +42,34 @@ async function main() {
   }
 
   // --- Sections ---
+  const laDupla = await prisma.section.upsert({
+    where: { slug: "la-dupla" },
+    update: { order: 0, description: "Todo lo que une (y enfrenta) al fútbol argentino y brasileño" },
+    create: { name: "La Dupla", slug: "la-dupla", color: "#FFDF00", order: 0, showOnHomepage: true, description: "Todo lo que une (y enfrenta) al fútbol argentino y brasileño" },
+  })
+  await prisma.section.upsert({
+    where: { slug: "clubes" },
+    update: {},
+    create: { name: "Clubes", slug: "clubes", color: "#75AADB", order: 1, showOnHomepage: false, parentId: laDupla.id },
+  })
+  await prisma.section.upsert({
+    where: { slug: "selecciones" },
+    update: {},
+    create: { name: "Selecciones", slug: "selecciones", color: "#009C3B", order: 2, showOnHomepage: false, parentId: laDupla.id },
+  })
   const argentina = await prisma.section.upsert({
     where: { slug: "argentina" },
-    update: { name: "Fútbol Argentino" },
+    update: { name: "Fútbol Argentino", order: 1 },
     create: { name: "Fútbol Argentino", slug: "argentina", color: "#75AADB", order: 1, showOnHomepage: true },
   })
   const brasil = await prisma.section.upsert({
     where: { slug: "brasil" },
-    update: { name: "Fútbol Brasileño", showOnHomepage: true },
+    update: { name: "Fútbol Brasileño", showOnHomepage: true, order: 2 },
     create: { name: "Fútbol Brasileño", slug: "brasil", color: "#009C3B", order: 2, showOnHomepage: true },
   })
   const copas = await prisma.section.upsert({
     where: { slug: "copas" },
-    update: { showOnHomepage: true },
+    update: { showOnHomepage: true, order: 3 },
     create: { name: "Copas", slug: "copas", color: "#D4AF37", order: 3, showOnHomepage: true },
   })
   await prisma.section.upsert({
@@ -69,7 +84,7 @@ async function main() {
   })
   const automovilismo = await prisma.section.upsert({
     where: { slug: "automovilismo" },
-    update: { showOnHomepage: true },
+    update: { showOnHomepage: true, order: 4 },
     create: { name: "Automovilismo", slug: "automovilismo", color: "#DC2626", order: 4, showOnHomepage: true },
   })
   await prisma.section.upsert({
@@ -77,7 +92,7 @@ async function main() {
     update: {},
     create: { name: "F1", slug: "f1", color: "#DC2626", order: 1, showOnHomepage: false, parentId: automovilismo.id },
   })
-  console.log("Secciones OK: Fútbol Argentino, Fútbol Brasileño, Copas (Libertadores, Sudamericana), Automovilismo (F1)")
+  console.log("Secciones OK: La Dupla (Clubes, Selecciones), Fútbol Argentino, Fútbol Brasileño, Copas (Libertadores, Sudamericana), Automovilismo (F1)")
 
   // Migrate existing articles without sectionId
   const articlesArgentina = await prisma.article.updateMany({

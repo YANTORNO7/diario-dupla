@@ -5,6 +5,7 @@ export type SectionNav = {
   name: string
   slug: string
   color: string
+  description: string | null
   path: string
   children: { id: string; name: string; slug: string; color: string; path: string }[]
 }
@@ -21,6 +22,7 @@ export async function getNavSections(): Promise<SectionNav[]> {
     name: s.name,
     slug: s.slug,
     color: s.color,
+    description: s.description,
     path: `/${s.slug}`,
     children: s.children.map((c) => ({
       id: c.id,
