@@ -224,9 +224,42 @@ function renderSectionListing(
   section: SectionWithParent,
   articles: ArticleWithRelations[]
 ) {
+  const sectionUrl = `${SITE_URL}${getSectionPath(section)}`
+  const breadcrumbItems: { name: string; url: string }[] = [
+    { name: "Inicio", url: SITE_URL },
+  ]
+  if (section.parent) {
+    breadcrumbItems.push({ name: section.parent.slug.charAt(0).toUpperCase() + section.parent.slug.slice(1), url: `${SITE_URL}/${section.parent.slug}` })
+  }
+  breadcrumbItems.push({ name: section.name, url: sectionUrl })
+
+  const breadcrumbLd = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: breadcrumbItems.map((item, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: item.name,
+      item: item.url,
+    })),
+  })
+
   return (
+    <>
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: breadcrumbLd }} />
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="mb-8">
+        <nav className="text-xs font-cuerpo text-gray-400 mb-3 flex items-center gap-1">
+          <a href="/" className="hover:text-gray-600">Inicio</a>
+          {section.parent && (
+            <>
+              <span>›</span>
+              <a href={`/${section.parent.slug}`} className="hover:text-gray-600">{section.parent.slug.charAt(0).toUpperCase() + section.parent.slug.slice(1)}</a>
+            </>
+          )}
+          <span>›</span>
+          <span style={{ color: section.color }}>{section.name}</span>
+        </nav>
         <h1 className="font-titular text-4xl md:text-5xl flex items-center gap-3">
           <span
             className="w-1.5 h-8 rounded-full inline-block"
@@ -267,12 +300,14 @@ function renderSectionListing(
         </div>
       )}
     </div>
+    </>
   )
 }
 
 function renderArticle(article: ArticleWithRelations, section: SectionWithParent) {
   const sectionColor = article.primarySection?.color ?? section.color
   const sectionName = article.primarySection?.name ?? section.name
+  const sectionPath = article.primarySection ? getSectionPath(article.primarySection) : `/${section.slug}`
   const articleUrl = `${SITE_URL}${getArticlePath(article)}`
   const pubDate = new Date(article.publishedAt || article.createdAt).toISOString()
 
@@ -285,17 +320,49 @@ function renderArticle(article: ArticleWithRelations, section: SectionWithParent
     datePublished: pubDate,
     dateModified: pubDate,
     author: { "@type": "Person", name: article.author?.name || "Diario Dupla" },
-    publisher: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
+    publisher: {
+      "@type": "NewsMediaOrganization",
+      name: SITE_NAME,
+      url: SITE_URL,
+      logo: { "@type": "ImageObject", url: `${SITE_URL}/icon.png` },
+    },
     mainEntityOfPage: { "@type": "WebPage", "@id": articleUrl },
     ...(article.heroImageUrl ? { image: { "@type": "ImageObject", url: article.heroImageUrl } } : {}),
     articleSection: sectionName,
   })
 
+  // Breadcrumbs: Inicio > Sección > [Subsección >] Artículo
+  const breadcrumbItems: { name: string; url: string }[] = [
+    { name: "Inicio", url: SITE_URL },
+  ]
+  if (section.parent) {
+    breadcrumbItems.push({ name: section.parent.slug.charAt(0).toUpperCase() + section.parent.slug.slice(1), url: `${SITE_URL}/${section.parent.slug}` })
+  }
+  breadcrumbItems.push({ name: sectionName, url: `${SITE_URL}${sectionPath}` })
+  breadcrumbItems.push({ name: article.title, url: articleUrl })
+
+  const breadcrumbLd = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: breadcrumbItems.map((item, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: item.name,
+      item: item.url,
+    })),
+  })
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: breadcrumbLd }} />
       <article className="max-w-4xl mx-auto px-4 py-8">
       <div className="mb-6">
+        <nav className="text-xs font-cuerpo text-gray-400 mb-3 flex items-center gap-1 flex-wrap">
+          <a href="/" className="hover:text-gray-600">Inicio</a>
+          <span>›</span>
+          <a href={sectionPath} className="hover:text-gray-600" style={{ color: sectionColor }}>{sectionName}</a>
+        </nav>
         <span
           className="inline-block text-xs font-cuerpo font-bold uppercase tracking-wider px-2 py-1 rounded text-white mb-3"
           style={{ backgroundColor: sectionColor }}

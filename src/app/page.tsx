@@ -88,8 +88,39 @@ export default async function HomePage() {
     }
   }
 
+  const organizationLd = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "NewsMediaOrganization",
+    name: "Diario Dupla",
+    url: "https://diariodupla.com",
+    logo: {
+      "@type": "ImageObject",
+      url: "https://diariodupla.com/icon.png",
+      width: 512,
+      height: 512,
+    },
+    sameAs: [
+      "https://www.instagram.com/diariodupla.ar",
+    ],
+    description: "El diario del fútbol argentino y brasileño, y de los deportes que nos unen",
+  })
+
+  const websiteLd = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Diario Dupla",
+    url: "https://diariodupla.com",
+    potentialAction: {
+      "@type": "SearchAction",
+      target: "https://diariodupla.com/buscar?q={search_term_string}",
+      "query-input": "required name=search_term_string",
+    },
+  })
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: organizationLd }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: websiteLd }} />
       <Header sections={navSections} />
       <main className="flex-1">
         <div className="max-w-6xl mx-auto px-4 py-6">
