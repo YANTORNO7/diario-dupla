@@ -25,23 +25,23 @@ export async function GET() {
         ...article.tags.map((t) => t.name),
       ]
         .filter(Boolean)
-        .map((c) => `<category>${escapeXml(c!)}</category>`)
-        .join("\n        ")
+        .map((c) => `      <category>${escapeXml(c!)}</category>`)
+        .join("\n")
 
       return `    <item>
       <title>${escapeXml(article.title)}</title>
       <link>${url}</link>
       <guid isPermaLink="true">${url}</guid>
       <pubDate>${pubDate}</pubDate>
-      <author>${escapeXml(article.author.name)}</author>
+      <dc:creator>${escapeXml(article.author.name)}</dc:creator>
       <description>${escapeXml(article.subtitle || article.title)}</description>
-      ${categories}${article.heroImageUrl ? `\n      <enclosure url="${escapeXml(article.heroImageUrl)}" type="image/webp" />` : ""}
+${categories}
     </item>`
     })
     .join("\n")
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/">
   <channel>
     <title>${escapeXml(SITE_NAME)}</title>
     <link>${SITE_URL}</link>
