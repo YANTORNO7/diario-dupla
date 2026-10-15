@@ -283,28 +283,31 @@ function renderSectionListing(
           <span>›</span>
           <span style={{ color: section.color }}>{section.name}</span>
         </nav>
-        <h1 className="font-titular text-4xl md:text-5xl flex items-center gap-3">
-          {section.slug === "la-dupla" || section.parent?.slug === "la-dupla" ? (
-            <span className="inline-flex flex-col gap-[2px] w-3 shrink-0">
-              <span className="flex gap-[1px]" style={{ height: 5 }}>
-                <span className="flex-1 bg-celeste rounded-l-full" />
-                <span className="flex-[0.5] bg-white" />
-                <span className="flex-1 bg-celeste rounded-r-full" />
-              </span>
-              <span className="flex gap-[1px]" style={{ height: 5 }}>
-                <span className="flex-1 bg-verde rounded-l-full" />
-                <span className="flex-[0.5] bg-amarelo" />
-                <span className="flex-1 bg-verde rounded-r-full" />
-              </span>
-            </span>
-          ) : (
+        {section.slug === "la-dupla" || section.parent?.slug === "la-dupla" ? (
+          <>
+            <h1 className="font-titular text-4xl md:text-5xl">{section.name}</h1>
+            <div className="flex gap-[3px] mt-2 w-32">
+              <div className="flex flex-1 gap-[1px]" style={{ height: 6 }}>
+                <div className="flex-1 bg-celeste rounded-l-full" />
+                <div className="flex-[0.5] bg-white" />
+                <div className="flex-1 bg-celeste rounded-r-full" />
+              </div>
+              <div className="flex flex-1 gap-[1px]" style={{ height: 6 }}>
+                <div className="flex-1 bg-verde rounded-l-full" />
+                <div className="flex-[0.5] bg-amarelo" />
+                <div className="flex-1 bg-verde rounded-r-full" />
+              </div>
+            </div>
+          </>
+        ) : (
+          <h1 className="font-titular text-4xl md:text-5xl flex items-center gap-3">
             <span
               className="w-1.5 h-8 rounded-full inline-block"
               style={{ backgroundColor: section.color }}
             />
-          )}
-          {section.name}
-        </h1>
+            {section.name}
+          </h1>
+        )}
         {section.description && (
           <p className="font-cuerpo text-gray-500 text-lg mt-2">{section.description}</p>
         )}
