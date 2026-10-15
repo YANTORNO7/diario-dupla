@@ -44,8 +44,8 @@ async function main() {
   // --- Sections ---
   const laDupla = await prisma.section.upsert({
     where: { slug: "la-dupla" },
-    update: { order: 0, description: "Todo lo que une (y enfrenta) al fútbol argentino y brasileño" },
-    create: { name: "La Dupla", slug: "la-dupla", color: "#FFDF00", order: 0, showOnHomepage: true, description: "Todo lo que une (y enfrenta) al fútbol argentino y brasileño" },
+    update: { order: 0, description: "La sección de Diario Dupla que reúne todo lo que conecta al fútbol argentino y brasileño" },
+    create: { name: "La Dupla", slug: "la-dupla", color: "#FFDF00", order: 0, showOnHomepage: true, description: "La sección de Diario Dupla que reúne todo lo que conecta al fútbol argentino y brasileño" },
   })
   await prisma.section.upsert({
     where: { slug: "clubes" },
