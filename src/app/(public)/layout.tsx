@@ -13,7 +13,7 @@ export default async function PublicLayout({
     <>
       <Header sections={sections} />
       <main className="flex-1">{children}</main>
-      <Footer />
+      <Footer sections={sections} />
     </>
   )
 }
