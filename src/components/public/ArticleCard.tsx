@@ -1,20 +1,21 @@
 import Link from "next/link"
-import { SECTIONS, type Section } from "@/lib/constants"
 import { formatDateShort } from "@/lib/utils"
 
 type Props = {
   title: string
   subtitle?: string | null
   slug: string
-  section: string
+  sectionPath: string
+  sectionLabel: string
+  sectionColor: string
   heroImageUrl?: string | null
   publishedAt?: string | Date | null
   showSection?: boolean
+  authorName?: string | null
 }
 
-export default function ArticleCard({ title, subtitle, slug, section, heroImageUrl, publishedAt, showSection = true }: Props) {
-  const sectionInfo = SECTIONS[section as Section]
-  const href = `/${sectionInfo.slug}/${slug}`
+export default function ArticleCard({ title, subtitle, slug, sectionPath, sectionLabel, sectionColor, heroImageUrl, publishedAt, showSection = true, authorName }: Props) {
+  const href = `${sectionPath}/${slug}`
 
   return (
     <Link href={href} className="block group">
@@ -28,15 +29,21 @@ export default function ArticleCard({ title, subtitle, slug, section, heroImageU
             </div>
           )}
           {showSection && (
-            <span className="absolute top-2 left-2 text-[10px] font-cuerpo font-bold uppercase tracking-wider px-2 py-0.5 rounded"
-              style={{ backgroundColor: sectionInfo.color, color: "white" }}>
-              {sectionInfo.label}
+            <span className="absolute top-2 left-2 text-[8px] md:text-[10px] font-cuerpo font-bold uppercase tracking-wider px-1.5 md:px-2 py-0.5 rounded"
+              style={{ backgroundColor: sectionColor, color: "white" }}>
+              {sectionLabel}
             </span>
           )}
         </div>
         <h3 className="font-titular text-lg md:text-xl leading-tight group-hover:text-gray-600 transition-colors">{title}</h3>
         {subtitle && <p className="font-cuerpo text-gray-500 text-sm mt-1 line-clamp-2">{subtitle}</p>}
-        {publishedAt && <p className="font-cuerpo text-gray-400 text-xs mt-2">{formatDateShort(publishedAt)}</p>}
+        {(authorName || publishedAt) && (
+          <p className="font-cuerpo text-gray-400 text-xs mt-2">
+            {authorName && <span>Por {authorName}</span>}
+            {authorName && publishedAt && <span> · </span>}
+            {publishedAt && <span>{formatDateShort(publishedAt)}</span>}
+          </p>
+        )}
       </article>
     </Link>
   )

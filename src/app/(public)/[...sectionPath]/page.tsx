@@ -101,18 +101,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const article = await findArticleInSection(parent.id, childIds, sectionPath[1])
     if (!article) return {}
     const articleUrl = `${SITE_URL}${getArticlePath(article)}`
-    return {
-      title: article.title,
-      description: article.subtitle || article.title,
-      alternates: { canonical: articleUrl },
-      openGraph: {
-        title: article.title,
-        description: article.subtitle || article.title,
-        type: "article",
-        url: articleUrl,
-        ...(article.heroImageUrl ? { images: [article.heroImageUrl] } : {}),
-      },
-    }
+    return articleMetadata(article, articleUrl)
   }
 
   if (sectionPath.length === 3) {
@@ -121,21 +110,40 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const article = await findArticleInSection(section.id, [], sectionPath[2])
     if (!article) return {}
     const articleUrl = `${SITE_URL}${getArticlePath(article)}`
-    return {
-      title: article.title,
-      description: article.subtitle || article.title,
-      alternates: { canonical: articleUrl },
-      openGraph: {
-        title: article.title,
-        description: article.subtitle || article.title,
-        type: "article",
-        url: articleUrl,
-        ...(article.heroImageUrl ? { images: [article.heroImageUrl] } : {}),
-      },
-    }
+    return articleMetadata(article, articleUrl)
   }
 
   return {}
+}
+
+function articleMetadata(
+  article: { title: string; subtitle: string | null; heroImageUrl: string | null; publishedAt: Date | null; createdAt: Date; author: { name: string }; primarySection: { name: string } | null; tags: { name: string }[] },
+  articleUrl: string
+): Metadata {
+  const pubDate = new Date(article.publishedAt || article.createdAt).toISOString()
+  const description = article.subtitle || article.title
+  return {
+    title: article.title,
+    description,
+    alternates: { canonical: articleUrl },
+    openGraph: {
+      title: article.title,
+      description,
+      type: "article",
+      url: articleUrl,
+      publishedTime: pubDate,
+      authors: [article.author.name],
+      section: article.primarySection?.name,
+      tags: article.tags.map((t) => t.name),
+      ...(article.heroImageUrl ? { images: [{ url: article.heroImageUrl, width: 1200, height: 630, alt: article.title }] } : {}),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: article.title,
+      description,
+      ...(article.heroImageUrl ? { images: [article.heroImageUrl] } : {}),
+    },
+  }
 }
 
 /* ---------- page ---------- */

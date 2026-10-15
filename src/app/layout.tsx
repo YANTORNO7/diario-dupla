@@ -16,6 +16,8 @@ const archivo = Archivo({
   display: "swap",
 })
 
+const BASE_URL = process.env.NEXTAUTH_URL || "http://localhost:3000"
+
 export const metadata: Metadata = {
   title: {
     default: "Diario Dupla — El diario del fútbol argentino y brasileño",
@@ -27,6 +29,16 @@ export const metadata: Metadata = {
     type: "website",
     locale: "es_AR",
     siteName: "Diario Dupla",
+    url: BASE_URL,
+  },
+  twitter: {
+    card: "summary_large_image",
+    site: "@diariodupla",
+  },
+  alternates: {
+    types: {
+      "application/rss+xml": `${BASE_URL}/feed.xml`,
+    },
   },
   icons: {
     icon: "/icon.png",
