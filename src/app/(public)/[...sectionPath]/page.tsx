@@ -2,6 +2,7 @@ export const revalidate = 60
 
 import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation"
+import Image from "next/image"
 import ArticleBody from "@/components/public/ArticleBody"
 import ArticleCard from "@/components/public/ArticleCard"
 import TagBadge from "@/components/public/TagBadge"
@@ -410,10 +411,15 @@ function renderArticle(article: ArticleWithRelations, section: SectionWithParent
 
       {article.heroImageUrl && (
         <figure className="mb-8">
-          <img
+          <Image
             src={article.heroImageUrl}
             alt={article.heroImageAlt || article.title}
+            width={896}
+            height={504}
+            sizes="(max-width: 896px) 100vw, 896px"
             className="w-full rounded-lg"
+            quality={90}
+            priority
           />
           {article.heroCredit && (
             <figcaption className="text-xs text-gray-400 mt-2 font-cuerpo">

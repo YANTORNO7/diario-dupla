@@ -1,4 +1,5 @@
 import Link from "next/link"
+import Image from "next/image"
 
 type Props = {
   title: string
@@ -18,7 +19,15 @@ export default function HeroArticle({ title, subtitle, slug, sectionPath, sectio
     <Link href={href} className="block group">
       <article className="relative rounded-lg overflow-hidden bg-[#111111] aspect-[16/9] md:aspect-[21/9]">
         {heroImageUrl && (
-          <img src={heroImageUrl} alt={title} className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-50 transition-opacity" />
+          <Image
+            src={heroImageUrl}
+            alt={title}
+            fill
+            sizes="(max-width: 768px) 100vw, 1152px"
+            className="object-cover opacity-60 group-hover:opacity-50 transition-opacity"
+            quality={90}
+            priority
+          />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
         <span className="absolute top-3 left-3 md:hidden text-[9px] font-cuerpo font-bold uppercase tracking-wider px-1.5 py-0.5 rounded" style={{ backgroundColor: sectionColor, color: "white" }}>

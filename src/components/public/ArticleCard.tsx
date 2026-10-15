@@ -1,4 +1,5 @@
 import Link from "next/link"
+import Image from "next/image"
 import { formatDateShort } from "@/lib/utils"
 
 type Props = {
@@ -22,7 +23,14 @@ export default function ArticleCard({ title, subtitle, slug, sectionPath, sectio
       <article className="flex flex-col h-full">
         <div className="relative aspect-[16/10] rounded-lg overflow-hidden bg-gray-100 mb-3">
           {heroImageUrl ? (
-            <img src={heroImageUrl} alt={title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+            <Image
+              src={heroImageUrl}
+              alt={title}
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 384px"
+              className="object-cover group-hover:scale-105 transition-transform duration-300"
+              quality={85}
+            />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
               <span className="text-gray-400 font-titular text-xl">DUPLA</span>
