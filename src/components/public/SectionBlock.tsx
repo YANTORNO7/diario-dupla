@@ -31,11 +31,17 @@ export default function SectionBlock({ sectionLabel, sectionPath, sectionColor, 
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-titular text-2xl md:text-3xl flex items-center gap-2">
           {sectionPath === "/la-dupla" ? (
-            <span className="flex rounded-full overflow-hidden w-1.5 h-6">
-              <span className="flex-1" style={{ backgroundColor: "#75AADB" }} />
-              <span className="flex-1" style={{ backgroundColor: "#FFFFFF" }} />
-              <span className="flex-1" style={{ backgroundColor: "#009C3B" }} />
-              <span className="flex-1" style={{ backgroundColor: "#FFDF00" }} />
+            <span className="inline-flex flex-col gap-[2px] w-2.5 shrink-0">
+              <span className="flex gap-[1px]" style={{ height: 4 }}>
+                <span className="flex-1 bg-celeste rounded-l-full" />
+                <span className="flex-[0.5] bg-white" />
+                <span className="flex-1 bg-celeste rounded-r-full" />
+              </span>
+              <span className="flex gap-[1px]" style={{ height: 4 }}>
+                <span className="flex-1 bg-verde rounded-l-full" />
+                <span className="flex-[0.5] bg-amarelo" />
+                <span className="flex-1 bg-verde rounded-r-full" />
+              </span>
             </span>
           ) : (
             <span className="w-1 h-6 rounded-full inline-block" style={{ backgroundColor: sectionColor }} />

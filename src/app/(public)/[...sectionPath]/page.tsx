@@ -285,11 +285,17 @@ function renderSectionListing(
         </nav>
         <h1 className="font-titular text-4xl md:text-5xl flex items-center gap-3">
           {section.slug === "la-dupla" || section.parent?.slug === "la-dupla" ? (
-            <span className="flex rounded-full overflow-hidden w-2 h-8">
-              <span className="flex-1" style={{ backgroundColor: "#75AADB" }} />
-              <span className="flex-1" style={{ backgroundColor: "#FFFFFF" }} />
-              <span className="flex-1" style={{ backgroundColor: "#009C3B" }} />
-              <span className="flex-1" style={{ backgroundColor: "#FFDF00" }} />
+            <span className="inline-flex flex-col gap-[2px] w-3 shrink-0">
+              <span className="flex gap-[1px]" style={{ height: 5 }}>
+                <span className="flex-1 bg-celeste rounded-l-full" />
+                <span className="flex-[0.5] bg-white" />
+                <span className="flex-1 bg-celeste rounded-r-full" />
+              </span>
+              <span className="flex gap-[1px]" style={{ height: 5 }}>
+                <span className="flex-1 bg-verde rounded-l-full" />
+                <span className="flex-[0.5] bg-amarelo" />
+                <span className="flex-1 bg-verde rounded-r-full" />
+              </span>
             </span>
           ) : (
             <span
