@@ -107,7 +107,7 @@ async function main() {
     console.log(`Artículos migrados: ${articlesArgentina.count} Argentina, ${articlesBrasil.count} Brasil`)
   }
 
-  // Remover La Dupla como seção secundária de artigos que não pertencem a ela
+  // Remover La Dupla como seção secundária indevida
   const wrongSecondary = await prisma.article.findMany({
     where: {
       secondarySections: { some: { id: laDupla.id } },
@@ -123,6 +123,23 @@ async function main() {
   }
   if (wrongSecondary.length > 0) {
     console.log(`Corregidos ${wrongSecondary.length} artículos con La Dupla como sección secundaria indebida`)
+  }
+
+  // Corrigir artigos que têm La Dupla como seção PRIMÁRIA (não deveria acontecer)
+  // Mover para Fútbol Argentino como fallback
+  const wrongPrimary = await prisma.article.findMany({
+    where: { sectionId: laDupla.id },
+    select: { id: true, title: true },
+  })
+  for (const article of wrongPrimary) {
+    await prisma.article.update({
+      where: { id: article.id },
+      data: { sectionId: argentina.id },
+    })
+    console.log(`  Artículo "${article.title}" movido de La Dupla a Fútbol Argentino`)
+  }
+  if (wrongPrimary.length > 0) {
+    console.log(`Corregidos ${wrongPrimary.length} artículos con La Dupla como sección primaria`)
   }
 }
 

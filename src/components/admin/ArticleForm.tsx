@@ -46,21 +46,26 @@ export default function ArticleForm({
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState("")
 
+  // Compute leaf sections first so we can use it as default for sectionId
+  const leafSections = sections.filter((s) => s.children.length === 0)
+
+  // Default to first leaf section — avoids accidentally saving La Dupla (parent) as primary
+  const defaultSectionId = article?.sectionId && leafSections.some(s => s.id === article.sectionId)
+    ? article.sectionId
+    : leafSections.find(s => !s.parentId)?.id || leafSections[0]?.id || ""
+
   const [title, setTitle] = useState(article?.title || "")
   const [subtitle, setSubtitle] = useState(article?.subtitle || "")
   const [body, setBody] = useState(article?.body || "")
   const [heroImageUrl, setHeroImageUrl] = useState(article?.heroImageUrl || "")
   const [heroCredit, setHeroCredit] = useState(article?.heroCredit || "")
-  const [sectionId, setSectionId] = useState(article?.sectionId || sections.find(s => !s.parentId)?.id || "")
+  const [sectionId, setSectionId] = useState(defaultSectionId)
   const [featured, setFeatured] = useState(article?.featured || false)
   const [tags, setTags] = useState<string[]>(article?.tags.map((t) => t.name) || [])
   const [author, setAuthor] = useState(authorName)
   const [secondaryIds, setSecondaryIds] = useState<string[]>(
     article?.secondarySections?.map((s) => s.id) || []
   )
-
-  // Only leaf sections (no children) can be selected as primary
-  const leafSections = sections.filter((s) => s.children.length === 0)
   // Group by parent for optgroups
   const topLevel = leafSections.filter((s) => !s.parentId)
   const grouped = sections
