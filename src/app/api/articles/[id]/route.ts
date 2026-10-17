@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma"
 import { requireAuthAPI } from "@/lib/auth-guard"
 import { slugify } from "@/lib/slugify"
 import { sendNewsletter } from "@/lib/newsletter"
+import { pingGoogle } from "@/lib/ping-google"
+import { getArticlePath } from "@/lib/sections"
 
 export async function GET(
   request: NextRequest,
@@ -150,9 +152,10 @@ export async function PUT(
     },
   })
 
-  // Disparar newsletter assincronamente só se realmente publicado
+  // Disparar newsletter e ping ao Google assincronamente só se realmente publicado
   if (isPublishing) {
     sendNewsletter(article.id).catch(console.error)
+    pingGoogle(getArticlePath(article)).catch(console.error)
   }
 
   return NextResponse.json(article)
