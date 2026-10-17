@@ -71,8 +71,13 @@ export default function ArticleForm({
     }))
     .filter((g) => g.children.length > 0)
 
-  // All selectable sections for secondary (exclude current primary)
-  const secondaryOptions = leafSections.filter((s) => s.id !== sectionId)
+  // Secondary options: leaf sections + parent sections (top-level with children, e.g. La Dupla)
+  // excluding the current primary
+  const parentSections = sections.filter((s) => s.children.length > 0 && !s.parentId)
+  const secondaryOptions = [
+    ...leafSections.filter((s) => s.id !== sectionId),
+    ...parentSections.filter((s) => s.id !== sectionId),
+  ]
 
   function toggleSecondary(id: string) {
     setSecondaryIds((prev) =>
