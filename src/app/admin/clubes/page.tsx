@@ -31,6 +31,8 @@ export default function ClubesPage() {
   const [showForm, setShowForm] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState("")
+  const [seeding, setSeeding] = useState(false)
+  const [seedResult, setSeedResult] = useState<string | null>(null)
 
   useEffect(() => {
     loadClubs()
@@ -104,21 +106,55 @@ export default function ClubesPage() {
     }
   }
 
+  async function handleSeedLPF() {
+    if (!confirm("¿Cargar los 30 equipos de la Liga Profesional Argentina 2026? Se actualizarán los que ya existan.")) return
+    setSeeding(true)
+    setSeedResult(null)
+    try {
+      const res = await fetch("/api/admin/seed-liga-profesional", { method: "POST" })
+      const data = await res.json()
+      if (res.ok) {
+        setSeedResult(`Listo: ${data.created} creados, ${data.updated} actualizados.`)
+        loadClubs()
+      } else {
+        setSeedResult(`Error: ${data.error || "desconocido"}`)
+      }
+    } catch {
+      setSeedResult("Error de conexión")
+    } finally {
+      setSeeding(false)
+    }
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold font-cuerpo">Clubes</h1>
-        <button
-          onClick={() => {
-            setForm(EMPTY_FORM)
-            setEditingId(null)
-            setShowForm(!showForm)
-          }}
-          className="bg-negro text-white px-4 py-2 rounded-md hover:bg-gray-800 transition-colors font-cuerpo text-sm"
-        >
-          {showForm ? "Cancelar" : "+ Nuevo club"}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleSeedLPF}
+            disabled={seeding}
+            className="bg-[#0A56A5] text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors font-cuerpo text-sm disabled:opacity-50"
+          >
+            {seeding ? "Cargando..." : "Cargar LPF 2026"}
+          </button>
+          <button
+            onClick={() => {
+              setForm(EMPTY_FORM)
+              setEditingId(null)
+              setShowForm(!showForm)
+            }}
+            className="bg-negro text-white px-4 py-2 rounded-md hover:bg-gray-800 transition-colors font-cuerpo text-sm"
+          >
+            {showForm ? "Cancelar" : "+ Nuevo club"}
+          </button>
+        </div>
       </div>
+      {seedResult && (
+        <div className={`mb-4 px-4 py-2 rounded text-sm font-cuerpo ${seedResult.startsWith("Error") ? "bg-red-50 text-red-700" : "bg-green-50 text-green-700"}`}>
+          {seedResult}
+        </div>
+      )}
 
       {showForm && (
         <form
