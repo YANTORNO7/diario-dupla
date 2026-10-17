@@ -20,11 +20,11 @@ export default function SearchForm({ initialQuery }: Props) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mb-6">
+    <form onSubmit={handleSubmit}>
       <div className="flex gap-2">
         <div className="relative flex-1">
           <svg
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
+            className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -38,14 +38,14 @@ export default function SearchForm({ initialQuery }: Props) {
             name="q"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Buscar noticias..."
-            className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 font-cuerpo text-base focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400"
+            placeholder="Buscá noticias..."
+            className="w-full pl-12 pr-4 py-4 rounded-lg bg-white font-cuerpo text-base text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-celeste/60 border-0 shadow-sm"
             autoFocus
           />
         </div>
         <button
           type="submit"
-          className="px-6 py-3 bg-[#111111] text-white font-cuerpo font-semibold text-sm rounded-lg hover:bg-[#333] transition-colors uppercase tracking-wide"
+          className="px-6 py-4 bg-celeste text-white font-cuerpo font-semibold text-sm rounded-lg hover:bg-celeste/80 transition-colors uppercase tracking-wide whitespace-nowrap"
         >
           Buscar
         </button>
