@@ -106,6 +106,24 @@ async function main() {
   if (articlesArgentina.count > 0 || articlesBrasil.count > 0) {
     console.log(`Artículos migrados: ${articlesArgentina.count} Argentina, ${articlesBrasil.count} Brasil`)
   }
+
+  // Remover La Dupla como seção secundária de artigos que não pertencem a ela
+  const wrongSecondary = await prisma.article.findMany({
+    where: {
+      secondarySections: { some: { id: laDupla.id } },
+      NOT: { sectionId: laDupla.id },
+    },
+    select: { id: true, title: true },
+  })
+  for (const article of wrongSecondary) {
+    await prisma.article.update({
+      where: { id: article.id },
+      data: { secondarySections: { disconnect: { id: laDupla.id } } },
+    })
+  }
+  if (wrongSecondary.length > 0) {
+    console.log(`Corregidos ${wrongSecondary.length} artículos con La Dupla como sección secundaria indebida`)
+  }
 }
 
 main()
