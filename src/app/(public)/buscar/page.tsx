@@ -46,10 +46,19 @@ export default async function BuscarPage({ searchParams }: Props) {
       {/* Hero oscuro */}
       <div className="bg-[#111111] py-14 px-4">
         <div className="max-w-2xl mx-auto text-center">
-          <h1 className="font-titular text-5xl md:text-6xl text-white mb-2">Buscar</h1>
-          <p className="font-cuerpo text-gray-500 text-sm mb-8">
-            Noticias de fútbol argentino y brasileño
-          </p>
+          <h1 className="font-titular text-5xl md:text-6xl text-white mb-4">Buscar</h1>
+          <div className="flex gap-[4px] mx-auto w-28 mb-8">
+            <div className="flex flex-1 gap-[1px]" style={{ height: 6 }}>
+              <div className="flex-1 bg-celeste rounded-l-full" />
+              <div className="flex-[0.5] bg-white/30" />
+              <div className="flex-1 bg-celeste rounded-r-full" />
+            </div>
+            <div className="flex flex-1 gap-[1px]" style={{ height: 6 }}>
+              <div className="flex-1 bg-verde rounded-l-full" />
+              <div className="flex-[0.5] bg-amarelo" />
+              <div className="flex-1 bg-verde rounded-r-full" />
+            </div>
+          </div>
           <SearchForm initialQuery={query} />
         </div>
       </div>
