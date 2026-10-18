@@ -1,5 +1,6 @@
 "use client"
-import { useState, useRef, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import { toPng } from "html-to-image"
 import EscudoLibrary from "./EscudoLibrary"
 import {
@@ -190,10 +191,42 @@ function FranjaField({ value, onChange }: { value: Franja; onChange: (v: Franja)
 
 // ---- Per-template forms ----
 
+type ClubOption = { id: string; shortName: string; crestUrl: string | null }
+
 function GolForm({ state, set }: { state: GolState; set: (s: GolState) => void }) {
   const u = (p: Partial<GolState>) => set({ ...state, ...p })
+  const [clubs, setClubs] = useState<ClubOption[]>([])
+
+  useEffect(() => {
+    fetch('/api/clubs')
+      .then(r => r.json())
+      .then((data: ClubOption[]) => setClubs(data))
+      .catch(() => {})
+  }, [])
+
+  function handleClubChange(clubId: string) {
+    const club = clubs.find(c => c.id === clubId)
+    u({ clubId, escudo1: club?.crestUrl || state.escudo1 })
+  }
+
   return (
     <div className="space-y-4">
+      <div>
+        <Label>Club</Label>
+        <select
+          value={state.clubId}
+          onChange={e => handleClubChange(e.target.value)}
+          className="w-full border rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#0B1631]"
+        >
+          <option value="">Seleccionar club…</option>
+          {clubs.map(c => (
+            <option key={c.id} value={c.id}>{c.shortName}</option>
+          ))}
+        </select>
+        {!state.clubId && (
+          <p className="text-xs text-amber-600 mt-1">Seleccioná el club para guardar en la biblioteca.</p>
+        )}
+      </div>
       <FotoField foto={state.foto} posX={state.fotoPosX} posY={state.fotoPosY} scale={state.fotoScale}
         onFoto={v => u({ foto: v })} onPosX={v => u({ fotoPosX: v })} onPosY={v => u({ fotoPosY: v })} onScale={v => u({ fotoScale: v })} />
       <EscudoField label="Escudo" value={state.escudo1} onChange={v => u({ escudo1: v })} />
@@ -595,8 +628,8 @@ function getDimensions(id: TemplateId): [number, number] {
 }
 
 // ---- Export function ----
-async function exportPng(html: string, w: number, h: number, filename: string) {
-  return new Promise<void>((resolve, reject) => {
+async function exportPng(html: string, w: number, h: number, filename: string): Promise<string> {
+  return new Promise<string>((resolve, reject) => {
     const iframe = document.createElement('iframe')
     iframe.style.cssText = `position:fixed;left:-${w + 100}px;top:0;width:${w}px;height:${h}px;border:none;`
     document.body.appendChild(iframe)
@@ -610,7 +643,7 @@ async function exportPng(html: string, w: number, h: number, filename: string) {
         a.download = filename
         a.href = dataUrl
         a.click()
-        resolve()
+        resolve(dataUrl)
       } catch (err) {
         reject(err)
       } finally {
@@ -620,14 +653,67 @@ async function exportPng(html: string, w: number, h: number, filename: string) {
   })
 }
 
+// ---- Upload helper (data URL → Vercel Blob via /api/upload) ----
+async function uploadDataUrl(dataUrl: string, filename: string): Promise<string> {
+  const res = await fetch(dataUrl)
+  const blob = await res.blob()
+  const file = new File([blob], filename, { type: blob.type })
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('skipOptimize', 'true')
+  const uploadRes = await fetch('/api/upload', { method: 'POST', body: formData })
+  if (!uploadRes.ok) throw new Error('Error al subir imagen')
+  const data = await uploadRes.json()
+  return data.url as string
+}
+
+type DuplicateModal = {
+  existingId: string
+  existingVersion: number
+  fotoUrl: string
+  escudoUrl: string
+  imageUrl: string
+  state: GolState
+}
+
 // ---- Main component ----
 export default function PlacaGenerator() {
+  const searchParams = useSearchParams()
+  const golId = searchParams.get('golId')
+
   const [templateId, setTemplateId] = useState<TemplateId>('01')
   const [stateMap, setStateMap] = useState<Partial<Record<TemplateId, unknown>>>({
     '01': defaultGol(),
   })
   const [exporting, setExporting] = useState(false)
   const [previewKey, setPreviewKey] = useState(0)
+  const [savedNotification, setSavedNotification] = useState('')
+  const [duplicateModal, setDuplicateModal] = useState<DuplicateModal | null>(null)
+
+  // Load GolPlaca for editing (when golId query param is present)
+  useEffect(() => {
+    if (!golId) return
+    fetch(`/api/gol-placas/${golId}`)
+      .then(r => r.json())
+      .then(placa => {
+        if (!placa?.id) return
+        const golState: GolState = {
+          foto: placa.fotoUrl,
+          fotoPosX: placa.fotoPosX,
+          fotoPosY: placa.fotoPosY,
+          fotoScale: placa.fotoScale,
+          fondo: placa.fondo as GolState['fondo'],
+          franja: placa.franja as GolState['franja'],
+          escudo1: placa.escudoUrl,
+          playerName: placa.playerName,
+          clubId: placa.clubId,
+        }
+        setTemplateId('01')
+        setStateMap(prev => ({ ...prev, '01': golState }))
+        setPreviewKey(k => k + 1)
+      })
+      .catch(() => {})
+  }, [golId])
 
   const currentState = stateMap[templateId] ?? getDefault(templateId)
   const html = renderHtml(templateId, currentState)
@@ -645,19 +731,96 @@ export default function PlacaGenerator() {
     setPreviewKey(k => k + 1)
   }
 
+  async function saveGolToDb(
+    state: GolState,
+    fotoUrl: string, escudoUrl: string, imageUrl: string,
+    mode: 'create' | 'replace' | 'new-version',
+    existingId?: string,
+    existingVersion?: number,
+  ) {
+    if (mode === 'replace' && existingId) {
+      await fetch(`/api/gol-placas/${existingId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fotoUrl, escudoUrl, imageUrl, ...state }),
+      })
+    } else {
+      const version = mode === 'new-version' ? (existingVersion ?? 1) + 1 : 1
+      await fetch('/api/gol-placas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          playerName: state.playerName,
+          clubId: state.clubId,
+          fotoUrl, escudoUrl, imageUrl,
+          fotoPosX: state.fotoPosX, fotoPosY: state.fotoPosY, fotoScale: state.fotoScale,
+          fondo: state.fondo, franja: state.franja,
+          version,
+        }),
+      })
+    }
+    setSavedNotification('Placa guardada en la biblioteca.')
+    setTimeout(() => setSavedNotification(''), 4000)
+  }
+
   const handleExport = useCallback(async () => {
     setExporting(true)
     try {
       const tpl = TEMPLATE_LIST.find(t => t.id === templateId)!
       const filename = `dupla-${tpl.id}-${tpl.label.toLowerCase().replace(/\s+/g, '-')}.png`
-      await exportPng(html, w, h, filename)
+      const pngDataUrl = await exportPng(html, w, h, filename)
+
+      // Save Gol placa when club is selected and photo is loaded
+      if (templateId === '01') {
+        const golState = currentState as GolState
+        if (golState.clubId && golState.foto) {
+          try {
+            // Upload foto (data URL → Blob) or keep if already a URL
+            const fotoUrl = golState.foto.startsWith('data:')
+              ? await uploadDataUrl(golState.foto, 'foto.jpg')
+              : golState.foto
+            // Upload escudo if it's a data URL
+            const escudoUrl = golState.escudo1.startsWith('data:')
+              ? await uploadDataUrl(golState.escudo1, 'escudo.png')
+              : golState.escudo1
+            // Upload PNG
+            const imageUrl = await uploadDataUrl(pngDataUrl, 'gol-placa.png')
+
+            // Check for existing placa (same player + club)
+            const checkRes = await fetch(
+              `/api/gol-placas?clubId=${golState.clubId}&playerName=${encodeURIComponent(golState.playerName)}`
+            )
+            const existing: { id: string; version: number }[] = await checkRes.json()
+
+            if (existing.length > 0 && !golId) {
+              // Show duplicate modal
+              setDuplicateModal({
+                existingId: existing[0].id,
+                existingVersion: existing[0].version,
+                fotoUrl, escudoUrl, imageUrl,
+                state: golState,
+              })
+            } else if (golId) {
+              // Editing an existing placa → replace directly
+              await saveGolToDb(golState, fotoUrl, escudoUrl, imageUrl, 'replace', golId)
+            } else {
+              // No duplicate → save automatically
+              await saveGolToDb(golState, fotoUrl, escudoUrl, imageUrl, 'create')
+            }
+          } catch (saveErr) {
+            console.warn('Error al guardar en biblioteca:', saveErr)
+            // Don't block the download for save errors
+          }
+        }
+      }
     } catch (e) {
       console.error('Export error:', e)
       alert('Error al exportar. Intentá de nuevo.')
     } finally {
       setExporting(false)
     }
-  }, [html, w, h, templateId])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [html, w, h, templateId, currentState, golId])
 
   const previewScale = w === 1170 ? 0.4 : 0.38
 
@@ -685,6 +848,57 @@ export default function PlacaGenerator() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Saved notification */}
+      {savedNotification && (
+        <div className="fixed top-4 right-4 z-50 bg-green-600 text-white text-sm px-4 py-2 rounded-lg shadow-lg">
+          {savedNotification}
+        </div>
+      )}
+
+      {/* Duplicate modal */}
+      {duplicateModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full mx-4 space-y-4">
+            <h3 className="font-bold text-sm">Ya existe una placa para este jugador</h3>
+            <p className="text-sm text-gray-600">
+              Ya hay una placa de <strong>{duplicateModal.state.playerName}</strong> en este club. ¿Qué querés hacer?
+            </p>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={async () => {
+                  await saveGolToDb(
+                    duplicateModal.state, duplicateModal.fotoUrl, duplicateModal.escudoUrl, duplicateModal.imageUrl,
+                    'replace', duplicateModal.existingId
+                  )
+                  setDuplicateModal(null)
+                }}
+                className="w-full py-2 bg-[#0B1631] text-white text-sm rounded-lg hover:bg-gray-800"
+              >
+                Reemplazar la placa existente
+              </button>
+              <button
+                onClick={async () => {
+                  await saveGolToDb(
+                    duplicateModal.state, duplicateModal.fotoUrl, duplicateModal.escudoUrl, duplicateModal.imageUrl,
+                    'new-version', duplicateModal.existingId, duplicateModal.existingVersion
+                  )
+                  setDuplicateModal(null)
+                }}
+                className="w-full py-2 border border-[#0B1631] text-[#0B1631] text-sm rounded-lg hover:bg-gray-50"
+              >
+                Guardar como versión {duplicateModal.existingVersion + 1}
+              </button>
+              <button
+                onClick={() => setDuplicateModal(null)}
+                className="w-full py-2 text-gray-400 text-sm hover:text-gray-600"
+              >
+                No guardar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Template selector */}
       <div className="bg-white border-b px-4 py-2 flex gap-1.5 overflow-x-auto">
         {TEMPLATE_LIST.map(t => (

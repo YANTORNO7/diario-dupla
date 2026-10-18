@@ -12,7 +12,7 @@ const commonNegro = { ...common, fondo: 'negro' as const }
 function uid() { return Math.random().toString(36).slice(2, 8) }
 
 export function defaultGol(): GolState {
-  return { ...common, escudo1: '', playerName: 'NOMBRE DEL JUGADOR' }
+  return { ...common, escudo1: '', playerName: 'NOMBRE DEL JUGADOR', clubId: '' }
 }
 export function defaultResultado(): ResultadoState {
   return {

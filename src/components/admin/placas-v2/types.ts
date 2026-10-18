@@ -38,7 +38,7 @@ export type TableRow = {
 
 // ---- Per-template states ----
 
-export type GolState = CommonFields & { escudo1: string; playerName: string }
+export type GolState = CommonFields & { escudo1: string; playerName: string; clubId: string }
 
 export type ResultadoState = CommonFields & {
   escudo1: string; escudo2: string

@@ -18,6 +18,7 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   articles  Article[]
+  golPlacas GolPlaca[]
 
   @@map("users")
 }
@@ -96,9 +97,34 @@ model Club {
   crestUrl       String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+  golPlacas      GolPlaca[]
 
   @@unique([name, league])
   @@map("clubs")
+}
+
+model GolPlaca {
+  id         String   @id @default(cuid())
+  playerName String
+  clubId     String
+  club       Club     @relation(fields: [clubId], references: [id])
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  fotoUrl    String
+  fotoPosX   Float    @default(50)
+  fotoPosY   Float    @default(50)
+  fotoScale  Float    @default(1)
+  escudoUrl  String
+  fondo      String   @default("azul")
+  franja     String   @default("4")
+  imageUrl   String
+  version    Int      @default(1)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([clubId])
+  @@index([userId])
+  @@map("gol_placas")
 }
 
 model Image {

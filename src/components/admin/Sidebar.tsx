@@ -16,6 +16,7 @@ export default function AdminSidebar() {
     { href: "/admin/articulos/nuevo", label: "Nuevo artículo", adminOnly: false },
     { href: "/admin/clubes", label: "Clubes", adminOnly: false },
     { href: "/admin/placas", label: "Placas IG", adminOnly: false },
+    { href: "/admin/goles", label: "Goles", adminOnly: false },
     { href: "/admin/pendientes", label: "Pendientes", adminOnly: true },
     { href: "/admin/estadisticas", label: "Estadísticas", adminOnly: true },
     { href: "/admin/usuarios", label: "Usuarios", adminOnly: true },
@@ -58,7 +59,7 @@ export default function AdminSidebar() {
                 href={link.href}
                 onClick={() => setOpen(false)}
                 className={`block px-3 py-2 rounded-md text-sm font-cuerpo transition-colors ${
-                  pathname === link.href
+                  pathname === link.href || (link.href !== '/admin' && pathname.startsWith(link.href + '/'))
                     ? "bg-white/10 text-white"
                     : "text-gray-300 hover:bg-white/5 hover:text-white"
                 }`}
