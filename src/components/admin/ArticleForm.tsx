@@ -163,23 +163,25 @@ export default function ArticleForm({
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1 font-cuerpo">Autor</label>
-        {userRole === "ADMIN" && users.length > 0 ? (
+        <input value={author} onChange={(e) => setAuthor(e.target.value)} placeholder="Nombre del autor"
+          className="w-full px-3 py-2 border rounded-md font-cuerpo focus:outline-none focus:ring-2 focus:ring-[#111111]" />
+        {userRole === "ADMIN" && users.length > 0 && (
           <select
-            value={selectedAuthorId}
+            value={selectedAuthorId || ""}
             onChange={(e) => {
               setSelectedAuthorId(e.target.value)
-              const u = users.find(u => u.id === e.target.value)
-              if (u) setAuthor(u.name)
+              if (e.target.value) {
+                const u = users.find(u => u.id === e.target.value)
+                if (u) setAuthor(u.name)
+              }
             }}
-            className="w-full px-3 py-2 border rounded-md font-cuerpo focus:outline-none focus:ring-2 focus:ring-[#111111]"
+            className="mt-1 w-full px-3 py-2 border rounded-md font-cuerpo text-sm text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#111111]"
           >
+            <option value="">— Asignar a colaborador —</option>
             {users.map(u => (
               <option key={u.id} value={u.id}>{u.name}</option>
             ))}
           </select>
-        ) : (
-          <input value={author} onChange={(e) => setAuthor(e.target.value)} placeholder="Nombre del autor"
-            className="w-full px-3 py-2 border rounded-md font-cuerpo focus:outline-none focus:ring-2 focus:ring-[#111111]" />
         )}
       </div>
 
