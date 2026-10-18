@@ -18,7 +18,13 @@ async function main() {
     })
     console.log(`Usuario admin "${username}" creado con éxito.`)
   } else {
-    console.log(`El usuario "${username}" ya existe.`)
+    // Always keep admin name in sync with env var
+    if (existing.name !== name) {
+      await prisma.user.update({ where: { username }, data: { name } })
+      console.log(`Admin "${username}" actualizado: "${existing.name}" → "${name}"`)
+    } else {
+      console.log(`El usuario "${username}" ya existe.`)
+    }
   }
 
   // --- Colaboradores (EDITOR) ---
@@ -37,7 +43,13 @@ async function main() {
       })
       console.log(`Colaborador "${colab.username}" creado.`)
     } else {
-      console.log(`Colaborador "${colab.email}" ya existe.`)
+      // Always keep collaborator names correct
+      if (existingColab.name !== colab.name) {
+        await prisma.user.update({ where: { email: colab.email }, data: { name: colab.name } })
+        console.log(`Colaborador "${colab.email}" actualizado: "${existingColab.name}" → "${colab.name}"`)
+      } else {
+        console.log(`Colaborador "${colab.email}" ya existe.`)
+      }
     }
   }
 
