@@ -218,19 +218,19 @@ ${logo(d.fondo)}
 <div style="position: absolute; left: 640px; top: 90px; width: 4px; height: 1160px; background: #F2B632"></div>
 <div style="position: absolute; left: 680px; top: 90px; width: 360px; display: flex; flex-direction: column">
 <div style="font-size: 16px; font-weight: 800; letter-spacing: 3px; color: #F2B632">${d.category}</div>
-<div style="font-family: 'Bebas Neue', sans-serif; font-size: 112px; line-height: 0.88; margin-top: 10px">CARA<br>A CARA</div>
+<div style="font-family: 'Bebas Neue', sans-serif; font-size: 96px; line-height: 0.92; margin-top: 10px; white-space: nowrap">CARA<br>A CARA</div>
 <div style="font-size: 17px; font-weight: 600; letter-spacing: 2px; color: #B8BCC4; margin-top: 14px">${d.historialTitle}</div>
-<div style="margin-top: 30px; display: flex; flex-direction: column">
-${d.stats.map(s => `<div style="display: flex; align-items: center; gap: 20px; padding: 8px 0; border-bottom: 2px solid rgba(255,255,255,0.25)">
-<div style="font-family: 'Bebas Neue', sans-serif; font-size: 76px; line-height: 0.9; color: #F2B632; width: 100px">${s.value}</div>
-<div style="font-size: 19px; font-weight: 800; letter-spacing: 2px; white-space: nowrap">${s.label}</div>
+<div style="margin-top: 24px; display: flex; flex-direction: column">
+${d.stats.map(s => `<div style="display: flex; align-items: center; gap: 16px; padding: 7px 0; border-bottom: 2px solid rgba(255,255,255,0.25)">
+<div style="font-family: 'Bebas Neue', sans-serif; font-size: 66px; line-height: 0.9; color: #F2B632; width: 90px">${s.value}</div>
+<div style="font-size: 18px; font-weight: 800; letter-spacing: 2px; white-space: nowrap">${s.label}</div>
 </div>`).join('')}
 </div>
-<div style="margin-top: 34px; font-size: 16px; font-weight: 800; letter-spacing: 3px; color: #F2B632">${d.recentTitle}</div>
+<div style="margin-top: 28px; font-size: 16px; font-weight: 800; letter-spacing: 3px; color: #F2B632">${d.recentTitle}</div>
 <div style="margin-top: 8px; display: flex; flex-direction: column">
-${d.recentMatches.map(m => `<div style="display: flex; flex-direction: column; gap: 3px; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,0.2)">
-<div style="font-family: 'Bebas Neue', sans-serif; font-size: 30px; line-height: 1">${m.result}</div>
-<div style="font-size: 14px; font-weight: 600; color: #B8BCC4">${m.competition}</div>
+${d.recentMatches.map(m => `<div style="display: flex; flex-direction: column; gap: 2px; padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.2)">
+<div style="font-family: 'Bebas Neue', sans-serif; font-size: 27px; line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">${m.result}</div>
+<div style="font-size: 13px; font-weight: 600; color: #B8BCC4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">${m.competition}</div>
 </div>`).join('')}
 </div>
 <div style="margin-top: 12px; font-size: 15px; color: #B8BCC4">${d.note}</div>
