@@ -60,11 +60,14 @@ export default function GolClubPage({ params }: { params: Promise<{ clubId: stri
     setDeleting(null)
   }
 
-  function downloadPlaca(placa: GolPlaca) {
+  async function downloadPlaca(placa: GolPlaca) {
+    const blob = await fetch(placa.imageUrl).then(r => r.blob())
+    const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
-    a.href = placa.imageUrl
+    a.href = url
     a.download = `gol-${placa.playerName.toLowerCase().replace(/\s+/g, '-')}-v${placa.version}.png`
     a.click()
+    URL.revokeObjectURL(url)
   }
 
   return (
