@@ -40,7 +40,7 @@ export default async function EditArticlePage({
   })
 
   const users = userRole === "ADMIN"
-    ? await prisma.user.findMany({ select: { id: true, name: true }, orderBy: { name: "asc" } })
+    ? await prisma.user.findMany({ where: { role: "EDITOR" }, select: { id: true, name: true }, orderBy: { name: "asc" } })
     : []
 
   return (
