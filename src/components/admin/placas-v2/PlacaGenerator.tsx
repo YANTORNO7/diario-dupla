@@ -627,10 +627,10 @@ function getDimensions(id: TemplateId): [number, number] {
   return id === '10' ? [1170, 658] : [1080, 1350]
 }
 
-// ---- Fetch a URL and return as base64 data URI ----
+// ---- Fetch a URL as base64 data URI via server-side proxy (avoids CORS) ----
 async function toDataUri(url: string): Promise<string> {
-  const res = await fetch(url, { mode: 'cors' })
-  if (!res.ok) throw new Error(`${res.status}`)
+  const res = await fetch(`/api/proxy-image?url=${encodeURIComponent(url)}`)
+  if (!res.ok) throw new Error(`proxy ${res.status}`)
   const blob = await res.blob()
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader()
@@ -704,13 +704,13 @@ async function downloadOrShare(dataUrl: string, filename: string) {
 
 // ---- Export function ----
 async function exportPng(html: string, w: number, h: number): Promise<string> {
-  // Inline external https:// images (CORS) but let fonts load normally from CDN.
-  // The iframe is scaled to ~0 visually but still painted, so the browser loads
-  // Google Fonts. Off-screen (negative left) iframes are not painted → fonts skip.
-  const inlinedHtml = await inlineImages(html)
+  // Images via server proxy (no CORS tainted canvas) + fonts inlined as base64.
+  // opacity:0 → iframe is invisible but painted at full dimensions.
+  // (scale(0.001) broke getBoundingClientRect → toPng saw zero-size element → error)
+  const inlinedHtml = await inlineFonts(await inlineImages(html))
   return new Promise<string>((resolve, reject) => {
     const iframe = document.createElement('iframe')
-    iframe.style.cssText = `position:fixed;left:0;top:0;width:${w}px;height:${h}px;border:none;transform:scale(0.001);transform-origin:top left;pointer-events:none;`
+    iframe.style.cssText = `position:fixed;left:0;top:0;width:${w}px;height:${h}px;border:none;opacity:0;pointer-events:none;`
     document.body.appendChild(iframe)
     iframe.srcdoc = inlinedHtml
     iframe.onload = async () => {
