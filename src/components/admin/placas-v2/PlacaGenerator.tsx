@@ -677,26 +677,17 @@ async function inlineImages(html: string): Promise<string> {
 }
 
 // ---- Inline Google Fonts as base64 so srcdoc iframe doesn't need network ----
-// The Google Fonts CSS API does NOT serve CORS headers for JS fetch() requests
-// (it's designed for <link> tags only). We route it through the server-side proxy
-// which has no CORS restrictions, so the CSS is always reachable.
+// Uses /api/font-embed which fetches + embeds fonts entirely server-side.
+// html-to-image cannot read cross-origin @font-face rules, so fonts must live
+// in a same-origin <style> tag with data URI sources before toPng is called.
 async function inlineFonts(html: string): Promise<string> {
   const linkMatch = html.match(/<link[^>]+fonts\.googleapis\.com\/css[^>]+>/)
   if (!linkMatch) return html
-  const hrefMatch = linkMatch[0].match(/href="([^"]+)"/)
-  if (!hrefMatch) return html
   try {
-    // Proxy the CSS fetch server-side to avoid CORS restriction
-    const cssRes = await fetch(`/api/proxy-image?url=${encodeURIComponent(hrefMatch[1])}`)
-    if (!cssRes.ok) return html
-    let css = await cssRes.text()
-    const fontUrls = [...new Set([...css.matchAll(/url\((https:\/\/[^)]+)\)/g)].map(m => m[1]))]
-    const encoded = await Promise.all(
-      fontUrls.map(async (url): Promise<[string, string]> => {
-        try { return [url, await toDataUri(url)] } catch { return [url, url] }
-      })
-    )
-    for (const [url, dataUri] of encoded) css = css.replaceAll(url, dataUri)
+    const res = await fetch('/api/font-embed')
+    if (!res.ok) return html
+    const css = await res.text()
+    if (!css || css.startsWith('/* font-embed:')) return html
     return html
       .replace(/<link[^>]+preconnect[^>]+>\n?/g, '')
       .replace(linkMatch[0], `<style>${css}</style>`)
