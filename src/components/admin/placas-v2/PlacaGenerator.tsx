@@ -712,9 +712,17 @@ async function exportPng(html: string, w: number, h: number): Promise<string> {
     iframe.srcdoc = inlinedHtml
     iframe.onload = async () => {
       try {
-        await (iframe.contentDocument as Document).fonts.ready
-        await new Promise(r => setTimeout(r, 300))
-        const el = (iframe.contentDocument as Document).body.querySelector('div') as HTMLElement
+        const doc = iframe.contentDocument as Document
+        await doc.fonts.ready
+        // Wait for all images (including large data-URL photos) to fully render
+        const imgs = [...doc.querySelectorAll('img')]
+        await Promise.all(imgs.map(img =>
+          img.complete
+            ? Promise.resolve()
+            : new Promise<void>(res => { img.onload = () => res(); img.onerror = () => res() })
+        ))
+        await new Promise(r => setTimeout(r, 150))
+        const el = doc.body.querySelector('div') as HTMLElement
         const dataUrl = await toPng(el, { width: w, height: h, pixelRatio: 1 })
         resolve(dataUrl)
       } catch (err) {
