@@ -803,6 +803,7 @@ export default function PlacaGenerator() {
   const [savedNotification, setSavedNotification] = useState('')
   const [exportError, setExportError] = useState('')
   const [duplicateModal, setDuplicateModal] = useState<DuplicateModal | null>(null)
+  const [mobileTab, setMobileTab] = useState<'form' | 'preview'>('form')
 
   // Load GolPlaca for editing (when golId query param is present)
   useEffect(() => {
@@ -958,7 +959,8 @@ export default function PlacaGenerator() {
     const container = previewContainerRef.current
     if (!container) return
     const update = () => {
-      const availableW = container.clientWidth - 16
+      // clientWidth is 0 when hidden (mobile form tab) — fall back to window width
+      const availableW = (container.clientWidth > 0 ? container.clientWidth : window.innerWidth) - 32
       const maxScale = w === 1170 ? 0.45 : 0.5
       setPreviewScale(Math.min(availableW / w, maxScale))
     }
@@ -966,7 +968,7 @@ export default function PlacaGenerator() {
     const observer = new ResizeObserver(update)
     observer.observe(container)
     return () => observer.disconnect()
-  }, [w])
+  }, [w, mobileTab])
 
   function renderForm() {
     const props = { state: currentState, set: setState }
@@ -1050,12 +1052,12 @@ export default function PlacaGenerator() {
         </div>
       )}
 
-      {/* Template selector */}
-      <div className="bg-white border-b px-4 py-1.5 flex gap-1 overflow-x-auto">
+      {/* Template selector — pl-14 on mobile clears the fixed hamburger menu button */}
+      <div className="bg-white border-b pl-14 md:pl-4 pr-4 py-1.5 flex gap-1 overflow-x-auto">
         {TEMPLATE_LIST.map(t => (
           <button
             key={t.id}
-            onClick={() => setTemplate(t.id)}
+            onClick={() => { setTemplate(t.id); setMobileTab('form') }}
             className={`flex-shrink-0 flex flex-col items-center gap-0.5 px-3 py-2.5 rounded-lg text-xs font-medium transition-colors ${templateId === t.id ? 'bg-[#0B1631] text-white' : 'hover:bg-gray-100 text-gray-600'}`}
           >
             <span className="text-base leading-none">{t.emoji}</span>
@@ -1064,9 +1066,28 @@ export default function PlacaGenerator() {
         ))}
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-0 lg:gap-4 p-4">
-        {/* Preview panel — first on mobile, right on desktop */}
-        <div ref={previewContainerRef} className="order-first lg:order-last flex-1 flex flex-col items-center gap-2 w-full">
+      {/* Mobile tab switcher */}
+      <div className="md:hidden flex bg-white border-b sticky top-0 z-20">
+        <button
+          onClick={() => setMobileTab('form')}
+          className={`flex-1 py-3 text-sm font-semibold transition-colors ${mobileTab === 'form' ? 'text-[#0B1631] border-b-2 border-[#0B1631]' : 'text-gray-400'}`}
+        >
+          Editar
+        </button>
+        <button
+          onClick={() => setMobileTab('preview')}
+          className={`flex-1 py-3 text-sm font-semibold transition-colors ${mobileTab === 'preview' ? 'text-[#0B1631] border-b-2 border-[#0B1631]' : 'text-gray-400'}`}
+        >
+          Previa
+        </button>
+      </div>
+
+      <div className="md:flex md:flex-row md:gap-4 md:p-4">
+        {/* Preview panel — "Previa" tab on mobile, always visible on desktop */}
+        <div
+          ref={previewContainerRef}
+          className={`md:order-last md:flex-1 flex-col items-center gap-3 p-4 ${mobileTab === 'preview' ? 'flex' : 'hidden md:flex'}`}
+        >
           <p className="text-xs text-gray-400">{w}×{h}px — vista previa</p>
           <div
             style={{
@@ -1101,31 +1122,41 @@ export default function PlacaGenerator() {
             >
               Refrescar
             </button>
-            {/* Export button below preview — only on mobile */}
+            {/* Download button on mobile preview tab */}
             <button
               onClick={handleExport}
               disabled={exporting}
-              className="lg:hidden flex-1 py-3 bg-[#F2B632] text-[#0B1631] font-bold text-base rounded-xl hover:bg-yellow-400 disabled:opacity-50 transition-colors"
+              className="md:hidden flex-1 py-3 bg-[#F2B632] text-[#0B1631] font-bold text-base rounded-xl hover:bg-yellow-400 disabled:opacity-50 transition-colors"
             >
               {exporting ? 'Exportando…' : 'Descargar PNG'}
             </button>
           </div>
         </div>
 
-        {/* Form panel — second on mobile (below preview), left on desktop */}
-        <div className="order-last lg:order-first w-full lg:w-96 lg:flex-shrink-0 bg-white rounded-xl shadow-sm border p-4 space-y-4 lg:overflow-y-auto lg:max-h-[calc(100vh-160px)] mt-4 lg:mt-0">
-          <div className="flex items-center justify-between">
-            <h2 className="font-bold text-sm">{currentTpl.emoji} {currentTpl.label}</h2>
-            {/* Export button in header — only on desktop */}
+        {/* Form panel — "Editar" tab on mobile, always visible on desktop */}
+        <div className={`md:order-first md:w-96 md:flex-shrink-0 bg-white md:rounded-xl md:shadow-sm md:border md:overflow-y-auto md:max-h-[calc(100vh-160px)] ${mobileTab === 'form' ? 'block' : 'hidden md:block'}`}>
+          <div className="p-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="font-bold text-sm">{currentTpl.emoji} {currentTpl.label}</h2>
+              {/* Download button in header — desktop only */}
+              <button
+                onClick={handleExport}
+                disabled={exporting}
+                className="hidden md:block px-4 py-1.5 bg-[#F2B632] text-[#0B1631] font-bold text-sm rounded-lg hover:bg-yellow-400 disabled:opacity-50 transition-colors"
+              >
+                {exporting ? 'Exportando…' : 'Descargar PNG'}
+              </button>
+            </div>
+            {renderForm()}
+            {/* Download button at bottom of form — mobile only */}
             <button
               onClick={handleExport}
               disabled={exporting}
-              className="hidden lg:block px-4 py-1.5 bg-[#F2B632] text-[#0B1631] font-bold text-sm rounded-lg hover:bg-yellow-400 disabled:opacity-50 transition-colors"
+              className="md:hidden w-full py-4 bg-[#F2B632] text-[#0B1631] font-bold text-base rounded-xl hover:bg-yellow-400 disabled:opacity-50 transition-colors"
             >
               {exporting ? 'Exportando…' : 'Descargar PNG'}
             </button>
           </div>
-          {renderForm()}
         </div>
       </div>
     </div>
