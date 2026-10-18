@@ -959,10 +959,14 @@ export default function PlacaGenerator() {
     const container = previewContainerRef.current
     if (!container) return
     const update = () => {
-      // clientWidth is 0 when hidden (mobile form tab) — fall back to window width
-      const availableW = (container.clientWidth > 0 ? container.clientWidth : window.innerWidth) - 32
-      const maxScale = w === 1170 ? 0.45 : 0.5
-      setPreviewScale(Math.min(availableW / w, maxScale))
+      const isMobile = window.innerWidth < 768
+      const containerW = container.clientWidth > 0 ? container.clientWidth : window.innerWidth
+      const availableW = containerW - 32
+      const scaleByW = availableW / w
+      // On mobile cap height to 260px so preview stays compact
+      const scaleByH = isMobile ? 260 / h : 1
+      const hardMax = w === 1170 ? 0.45 : 0.5
+      setPreviewScale(Math.min(scaleByW, scaleByH, hardMax))
     }
     update()
     const observer = new ResizeObserver(update)
