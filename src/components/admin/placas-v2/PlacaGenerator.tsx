@@ -704,12 +704,13 @@ async function downloadOrShare(dataUrl: string, filename: string) {
 
 // ---- Export function ----
 async function exportPng(html: string, w: number, h: number): Promise<string> {
-  // Images via server proxy (no CORS tainted canvas) + fonts inlined as base64.
-  // opacity:0 → iframe is invisible but painted at full dimensions.
-  // (scale(0.001) broke getBoundingClientRect → toPng saw zero-size element → error)
-  const inlinedHtml = await inlineFonts(await inlineImages(html))
+  // Pre-inline external images via server proxy → no tainted canvas in toPng.
+  // Fonts: let html-to-image fetch them from CDN internally (no pre-inlining
+  // needed since the iframe is painted at opacity:0 and fonts load normally).
+  const inlinedHtml = await inlineImages(html)
   return new Promise<string>((resolve, reject) => {
     const iframe = document.createElement('iframe')
+    // opacity:0 → invisible but rendered at correct dimensions for toPng
     iframe.style.cssText = `position:fixed;left:0;top:0;width:${w}px;height:${h}px;border:none;opacity:0;pointer-events:none;`
     document.body.appendChild(iframe)
     iframe.srcdoc = inlinedHtml
@@ -772,6 +773,7 @@ export default function PlacaGenerator() {
   const [exporting, setExporting] = useState(false)
   const [previewKey, setPreviewKey] = useState(0)
   const [savedNotification, setSavedNotification] = useState('')
+  const [exportError, setExportError] = useState('')
   const [duplicateModal, setDuplicateModal] = useState<DuplicateModal | null>(null)
 
   // Load GolPlaca for editing (when golId query param is present)
@@ -900,7 +902,9 @@ export default function PlacaGenerator() {
       }
     } catch (e) {
       console.error('Export error:', e)
-      alert('Error al exportar. Intentá de nuevo.')
+      const msg = e instanceof Error ? e.message : String(e)
+      setExportError(msg)
+      setTimeout(() => setExportError(''), 8000)
     } finally {
       setExporting(false)
     }
@@ -952,6 +956,13 @@ export default function PlacaGenerator() {
       {savedNotification && (
         <div className="fixed top-4 right-4 z-50 bg-green-600 text-white text-sm px-4 py-2 rounded-lg shadow-lg">
           {savedNotification}
+        </div>
+      )}
+      {/* Export error */}
+      {exportError && (
+        <div className="fixed top-4 right-4 z-50 bg-red-600 text-white text-xs px-4 py-3 rounded-lg shadow-lg max-w-xs">
+          <strong className="block mb-1">Error al exportar:</strong>
+          {exportError}
         </div>
       )}
 

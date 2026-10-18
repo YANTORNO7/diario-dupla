@@ -1,10 +1,7 @@
 import { NextResponse } from "next/server"
-import { requireAuthAPI } from "@/lib/auth-guard"
 
+// Public images proxy — no auth needed (only fetches public HTTPS URLs)
 export async function GET(request: Request) {
-  const auth = await requireAuthAPI()
-  if (auth instanceof NextResponse) return auth
-
   const { searchParams } = new URL(request.url)
   const url = searchParams.get("url")
 
