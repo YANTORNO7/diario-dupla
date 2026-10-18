@@ -677,13 +677,17 @@ async function inlineImages(html: string): Promise<string> {
 }
 
 // ---- Inline Google Fonts as base64 so srcdoc iframe doesn't need network ----
+// The Google Fonts CSS API does NOT serve CORS headers for JS fetch() requests
+// (it's designed for <link> tags only). We route it through the server-side proxy
+// which has no CORS restrictions, so the CSS is always reachable.
 async function inlineFonts(html: string): Promise<string> {
   const linkMatch = html.match(/<link[^>]+fonts\.googleapis\.com\/css[^>]+>/)
   if (!linkMatch) return html
   const hrefMatch = linkMatch[0].match(/href="([^"]+)"/)
   if (!hrefMatch) return html
   try {
-    const cssRes = await fetch(hrefMatch[1])
+    // Proxy the CSS fetch server-side to avoid CORS restriction
+    const cssRes = await fetch(`/api/proxy-image?url=${encodeURIComponent(hrefMatch[1])}`)
     if (!cssRes.ok) return html
     let css = await cssRes.text()
     const fontUrls = [...new Set([...css.matchAll(/url\((https:\/\/[^)]+)\)/g)].map(m => m[1]))]

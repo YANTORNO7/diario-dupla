@@ -10,9 +10,11 @@ export async function GET(request: Request) {
   }
 
   try {
-    const res = await fetch(url, {
-      headers: { "User-Agent": "Mozilla/5.0 DiarioDupla/1.0 ImageProxy" },
-    })
+    // Use a Chrome UA so Google Fonts CSS returns WOFF2 format
+    const ua = url.includes("fonts.googleapis.com")
+      ? "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+      : "Mozilla/5.0 DiarioDupla/1.0 ImageProxy"
+    const res = await fetch(url, { headers: { "User-Agent": ua } })
     if (!res.ok) {
       return NextResponse.json({ error: `upstream ${res.status}` }, { status: 502 })
     }
