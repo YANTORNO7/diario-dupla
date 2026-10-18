@@ -743,12 +743,11 @@ async function exportPng(html: string, w: number, h: number): Promise<string> {
         const doc = iframe.contentDocument as Document
         await doc.fonts.ready
         const imgs = [...doc.querySelectorAll('img')]
-        await Promise.all(imgs.map(img =>
-          img.complete
-            ? Promise.resolve()
-            : new Promise<void>(res => { img.onload = () => res(); img.onerror = () => res() })
-        ))
-        await new Promise(r => setTimeout(r, 300))
+        // Use img.decode() to wait for full decode (not just complete flag).
+        // data: URLs from large iPhone photos report complete=true before
+        // the pixels are available, causing toPng to capture a blank photo.
+        await Promise.all(imgs.map(img => img.decode().catch(() => {})))
+        await new Promise(r => setTimeout(r, 500))
         const el = doc.body.querySelector('div') as HTMLElement
         const dataUrl = await toPng(el, {
           width: w,
