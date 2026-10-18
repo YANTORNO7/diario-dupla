@@ -958,13 +958,9 @@ export default function PlacaGenerator() {
     const container = previewContainerRef.current
     if (!container) return
     const update = () => {
-      if (window.innerWidth < 768) {
-        // Mobile: fix preview to 200px on its longest side
-        setPreviewScale(200 / Math.max(w, h))
-        return
-      }
-      const containerW = container.clientWidth > 0 ? container.clientWidth : window.innerWidth
-      const availableW = containerW - 32
+      const containerW = container.clientWidth
+      if (!containerW) return
+      const availableW = containerW - 16
       const scaleByW = availableW / w
       const hardMax = w === 1170 ? 0.45 : 0.5
       setPreviewScale(Math.min(scaleByW, hardMax))
@@ -972,8 +968,7 @@ export default function PlacaGenerator() {
     update()
     const observer = new ResizeObserver(update)
     observer.observe(container)
-    window.addEventListener('resize', update)
-    return () => { observer.disconnect(); window.removeEventListener('resize', update) }
+    return () => observer.disconnect()
   }, [w])
 
   function renderForm() {
@@ -1072,13 +1067,12 @@ export default function PlacaGenerator() {
         ))}
       </div>
 
-      <div className="md:flex md:flex-row md:gap-4 md:p-4 pb-20 md:pb-0">
-        {/* Form panel — full width on mobile (top), left panel on desktop */}
-        <div className="md:order-first md:w-96 md:flex-shrink-0 bg-white md:rounded-xl md:shadow-sm md:border md:overflow-y-auto md:max-h-[calc(100vh-160px)]">
-          <div className="p-4 space-y-4">
+      <div className="flex gap-2 md:gap-4 md:p-4 pb-20 md:pb-0">
+        {/* Form panel — left column, scrollable */}
+        <div className="basis-[58%] shrink-0 md:basis-auto md:w-96 md:flex-none bg-white md:rounded-xl md:shadow-sm md:border overflow-y-auto max-h-[calc(100vh-108px)] md:max-h-[calc(100vh-160px)]">
+          <div className="p-3 md:p-4 space-y-3 md:space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="font-bold text-sm">{currentTpl.emoji} {currentTpl.label}</h2>
-              {/* Download button in header — desktop only */}
+              <h2 className="font-bold text-xs md:text-sm">{currentTpl.emoji} {currentTpl.label}</h2>
               <button
                 onClick={handleExport}
                 disabled={exporting}
@@ -1091,20 +1085,21 @@ export default function PlacaGenerator() {
           </div>
         </div>
 
-        {/* Preview panel — compact strip below form on mobile, right panel on desktop */}
+        {/* Preview panel — right column, sticky */}
         <div
           ref={previewContainerRef}
-          className="md:order-last md:flex-1 flex flex-col items-center gap-2 p-3 md:gap-3 md:p-4"
+          className="flex-1 min-w-0 flex flex-col items-center gap-2 p-2 md:gap-3 md:p-4 sticky top-0 self-start"
         >
-          <p className="text-xs text-gray-400 hidden md:block">{w}×{h}px — vista previa</p>
+          <p className="hidden md:block text-xs text-gray-400">{w}×{h}px — vista previa</p>
           <div
             style={{
               width: Math.round(w * previewScale),
               height: Math.round(h * previewScale),
               overflow: 'hidden',
               position: 'relative',
-              borderRadius: 8,
-              boxShadow: '0 4px 24px rgba(0,0,0,0.18)',
+              borderRadius: 6,
+              boxShadow: '0 2px 12px rgba(0,0,0,0.2)',
+              flexShrink: 0,
             }}
           >
             <iframe
