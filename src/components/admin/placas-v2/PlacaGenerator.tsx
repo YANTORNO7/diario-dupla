@@ -627,6 +627,19 @@ function getDimensions(id: TemplateId): [number, number] {
   return id === '10' ? [1170, 658] : [1080, 1350]
 }
 
+// ---- Fetch a URL and return as base64 data URI ----
+async function toDataUri(url: string): Promise<string> {
+  const res = await fetch(url, { mode: 'cors' })
+  if (!res.ok) throw new Error(`${res.status}`)
+  const blob = await res.blob()
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = reject
+    reader.readAsDataURL(blob)
+  })
+}
+
 // ---- Inline external images as base64 to avoid CORS issues in html-to-image ----
 async function inlineImages(html: string): Promise<string> {
   const regex = /src="(https?:\/\/[^"]+)"/g
@@ -634,19 +647,7 @@ async function inlineImages(html: string): Promise<string> {
   if (!urls.length) return html
   const replacements = await Promise.all(
     urls.map(async (url): Promise<[string, string]> => {
-      try {
-        const res = await fetch(url, { mode: 'cors' })
-        if (!res.ok) return [url, url]
-        const blob = await res.blob()
-        return new Promise<[string, string]>(resolve => {
-          const reader = new FileReader()
-          reader.onload = () => resolve([url, reader.result as string])
-          reader.onerror = () => resolve([url, url])
-          reader.readAsDataURL(blob)
-        })
-      } catch {
-        return [url, url]
-      }
+      try { return [url, await toDataUri(url)] } catch { return [url, url] }
     })
   )
   let result = html
@@ -654,6 +655,29 @@ async function inlineImages(html: string): Promise<string> {
     result = result.replaceAll(`src="${url}"`, `src="${dataUrl}"`)
   }
   return result
+}
+
+// ---- Inline Google Fonts as base64 so srcdoc iframe doesn't need network ----
+async function inlineFonts(html: string): Promise<string> {
+  const linkMatch = html.match(/<link[^>]+fonts\.googleapis\.com\/css[^>]+>/)
+  if (!linkMatch) return html
+  const hrefMatch = linkMatch[0].match(/href="([^"]+)"/)
+  if (!hrefMatch) return html
+  try {
+    const cssRes = await fetch(hrefMatch[1])
+    if (!cssRes.ok) return html
+    let css = await cssRes.text()
+    const fontUrls = [...new Set([...css.matchAll(/url\((https:\/\/[^)]+)\)/g)].map(m => m[1]))]
+    const encoded = await Promise.all(
+      fontUrls.map(async (url): Promise<[string, string]> => {
+        try { return [url, await toDataUri(url)] } catch { return [url, url] }
+      })
+    )
+    for (const [url, dataUri] of encoded) css = css.replaceAll(url, dataUri)
+    return html
+      .replace(/<link[^>]+preconnect[^>]+>\n?/g, '')
+      .replace(linkMatch[0], `<style>${css}</style>`)
+  } catch { return html }
 }
 
 // ---- Download on desktop, Web Share on mobile ----
@@ -680,7 +704,7 @@ async function downloadOrShare(dataUrl: string, filename: string) {
 
 // ---- Export function ----
 async function exportPng(html: string, w: number, h: number): Promise<string> {
-  const inlinedHtml = await inlineImages(html)
+  const inlinedHtml = await inlineFonts(await inlineImages(html))
   return new Promise<string>((resolve, reject) => {
     const iframe = document.createElement('iframe')
     iframe.style.cssText = `position:fixed;left:-${w + 100}px;top:0;width:${w}px;height:${h}px;border:none;`
