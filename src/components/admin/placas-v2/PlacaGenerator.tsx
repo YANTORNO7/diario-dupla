@@ -702,12 +702,48 @@ async function downloadOrShare(dataUrl: string, filename: string) {
   a.click()
 }
 
+// ---- Shrink large data-URL images before export ----
+// iPhone photos can be 4-8MB base64. When html-to-image wraps the element in
+// SVG foreignObject and turns that SVG into a data URL for an <img>, browsers
+// reject data URLs over ~2MB → blank canvas → export error.
+// We resize any data-URL image wider/taller than 1200px down to 1200px.
+async function shrinkLargeDataUrls(html: string): Promise<string> {
+  const regex = /src="(data:image\/[^"]{150000,})"/g
+  const urls = [...new Set([...html.matchAll(regex)].map(m => m[1]))]
+  if (!urls.length) return html
+  const shrunk = await Promise.all(urls.map(async url => {
+    try {
+      const small = await new Promise<string>(resolve => {
+        const img = new Image()
+        img.onload = () => {
+          const MAX = 1200
+          if (Math.max(img.naturalWidth, img.naturalHeight) <= MAX) { resolve(url); return }
+          const scale = MAX / Math.max(img.naturalWidth, img.naturalHeight)
+          const c = document.createElement('canvas')
+          c.width = Math.round(img.naturalWidth * scale)
+          c.height = Math.round(img.naturalHeight * scale)
+          const ctx = c.getContext('2d')!
+          ctx.drawImage(img, 0, 0, c.width, c.height)
+          resolve(c.toDataURL('image/jpeg', 0.9))
+        }
+        img.onerror = () => resolve(url)
+        img.src = url
+      })
+      return [url, small] as [string, string]
+    } catch { return [url, url] as [string, string] }
+  }))
+  let result = html
+  for (const [orig, small] of shrunk) {
+    if (orig !== small) result = result.split(`src="${orig}"`).join(`src="${small}"`)
+  }
+  return result
+}
+
 // ---- Export function ----
 async function exportPng(html: string, w: number, h: number): Promise<string> {
-  // Pre-inline external images via server proxy → no tainted canvas in toPng.
-  // Fonts: let html-to-image fetch them from CDN internally (no pre-inlining
-  // needed since the iframe is painted at opacity:0 and fonts load normally).
-  const inlinedHtml = await inlineImages(html)
+  // 1. Inline external images via server proxy (no tainted canvas)
+  // 2. Shrink large data-URL photos so the SVG foreignObject data URL stays < 2MB
+  const inlinedHtml = await shrinkLargeDataUrls(await inlineImages(html))
   return new Promise<string>((resolve, reject) => {
     const iframe = document.createElement('iframe')
     // opacity:0 → invisible but rendered at correct dimensions for toPng
