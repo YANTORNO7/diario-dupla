@@ -105,6 +105,7 @@ export default function ArticleForm({
     setSaving(true)
     setError("")
 
+    const changingAuthor = userRole === "ADMIN" && users.length > 0 && selectedAuthorId && selectedAuthorId !== initialAuthorId
     const payload: Record<string, unknown> = {
       title,
       subtitle: subtitle || undefined,
@@ -116,10 +117,10 @@ export default function ArticleForm({
       status,
       featured,
       tags,
-      authorName: author.trim() || undefined,
+      // Don't send authorName when changing authorId — it would rename the wrong user
+      authorName: changingAuthor ? undefined : (author.trim() || undefined),
     }
-    // Admin: include authorId if a different user was selected
-    if (userRole === "ADMIN" && users.length > 0 && selectedAuthorId && selectedAuthorId !== initialAuthorId) {
+    if (changingAuthor) {
       payload.authorId = selectedAuthorId
     }
 
