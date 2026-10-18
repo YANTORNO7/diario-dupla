@@ -1,5 +1,5 @@
 "use client"
-import { useState, useCallback, useEffect } from "react"
+import { useState, useCallback, useEffect, useRef } from "react"
 import { useSearchParams } from "next/navigation"
 import { toPng } from "html-to-image"
 import EscudoLibrary from "./EscudoLibrary"
@@ -627,22 +627,71 @@ function getDimensions(id: TemplateId): [number, number] {
   return id === '10' ? [1170, 658] : [1080, 1350]
 }
 
+// ---- Inline external images as base64 to avoid CORS issues in html-to-image ----
+async function inlineImages(html: string): Promise<string> {
+  const regex = /src="(https?:\/\/[^"]+)"/g
+  const urls = [...new Set([...html.matchAll(regex)].map(m => m[1]))]
+  if (!urls.length) return html
+  const replacements = await Promise.all(
+    urls.map(async (url): Promise<[string, string]> => {
+      try {
+        const res = await fetch(url, { mode: 'cors' })
+        if (!res.ok) return [url, url]
+        const blob = await res.blob()
+        return new Promise<[string, string]>(resolve => {
+          const reader = new FileReader()
+          reader.onload = () => resolve([url, reader.result as string])
+          reader.onerror = () => resolve([url, url])
+          reader.readAsDataURL(blob)
+        })
+      } catch {
+        return [url, url]
+      }
+    })
+  )
+  let result = html
+  for (const [url, dataUrl] of replacements) {
+    result = result.replaceAll(`src="${url}"`, `src="${dataUrl}"`)
+  }
+  return result
+}
+
+// ---- Download on desktop, Web Share on mobile ----
+async function downloadOrShare(dataUrl: string, filename: string) {
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+  if (isMobile && typeof navigator.share === 'function') {
+    try {
+      const blob = await (await fetch(dataUrl)).blob()
+      const file = new File([blob], filename, { type: 'image/png' })
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file] })
+        return
+      }
+    } catch (e) {
+      if ((e as Error).name === 'AbortError') return
+      // fall through to regular download
+    }
+  }
+  const a = document.createElement('a')
+  a.download = filename
+  a.href = dataUrl
+  a.click()
+}
+
 // ---- Export function ----
-async function exportPng(html: string, w: number, h: number, filename: string): Promise<string> {
+async function exportPng(html: string, w: number, h: number): Promise<string> {
+  const inlinedHtml = await inlineImages(html)
   return new Promise<string>((resolve, reject) => {
     const iframe = document.createElement('iframe')
     iframe.style.cssText = `position:fixed;left:-${w + 100}px;top:0;width:${w}px;height:${h}px;border:none;`
     document.body.appendChild(iframe)
-    iframe.srcdoc = html
+    iframe.srcdoc = inlinedHtml
     iframe.onload = async () => {
       try {
         await (iframe.contentDocument as Document).fonts.ready
+        await new Promise(r => setTimeout(r, 300))
         const el = (iframe.contentDocument as Document).body.querySelector('div') as HTMLElement
         const dataUrl = await toPng(el, { width: w, height: h, pixelRatio: 1 })
-        const a = document.createElement('a')
-        a.download = filename
-        a.href = dataUrl
-        a.click()
         resolve(dataUrl)
       } catch (err) {
         reject(err)
@@ -768,7 +817,8 @@ export default function PlacaGenerator() {
     try {
       const tpl = TEMPLATE_LIST.find(t => t.id === templateId)!
       const filename = `dupla-${tpl.id}-${tpl.label.toLowerCase().replace(/\s+/g, '-')}.png`
-      const pngDataUrl = await exportPng(html, w, h, filename)
+      const pngDataUrl = await exportPng(html, w, h)
+      await downloadOrShare(pngDataUrl, filename)
 
       // Save Gol placa when club is selected and photo is loaded
       if (templateId === '01') {
@@ -822,7 +872,22 @@ export default function PlacaGenerator() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [html, w, h, templateId, currentState, golId])
 
-  const previewScale = w === 1170 ? 0.4 : 0.38
+  const previewContainerRef = useRef<HTMLDivElement>(null)
+  const [previewScale, setPreviewScale] = useState(0.38)
+
+  useEffect(() => {
+    const container = previewContainerRef.current
+    if (!container) return
+    const update = () => {
+      const availableW = container.clientWidth - 16
+      const maxScale = w === 1170 ? 0.45 : 0.5
+      setPreviewScale(Math.min(availableW / w, maxScale))
+    }
+    update()
+    const observer = new ResizeObserver(update)
+    observer.observe(container)
+    return () => observer.disconnect()
+  }, [w])
 
   function renderForm() {
     const props = { state: currentState, set: setState }
@@ -930,7 +995,7 @@ export default function PlacaGenerator() {
         </div>
 
         {/* Preview panel */}
-        <div className="flex-1 flex flex-col items-center gap-2 mt-4 lg:mt-0">
+        <div ref={previewContainerRef} className="flex-1 flex flex-col items-center gap-2 mt-4 lg:mt-0 w-full">
           <p className="text-xs text-gray-400">{w}×{h}px — vista previa</p>
           <div
             style={{
