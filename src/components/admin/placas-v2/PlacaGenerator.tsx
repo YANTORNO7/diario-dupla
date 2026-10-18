@@ -718,11 +718,23 @@ async function downloadOrShare(dataUrl: string, filename: string) {
 
 // ---- Export function ----
 async function exportPng(html: string, w: number, h: number): Promise<string> {
-  // Inline external images (proxy for CORS) + embed fonts so srcdoc iframe renders them
-  const inlinedHtml = await inlineFonts(await inlineImages(html))
+  // Fetch font CSS with data URIs from server (no CORS issues server-side).
+  // Pass it via fontEmbedCSS so html-to-image uses it directly instead of
+  // trying to read cross-origin @font-face rules (which always fails).
+  let fontEmbedCSS: string | undefined
+  try {
+    const fr = await fetch('/api/font-embed')
+    if (fr.ok) {
+      const css = await fr.text()
+      if (css && !css.startsWith('/* font-embed:')) fontEmbedCSS = css
+    }
+  } catch { /* best-effort */ }
+
+  // Only inline external images — no need to modify the HTML for fonts
+  const inlinedHtml = await inlineImages(html)
+
   return new Promise<string>((resolve, reject) => {
     const iframe = document.createElement('iframe')
-    // opacity:0 → invisible but rendered at correct dimensions for toPng
     iframe.style.cssText = `position:fixed;left:0;top:0;width:${w}px;height:${h}px;border:none;opacity:0;pointer-events:none;`
     document.body.appendChild(iframe)
     iframe.srcdoc = inlinedHtml
@@ -730,7 +742,6 @@ async function exportPng(html: string, w: number, h: number): Promise<string> {
       try {
         const doc = iframe.contentDocument as Document
         await doc.fonts.ready
-        // Wait for all images (player photo data-URLs, etc.) to fully decode
         const imgs = [...doc.querySelectorAll('img')]
         await Promise.all(imgs.map(img =>
           img.complete
@@ -739,7 +750,12 @@ async function exportPng(html: string, w: number, h: number): Promise<string> {
         ))
         await new Promise(r => setTimeout(r, 300))
         const el = doc.body.querySelector('div') as HTMLElement
-        const dataUrl = await toPng(el, { width: w, height: h, pixelRatio: 1 })
+        const dataUrl = await toPng(el, {
+          width: w,
+          height: h,
+          pixelRatio: 1,
+          ...(fontEmbedCSS ? { fontEmbedCSS } : {}),
+        })
         resolve(dataUrl)
       } catch (err) {
         reject(err)
