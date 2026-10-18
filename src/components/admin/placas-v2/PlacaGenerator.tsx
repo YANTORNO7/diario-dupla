@@ -989,12 +989,12 @@ export default function PlacaGenerator() {
       )}
 
       {/* Template selector */}
-      <div className="bg-white border-b px-4 py-2 flex gap-1.5 overflow-x-auto">
+      <div className="bg-white border-b px-4 py-1.5 flex gap-1 overflow-x-auto">
         {TEMPLATE_LIST.map(t => (
           <button
             key={t.id}
             onClick={() => setTemplate(t.id)}
-            className={`flex-shrink-0 flex flex-col items-center gap-0.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${templateId === t.id ? 'bg-[#0B1631] text-white' : 'hover:bg-gray-100 text-gray-600'}`}
+            className={`flex-shrink-0 flex flex-col items-center gap-0.5 px-3 py-2.5 rounded-lg text-xs font-medium transition-colors ${templateId === t.id ? 'bg-[#0B1631] text-white' : 'hover:bg-gray-100 text-gray-600'}`}
           >
             <span className="text-base leading-none">{t.emoji}</span>
             <span className="whitespace-nowrap">{t.label}</span>
@@ -1003,23 +1003,8 @@ export default function PlacaGenerator() {
       </div>
 
       <div className="flex flex-col lg:flex-row gap-0 lg:gap-4 p-4">
-        {/* Form panel */}
-        <div className="w-full lg:w-96 lg:flex-shrink-0 bg-white rounded-xl shadow-sm border p-4 space-y-4 overflow-y-auto max-h-[calc(100vh-160px)]">
-          <div className="flex items-center justify-between">
-            <h2 className="font-bold text-sm">{currentTpl.emoji} {currentTpl.label}</h2>
-            <button
-              onClick={handleExport}
-              disabled={exporting}
-              className="px-4 py-1.5 bg-[#F2B632] text-[#0B1631] font-bold text-sm rounded-lg hover:bg-yellow-400 disabled:opacity-50 transition-colors"
-            >
-              {exporting ? 'Exportando…' : 'Descargar PNG'}
-            </button>
-          </div>
-          {renderForm()}
-        </div>
-
-        {/* Preview panel */}
-        <div ref={previewContainerRef} className="flex-1 flex flex-col items-center gap-2 mt-4 lg:mt-0 w-full">
+        {/* Preview panel — first on mobile, right on desktop */}
+        <div ref={previewContainerRef} className="order-first lg:order-last flex-1 flex flex-col items-center gap-2 w-full">
           <p className="text-xs text-gray-400">{w}×{h}px — vista previa</p>
           <div
             style={{
@@ -1047,12 +1032,38 @@ export default function PlacaGenerator() {
               title="Vista previa"
             />
           </div>
-          <button
-            onClick={() => setPreviewKey(k => k + 1)}
-            className="text-xs text-gray-400 hover:text-gray-600"
-          >
-            Refrescar vista previa
-          </button>
+          <div className="w-full flex gap-2 items-center justify-center">
+            <button
+              onClick={() => setPreviewKey(k => k + 1)}
+              className="text-xs text-gray-400 hover:text-gray-600"
+            >
+              Refrescar
+            </button>
+            {/* Export button below preview — only on mobile */}
+            <button
+              onClick={handleExport}
+              disabled={exporting}
+              className="lg:hidden flex-1 py-3 bg-[#F2B632] text-[#0B1631] font-bold text-base rounded-xl hover:bg-yellow-400 disabled:opacity-50 transition-colors"
+            >
+              {exporting ? 'Exportando…' : 'Descargar PNG'}
+            </button>
+          </div>
+        </div>
+
+        {/* Form panel — second on mobile (below preview), left on desktop */}
+        <div className="order-last lg:order-first w-full lg:w-96 lg:flex-shrink-0 bg-white rounded-xl shadow-sm border p-4 space-y-4 lg:overflow-y-auto lg:max-h-[calc(100vh-160px)] mt-4 lg:mt-0">
+          <div className="flex items-center justify-between">
+            <h2 className="font-bold text-sm">{currentTpl.emoji} {currentTpl.label}</h2>
+            {/* Export button in header — only on desktop */}
+            <button
+              onClick={handleExport}
+              disabled={exporting}
+              className="hidden lg:block px-4 py-1.5 bg-[#F2B632] text-[#0B1631] font-bold text-sm rounded-lg hover:bg-yellow-400 disabled:opacity-50 transition-colors"
+            >
+              {exporting ? 'Exportando…' : 'Descargar PNG'}
+            </button>
+          </div>
+          {renderForm()}
         </div>
       </div>
     </div>
