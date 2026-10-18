@@ -704,17 +704,20 @@ async function downloadOrShare(dataUrl: string, filename: string) {
 
 // ---- Export function ----
 async function exportPng(html: string, w: number, h: number): Promise<string> {
-  const inlinedHtml = await inlineFonts(await inlineImages(html))
+  // Inline external https:// images (CORS) but let fonts load normally from CDN.
+  // The iframe is scaled to ~0 visually but still painted, so the browser loads
+  // Google Fonts. Off-screen (negative left) iframes are not painted → fonts skip.
+  const inlinedHtml = await inlineImages(html)
   return new Promise<string>((resolve, reject) => {
     const iframe = document.createElement('iframe')
-    iframe.style.cssText = `position:fixed;left:-${w + 100}px;top:0;width:${w}px;height:${h}px;border:none;`
+    iframe.style.cssText = `position:fixed;left:0;top:0;width:${w}px;height:${h}px;border:none;transform:scale(0.001);transform-origin:top left;pointer-events:none;`
     document.body.appendChild(iframe)
     iframe.srcdoc = inlinedHtml
     iframe.onload = async () => {
       try {
         const doc = iframe.contentDocument as Document
         await doc.fonts.ready
-        // Wait for all images (including large data-URL photos) to fully render
+        // Wait for all images (player photo data-URLs, etc.) to fully decode
         const imgs = [...doc.querySelectorAll('img')]
         await Promise.all(imgs.map(img =>
           img.complete
