@@ -33,6 +33,25 @@ function readFile(file: File): Promise<string> {
   })
 }
 
+// ---- Resize a data URL image down to maxPx on its longest side ----
+async function resizeDataUrl(dataUrl: string, maxPx: number): Promise<string> {
+  return new Promise<string>(resolve => {
+    const img = new Image()
+    img.onload = () => {
+      if (Math.max(img.naturalWidth, img.naturalHeight) <= maxPx) { resolve(dataUrl); return }
+      const scale = maxPx / Math.max(img.naturalWidth, img.naturalHeight)
+      const c = document.createElement('canvas')
+      c.width = Math.round(img.naturalWidth * scale)
+      c.height = Math.round(img.naturalHeight * scale)
+      const ctx = c.getContext('2d')!
+      ctx.drawImage(img, 0, 0, c.width, c.height)
+      resolve(c.toDataURL('image/jpeg', 0.92))
+    }
+    img.onerror = () => resolve(dataUrl)
+    img.src = dataUrl
+  })
+}
+
 // ---- sub-components ----
 
 function Label({ children }: { children: React.ReactNode }) {
@@ -702,48 +721,10 @@ async function downloadOrShare(dataUrl: string, filename: string) {
   a.click()
 }
 
-// ---- Shrink large data-URL images before export ----
-// iPhone photos can be 4-8MB base64. When html-to-image wraps the element in
-// SVG foreignObject and turns that SVG into a data URL for an <img>, browsers
-// reject data URLs over ~2MB → blank canvas → export error.
-// We resize any data-URL image wider/taller than 1200px down to 1200px.
-async function shrinkLargeDataUrls(html: string): Promise<string> {
-  const regex = /src="(data:image\/[^"]{150000,})"/g
-  const urls = [...new Set([...html.matchAll(regex)].map(m => m[1]))]
-  if (!urls.length) return html
-  const shrunk = await Promise.all(urls.map(async url => {
-    try {
-      const small = await new Promise<string>(resolve => {
-        const img = new Image()
-        img.onload = () => {
-          const MAX = 1200
-          if (Math.max(img.naturalWidth, img.naturalHeight) <= MAX) { resolve(url); return }
-          const scale = MAX / Math.max(img.naturalWidth, img.naturalHeight)
-          const c = document.createElement('canvas')
-          c.width = Math.round(img.naturalWidth * scale)
-          c.height = Math.round(img.naturalHeight * scale)
-          const ctx = c.getContext('2d')!
-          ctx.drawImage(img, 0, 0, c.width, c.height)
-          resolve(c.toDataURL('image/jpeg', 0.9))
-        }
-        img.onerror = () => resolve(url)
-        img.src = url
-      })
-      return [url, small] as [string, string]
-    } catch { return [url, url] as [string, string] }
-  }))
-  let result = html
-  for (const [orig, small] of shrunk) {
-    if (orig !== small) result = result.split(`src="${orig}"`).join(`src="${small}"`)
-  }
-  return result
-}
-
 // ---- Export function ----
 async function exportPng(html: string, w: number, h: number): Promise<string> {
-  // 1. Inline external images via server proxy (no tainted canvas)
-  // 2. Shrink large data-URL photos so the SVG foreignObject data URL stays < 2MB
-  const inlinedHtml = await shrinkLargeDataUrls(await inlineImages(html))
+  // Inline external images (proxy for CORS) + embed fonts so srcdoc iframe renders them
+  const inlinedHtml = await inlineFonts(await inlineImages(html))
   return new Promise<string>((resolve, reject) => {
     const iframe = document.createElement('iframe')
     // opacity:0 → invisible but rendered at correct dimensions for toPng
@@ -761,7 +742,7 @@ async function exportPng(html: string, w: number, h: number): Promise<string> {
             ? Promise.resolve()
             : new Promise<void>(res => { img.onload = () => res(); img.onerror = () => res() })
         ))
-        await new Promise(r => setTimeout(r, 150))
+        await new Promise(r => setTimeout(r, 300))
         const el = doc.body.querySelector('div') as HTMLElement
         const dataUrl = await toPng(el, { width: w, height: h, pixelRatio: 1 })
         resolve(dataUrl)
@@ -890,7 +871,19 @@ export default function PlacaGenerator() {
     try {
       const tpl = TEMPLATE_LIST.find(t => t.id === templateId)!
       const filename = `dupla-${tpl.id}-${tpl.label.toLowerCase().replace(/\s+/g, '-')}.png`
-      const pngDataUrl = await exportPng(html, w, h)
+
+      // Resize foto to max 1200px before rendering export HTML.
+      // iPhone photos are 4-8MB data URLs — inlining them in the SVG foreignObject
+      // that html-to-image creates would exceed browser data URL limits and crash.
+      let exportState = currentState
+      const stateAny = currentState as { foto?: string }
+      if (stateAny.foto?.startsWith('data:')) {
+        const resized = await resizeDataUrl(stateAny.foto, 1200)
+        exportState = { ...currentState, foto: resized }
+      }
+      const exportHtml = renderHtml(templateId, exportState)
+
+      const pngDataUrl = await exportPng(exportHtml, w, h)
       await downloadOrShare(pngDataUrl, filename)
 
       // Save Gol placa when club is selected and photo is loaded
