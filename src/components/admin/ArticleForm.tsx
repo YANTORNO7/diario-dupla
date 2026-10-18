@@ -31,22 +31,16 @@ type Article = {
   rejectionNote?: string | null
 }
 
-type UserOption = { id: string; name: string }
-
 export default function ArticleForm({
   article,
   authorName,
-  authorId: initialAuthorId,
   sections,
   userRole = "ADMIN",
-  users = [],
 }: {
   article?: Article
   authorName: string
-  authorId?: string
   sections: SectionOption[]
   userRole?: string
-  users?: UserOption[]
 }) {
   const router = useRouter()
   const [saving, setSaving] = useState(false)
@@ -69,7 +63,6 @@ export default function ArticleForm({
   const [featured, setFeatured] = useState(article?.featured || false)
   const [tags, setTags] = useState<string[]>(article?.tags.map((t) => t.name) || [])
   const [author, setAuthor] = useState(authorName)
-  const [selectedAuthorId, setSelectedAuthorId] = useState(initialAuthorId || "")
   const [secondaryIds, setSecondaryIds] = useState<string[]>(
     article?.secondarySections?.map((s) => s.id) || []
   )
@@ -105,7 +98,6 @@ export default function ArticleForm({
     setSaving(true)
     setError("")
 
-    const changingAuthor = userRole === "ADMIN" && users.length > 0 && selectedAuthorId && selectedAuthorId !== initialAuthorId
     const payload: Record<string, unknown> = {
       title,
       subtitle: subtitle || undefined,
@@ -117,11 +109,7 @@ export default function ArticleForm({
       status,
       featured,
       tags,
-      // Don't send authorName when changing authorId — it would rename the wrong user
-      authorName: changingAuthor ? undefined : (author.trim() || undefined),
-    }
-    if (changingAuthor) {
-      payload.authorId = selectedAuthorId
+      authorName: author.trim() || undefined,
     }
 
     try {
@@ -165,24 +153,6 @@ export default function ArticleForm({
         <label className="block text-sm font-medium text-gray-700 mb-1 font-cuerpo">Autor</label>
         <input value={author} onChange={(e) => setAuthor(e.target.value)} placeholder="Nombre del autor"
           className="w-full px-3 py-2 border rounded-md font-cuerpo focus:outline-none focus:ring-2 focus:ring-[#111111]" />
-        {userRole === "ADMIN" && users.length > 0 && (
-          <select
-            value={selectedAuthorId || ""}
-            onChange={(e) => {
-              setSelectedAuthorId(e.target.value)
-              if (e.target.value) {
-                const u = users.find(u => u.id === e.target.value)
-                if (u) setAuthor(u.name)
-              }
-            }}
-            className="mt-1 w-full px-3 py-2 border rounded-md font-cuerpo text-sm text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#111111]"
-          >
-            <option value="">— Asignar a colaborador —</option>
-            {users.map(u => (
-              <option key={u.id} value={u.id}>{u.name}</option>
-            ))}
-          </select>
-        )}
       </div>
 
       <div>
