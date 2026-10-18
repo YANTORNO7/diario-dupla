@@ -56,6 +56,7 @@ export async function PUT(
     featured,
     tags,
     authorName,
+    authorId: newAuthorId,
   } = body
 
   const existing = await prisma.article.findUnique({ where: { id } })
@@ -143,6 +144,8 @@ export async function PUT(
       ...(secondarySectionIds !== undefined && {
         secondarySections: { set: secondarySectionIds.map((id: string) => ({ id })) },
       }),
+      // Admin can reassign article to a different user
+      ...(userRole === "ADMIN" && newAuthorId !== undefined && { authorId: newAuthorId }),
     },
     include: {
       author: { select: { id: true, name: true } },

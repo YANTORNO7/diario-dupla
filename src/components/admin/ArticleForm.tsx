@@ -31,16 +31,22 @@ type Article = {
   rejectionNote?: string | null
 }
 
+type UserOption = { id: string; name: string }
+
 export default function ArticleForm({
   article,
   authorName,
+  authorId: initialAuthorId,
   sections,
   userRole = "ADMIN",
+  users = [],
 }: {
   article?: Article
   authorName: string
+  authorId?: string
   sections: SectionOption[]
   userRole?: string
+  users?: UserOption[]
 }) {
   const router = useRouter()
   const [saving, setSaving] = useState(false)
@@ -63,6 +69,7 @@ export default function ArticleForm({
   const [featured, setFeatured] = useState(article?.featured || false)
   const [tags, setTags] = useState<string[]>(article?.tags.map((t) => t.name) || [])
   const [author, setAuthor] = useState(authorName)
+  const [selectedAuthorId, setSelectedAuthorId] = useState(initialAuthorId || "")
   const [secondaryIds, setSecondaryIds] = useState<string[]>(
     article?.secondarySections?.map((s) => s.id) || []
   )
@@ -98,7 +105,7 @@ export default function ArticleForm({
     setSaving(true)
     setError("")
 
-    const payload = {
+    const payload: Record<string, unknown> = {
       title,
       subtitle: subtitle || undefined,
       body,
@@ -110,6 +117,10 @@ export default function ArticleForm({
       featured,
       tags,
       authorName: author.trim() || undefined,
+    }
+    // Admin: include authorId if a different user was selected
+    if (userRole === "ADMIN" && users.length > 0 && selectedAuthorId && selectedAuthorId !== initialAuthorId) {
+      payload.authorId = selectedAuthorId
     }
 
     try {
@@ -151,8 +162,24 @@ export default function ArticleForm({
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1 font-cuerpo">Autor</label>
-        <input value={author} onChange={(e) => setAuthor(e.target.value)} placeholder="Nombre del autor"
-          className="w-full px-3 py-2 border rounded-md font-cuerpo focus:outline-none focus:ring-2 focus:ring-[#111111]" />
+        {userRole === "ADMIN" && users.length > 0 ? (
+          <select
+            value={selectedAuthorId}
+            onChange={(e) => {
+              setSelectedAuthorId(e.target.value)
+              const u = users.find(u => u.id === e.target.value)
+              if (u) setAuthor(u.name)
+            }}
+            className="w-full px-3 py-2 border rounded-md font-cuerpo focus:outline-none focus:ring-2 focus:ring-[#111111]"
+          >
+            {users.map(u => (
+              <option key={u.id} value={u.id}>{u.name}</option>
+            ))}
+          </select>
+        ) : (
+          <input value={author} onChange={(e) => setAuthor(e.target.value)} placeholder="Nombre del autor"
+            className="w-full px-3 py-2 border rounded-md font-cuerpo focus:outline-none focus:ring-2 focus:ring-[#111111]" />
+        )}
       </div>
 
       <div>

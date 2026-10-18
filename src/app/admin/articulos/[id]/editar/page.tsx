@@ -39,10 +39,21 @@ export default async function EditArticlePage({
     orderBy: { order: "asc" },
   })
 
+  const users = userRole === "ADMIN"
+    ? await prisma.user.findMany({ select: { id: true, name: true }, orderBy: { name: "asc" } })
+    : []
+
   return (
     <div>
       <h1 className="text-2xl font-bold font-cuerpo mb-6">Editar artículo</h1>
-      <ArticleForm article={article} authorName={article.author.name} sections={sections} userRole={userRole} />
+      <ArticleForm
+        article={article}
+        authorName={article.author.name}
+        authorId={article.authorId}
+        sections={sections}
+        userRole={userRole}
+        users={users}
+      />
     </div>
   )
 }
