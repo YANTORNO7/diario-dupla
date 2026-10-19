@@ -32,7 +32,7 @@ async function submitIndexNow(urls: string[]) {
 }
 
 async function pingPubSubHubbub() {
-  const hubs = [`${SITE_URL}/sitemap.xml`, `${SITE_URL}/feed.xml`]
+  const hubs = [`${SITE_URL}/sitemap.xml`, `${SITE_URL}/news-sitemap.xml`, `${SITE_URL}/feed.xml`]
   for (const url of hubs) {
     await withRetry(async () => {
       const res = await fetch("https://pubsubhubbub.appspot.com/", {
@@ -42,6 +42,21 @@ async function pingPubSubHubbub() {
       })
       console.log(`[PubSubHubbub] ${url} — status ${res.status}`)
     })
+  }
+}
+
+async function pingSitemaps() {
+  const sitemaps = [
+    `${SITE_URL}/sitemap.xml`,
+    `${SITE_URL}/news-sitemap.xml`,
+  ]
+  for (const url of sitemaps) {
+    try {
+      const res = await fetch(
+        `https://www.google.com/ping?sitemap=${encodeURIComponent(url)}`
+      )
+      console.log(`[Google ping] ${url} — status ${res.status}`)
+    } catch { /* best-effort */ }
   }
 }
 
@@ -55,6 +70,7 @@ export async function pingGoogle(articlePath?: string) {
   await Promise.allSettled([
     submitIndexNow([articleUrl]),
     pingPubSubHubbub(),
+    pingSitemaps(),
   ])
 }
 
