@@ -3,6 +3,7 @@ import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import ArticleList from "@/components/admin/ArticleList"
 import SectionHomepageToggles from "@/components/admin/SectionHomepageToggles"
+import ReindexButton from "@/components/admin/ReindexButton"
 
 export default async function AdminDashboard() {
   const session = await auth()
@@ -43,6 +44,7 @@ export default async function AdminDashboard() {
         </a>
       </div>
       <SectionHomepageToggles sections={sections} />
+      {userRole === "ADMIN" && <div className="mb-4"><ReindexButton /></div>}
       <ArticleList articles={articles} userRole={userRole} />
     </div>
   )
