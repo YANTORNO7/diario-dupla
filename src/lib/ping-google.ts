@@ -130,5 +130,7 @@ export async function pingGoogleBulk(urls: string[]) {
   await Promise.allSettled([
     submitIndexNow(urls),
     pingPubSubHubbub(),
+    // Submit each URL individually to the Indexing API (rate limit: 200/day)
+    ...urls.slice(0, 200).map(url => submitGoogleIndexingAPI(url)),
   ])
 }
