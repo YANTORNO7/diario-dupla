@@ -191,6 +191,8 @@ export async function DELETE(
     )
   }
 
+  // Delete newsletter log first to avoid FK constraint
+  await prisma.newsletterLog.deleteMany({ where: { articleId: id } })
   await prisma.article.delete({ where: { id } })
 
   return NextResponse.json({ message: "Artículo eliminado" })

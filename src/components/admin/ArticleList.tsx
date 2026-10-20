@@ -25,9 +25,13 @@ export default function ArticleList({ articles, userRole }: { articles: Article[
   async function handleDelete(id: string) {
     if (!confirm("¿Estás seguro de eliminar este artículo?")) return
     setDeleting(id)
-    await fetch(`/api/articles/${id}`, { method: "DELETE" })
-    router.refresh()
-    setDeleting(null)
+    try {
+      const res = await fetch(`/api/articles/${id}`, { method: "DELETE" })
+      if (!res.ok) { alert("Error al eliminar el artículo"); return }
+      router.refresh()
+    } finally {
+      setDeleting(null)
+    }
   }
 
   async function toggleStatus(id: string, currentStatus: string) {
