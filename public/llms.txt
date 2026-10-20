@@ -1,0 +1,21 @@
+# Diario Dupla
+
+> El diario del fútbol argentino y brasileño, y de los deportes que nos unen.
+
+Diario Dupla es un medio digital especializado en la cobertura del fútbol argentino y brasileño, y de los deportes que conectan a ambas naciones: automovilismo (F1, MotoGP), copas internacionales (Libertadores, Sudamericana), selecciones y clubes.
+
+## Secciones
+
+- **La Dupla** — Todo lo que conecta el fútbol argentino y brasileño (subsecciones: Clubes, Selecciones)
+- **Fútbol Argentino** — Cobertura del fútbol de Argentina
+- **Fútbol Brasileño** — Cobertura del fútbol de Brasil
+- **Copas** — Libertadores y Sudamericana
+- **Automovilismo** — F1 y MotoGP
+
+## Información
+
+- Sitio web: https://diariodupla.com
+- Feed RSS: https://diariodupla.com/feed.xml
+- Sitemap: https://diariodupla.com/sitemap.xml
+- Idioma: Español
+- País: Argentina / Brasil
