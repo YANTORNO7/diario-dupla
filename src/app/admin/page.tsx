@@ -44,7 +44,7 @@ export default async function AdminDashboard() {
           + Nuevo artículo
         </a>
       </div>
-      <SectionHomepageToggles sections={sections} />
+      <SectionHomepageToggles sections={sections} isAdmin={userRole === "ADMIN"} />
       {userRole === "ADMIN" && (
         <div className="mb-4 flex flex-col gap-2">
           <ReindexButton />

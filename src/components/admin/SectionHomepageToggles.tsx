@@ -12,7 +12,7 @@ type Section = {
   children: { id: string; name: string; color: string; showOnHomepage: boolean }[]
 }
 
-export default function SectionHomepageToggles({ sections }: { sections: Section[] }) {
+export default function SectionHomepageToggles({ sections, isAdmin }: { sections: Section[], isAdmin: boolean }) {
   const router = useRouter()
   const [updating, setUpdating] = useState<string | null>(null)
 
@@ -84,28 +84,30 @@ export default function SectionHomepageToggles({ sections }: { sections: Section
           </button>
         ))}
       </div>
-      <div className="border-t pt-3">
-        <p className="text-xs text-gray-400 font-cuerpo mb-2">Orden en la portada</p>
-        <div className="flex flex-col gap-1">
-          {sorted.map((s, i) => (
-            <div key={s.id} className="flex items-center gap-2">
-              <span className="text-xs font-cuerpo text-gray-600 w-40 truncate">{s.name}</span>
-              <button
-                onClick={() => move(i, "up")}
-                disabled={i === 0 || updating === s.id}
-                className="text-gray-400 hover:text-gray-700 disabled:opacity-20 text-xs leading-none"
-                title="Subir"
-              >▲</button>
-              <button
-                onClick={() => move(i, "down")}
-                disabled={i === sorted.length - 1 || updating === s.id}
-                className="text-gray-400 hover:text-gray-700 disabled:opacity-20 text-xs leading-none"
-                title="Bajar"
-              >▼</button>
-            </div>
-          ))}
+      {isAdmin && (
+        <div className="border-t pt-3">
+          <p className="text-xs text-gray-400 font-cuerpo mb-2">Orden en la portada</p>
+          <div className="flex flex-col gap-1">
+            {sorted.map((s, i) => (
+              <div key={s.id} className="flex items-center gap-2">
+                <span className="text-xs font-cuerpo text-gray-600 w-40 truncate">{s.name}</span>
+                <button
+                  onClick={() => move(i, "up")}
+                  disabled={i === 0 || updating === s.id}
+                  className="text-gray-400 hover:text-gray-700 disabled:opacity-20 text-xs leading-none"
+                  title="Subir"
+                >▲</button>
+                <button
+                  onClick={() => move(i, "down")}
+                  disabled={i === sorted.length - 1 || updating === s.id}
+                  className="text-gray-400 hover:text-gray-700 disabled:opacity-20 text-xs leading-none"
+                  title="Bajar"
+                >▼</button>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }
