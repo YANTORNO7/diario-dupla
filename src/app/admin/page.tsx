@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import ArticleList from "@/components/admin/ArticleList"
 import SectionHomepageToggles from "@/components/admin/SectionHomepageToggles"
 import ReindexButton from "@/components/admin/ReindexButton"
+import FixSectionOrderButton from "@/components/admin/FixSectionOrderButton"
 
 export default async function AdminDashboard() {
   const session = await auth()
@@ -44,7 +45,12 @@ export default async function AdminDashboard() {
         </a>
       </div>
       <SectionHomepageToggles sections={sections} />
-      {userRole === "ADMIN" && <div className="mb-4"><ReindexButton /></div>}
+      {userRole === "ADMIN" && (
+        <div className="mb-4 flex flex-col gap-2">
+          <ReindexButton />
+          <FixSectionOrderButton />
+        </div>
+      )}
       <ArticleList articles={articles} userRole={userRole} />
     </div>
   )
