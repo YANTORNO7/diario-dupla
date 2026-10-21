@@ -21,8 +21,8 @@ export async function POST() {
 
   const correctOrders: { slug: string; order: number; showOnHomepage?: boolean }[] = [
     { slug: "la-dupla", order: 0, showOnHomepage: true },
-    { slug: "argentina", order: 1, showOnHomepage: true },
-    { slug: "brasil", order: 2, showOnHomepage: true },
+    { slug: "brasil", order: 1, showOnHomepage: true },
+    { slug: "argentina", order: 2, showOnHomepage: true },
     { slug: "copas", order: 3, showOnHomepage: true },
     { slug: "automovilismo", order: 4, showOnHomepage: true },
   ]

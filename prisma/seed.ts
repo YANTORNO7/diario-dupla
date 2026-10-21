@@ -69,15 +69,15 @@ async function main() {
     update: {},
     create: { name: "Selecciones", slug: "selecciones", color: "#009C3B", order: 2, showOnHomepage: false, parentId: laDupla.id },
   })
-  const argentina = await prisma.section.upsert({
-    where: { slug: "argentina" },
-    update: { name: "Fútbol Argentino", order: 1, showOnHomepage: true },
-    create: { name: "Fútbol Argentino", slug: "argentina", color: "#75AADB", order: 1, showOnHomepage: true },
-  })
   const brasil = await prisma.section.upsert({
     where: { slug: "brasil" },
-    update: { name: "Fútbol Brasileño", showOnHomepage: true, order: 2 },
-    create: { name: "Fútbol Brasileño", slug: "brasil", color: "#009C3B", order: 2, showOnHomepage: true },
+    update: { name: "Fútbol Brasileño", showOnHomepage: true, order: 1 },
+    create: { name: "Fútbol Brasileño", slug: "brasil", color: "#009C3B", order: 1, showOnHomepage: true },
+  })
+  const argentina = await prisma.section.upsert({
+    where: { slug: "argentina" },
+    update: { name: "Fútbol Argentino", order: 2, showOnHomepage: true },
+    create: { name: "Fútbol Argentino", slug: "argentina", color: "#75AADB", order: 2, showOnHomepage: true },
   })
   const copas = await prisma.section.upsert({
     where: { slug: "copas" },
