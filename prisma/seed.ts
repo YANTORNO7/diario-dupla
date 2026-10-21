@@ -71,7 +71,7 @@ async function main() {
   })
   const argentina = await prisma.section.upsert({
     where: { slug: "argentina" },
-    update: { name: "Fútbol Argentino", order: 1 },
+    update: { name: "Fútbol Argentino", order: 1, showOnHomepage: true },
     create: { name: "Fútbol Argentino", slug: "argentina", color: "#75AADB", order: 1, showOnHomepage: true },
   })
   const brasil = await prisma.section.upsert({
