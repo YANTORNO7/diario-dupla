@@ -3,8 +3,6 @@ export const SUBSECTION_COLORS: Record<string, string> = {
   // Copas
   "libertadores":    "#F2B632",
   "sudamericana":    "#2F6FDB",
-  "copa-argentina":  "#74ACDF",
-  "copa-do-brasil":  "#009C3B",
   // Deporte motor
   "f1":              "#E10600",
   "motogp":          "#C8A951",

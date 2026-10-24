@@ -94,16 +94,8 @@ async function main() {
     update: { color: "#2F6FDB" },
     create: { name: "Sudamericana", slug: "sudamericana", color: "#2F6FDB", order: 2, showOnHomepage: false, parentId: copas.id },
   })
-  await prisma.section.upsert({
-    where: { slug: "copa-argentina" },
-    update: { color: "#74ACDF" },
-    create: { name: "Copa Argentina", slug: "copa-argentina", color: "#74ACDF", order: 3, showOnHomepage: false, parentId: copas.id },
-  })
-  await prisma.section.upsert({
-    where: { slug: "copa-do-brasil" },
-    update: { color: "#009C3B" },
-    create: { name: "Copa do Brasil", slug: "copa-do-brasil", color: "#009C3B", order: 4, showOnHomepage: false, parentId: copas.id },
-  })
+  // Eliminar Copa Argentina y Copa do Brasil si existen por error
+  await prisma.section.deleteMany({ where: { slug: { in: ["copa-argentina", "copa-do-brasil"] } } })
 
   // Renombrar Automovilismo → Deporte motor (actualizar slug si existe con slug viejo)
   const automovilismoViejo = await prisma.section.findFirst({ where: { slug: "automovilismo" } })
