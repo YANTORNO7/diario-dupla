@@ -9,6 +9,16 @@ const nextConfig: NextConfig = {
         destination: "https://diariodupla.com/:path*",
         permanent: true,
       },
+      {
+        source: "/automovilismo",
+        destination: "/deporte-motor",
+        permanent: true,
+      },
+      {
+        source: "/automovilismo/:path*",
+        destination: "/deporte-motor/:path*",
+        permanent: true,
+      },
     ]
   },
   images: {

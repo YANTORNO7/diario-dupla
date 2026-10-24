@@ -61,13 +61,13 @@ async function main() {
   })
   await prisma.section.upsert({
     where: { slug: "clubes" },
-    update: {},
+    update: { color: "#75AADB" },
     create: { name: "Clubes", slug: "clubes", color: "#75AADB", order: 1, showOnHomepage: false, parentId: laDupla.id },
   })
   await prisma.section.upsert({
     where: { slug: "selecciones" },
-    update: {},
-    create: { name: "Selecciones", slug: "selecciones", color: "#009C3B", order: 2, showOnHomepage: false, parentId: laDupla.id },
+    update: { color: "#20B2AA" },
+    create: { name: "Selecciones", slug: "selecciones", color: "#20B2AA", order: 2, showOnHomepage: false, parentId: laDupla.id },
   })
   const brasil = await prisma.section.upsert({
     where: { slug: "brasil" },
@@ -86,30 +86,47 @@ async function main() {
   })
   await prisma.section.upsert({
     where: { slug: "libertadores" },
-    update: {},
-    create: { name: "Libertadores", slug: "libertadores", color: "#D4AF37", order: 1, showOnHomepage: false, parentId: copas.id },
+    update: { color: "#F2B632" },
+    create: { name: "Libertadores", slug: "libertadores", color: "#F2B632", order: 1, showOnHomepage: false, parentId: copas.id },
   })
   await prisma.section.upsert({
     where: { slug: "sudamericana" },
-    update: {},
-    create: { name: "Sudamericana", slug: "sudamericana", color: "#E8425E", order: 2, showOnHomepage: false, parentId: copas.id },
+    update: { color: "#2F6FDB" },
+    create: { name: "Sudamericana", slug: "sudamericana", color: "#2F6FDB", order: 2, showOnHomepage: false, parentId: copas.id },
   })
-  const automovilismo = await prisma.section.upsert({
-    where: { slug: "automovilismo" },
-    update: { showOnHomepage: true, order: 4 },
-    create: { name: "Automovilismo", slug: "automovilismo", color: "#DC2626", order: 4, showOnHomepage: true },
+  await prisma.section.upsert({
+    where: { slug: "copa-argentina" },
+    update: { color: "#74ACDF" },
+    create: { name: "Copa Argentina", slug: "copa-argentina", color: "#74ACDF", order: 3, showOnHomepage: false, parentId: copas.id },
+  })
+  await prisma.section.upsert({
+    where: { slug: "copa-do-brasil" },
+    update: { color: "#009C3B" },
+    create: { name: "Copa do Brasil", slug: "copa-do-brasil", color: "#009C3B", order: 4, showOnHomepage: false, parentId: copas.id },
+  })
+
+  // Renombrar Automovilismo → Deporte motor (actualizar slug si existe con slug viejo)
+  const automovilismoViejo = await prisma.section.findFirst({ where: { slug: "automovilismo" } })
+  if (automovilismoViejo) {
+    await prisma.section.update({ where: { id: automovilismoViejo.id }, data: { slug: "deporte-motor", name: "Deporte motor" } })
+    console.log("Sección 'Automovilismo' renombrada a 'Deporte motor' con slug 'deporte-motor'")
+  }
+  const deporteMotor = await prisma.section.upsert({
+    where: { slug: "deporte-motor" },
+    update: { name: "Deporte motor", showOnHomepage: true, order: 4, color: "#DC2626" },
+    create: { name: "Deporte motor", slug: "deporte-motor", color: "#DC2626", order: 4, showOnHomepage: true },
   })
   await prisma.section.upsert({
     where: { slug: "f1" },
-    update: {},
-    create: { name: "F1", slug: "f1", color: "#DC2626", order: 1, showOnHomepage: false, parentId: automovilismo.id },
+    update: { color: "#E10600", parentId: deporteMotor.id },
+    create: { name: "F1", slug: "f1", color: "#E10600", order: 1, showOnHomepage: false, parentId: deporteMotor.id },
   })
   await prisma.section.upsert({
     where: { slug: "motogp" },
-    update: {},
-    create: { name: "MotoGP", slug: "motogp", color: "#DC2626", order: 2, showOnHomepage: false, parentId: automovilismo.id },
+    update: { color: "#C8A951", parentId: deporteMotor.id },
+    create: { name: "MotoGP", slug: "motogp", color: "#C8A951", order: 2, showOnHomepage: false, parentId: deporteMotor.id },
   })
-  console.log("Secciones OK: La Dupla (Clubes, Selecciones), Fútbol Argentino, Fútbol Brasileño, Copas (Libertadores, Sudamericana), Automovilismo (F1, MotoGP)")
+  console.log("Secciones OK: La Dupla (Clubes, Selecciones), Fútbol Brasileño, Fútbol Argentino, Copas (Libertadores, Sudamericana, Copa Argentina, Copa do Brasil), Deporte motor (F1, MotoGP)")
 
   // Migrate existing articles without sectionId
   const articlesArgentina = await prisma.article.updateMany({

@@ -78,7 +78,7 @@ export default function SectionBlock({ sectionLabel, sectionPath, sectionColor, 
               sectionPath={artPath}
               sectionLabel={artLabel}
               sectionColor={artColor}
-              showSection={false}
+              showSection={true}
             />
           )
         })}

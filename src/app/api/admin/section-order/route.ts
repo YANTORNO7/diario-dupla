@@ -24,7 +24,7 @@ export async function POST() {
     { slug: "brasil", order: 1, showOnHomepage: true },
     { slug: "argentina", order: 2, showOnHomepage: true },
     { slug: "copas", order: 3, showOnHomepage: true },
-    { slug: "automovilismo", order: 4, showOnHomepage: true },
+    { slug: "deporte-motor", order: 4, showOnHomepage: true },
   ]
 
   const results = []
