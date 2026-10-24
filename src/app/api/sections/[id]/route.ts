@@ -18,6 +18,7 @@ export async function PUT(
       ...(body.showOnHomepage !== undefined && { showOnHomepage: body.showOnHomepage }),
       ...(body.name !== undefined && { name: body.name }),
       ...(body.order !== undefined && { order: body.order }),
+      ...(body.description !== undefined && { description: body.description || null }),
     },
   })
 

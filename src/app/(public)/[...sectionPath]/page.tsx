@@ -105,7 +105,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     if (!section) return {}
     return {
       title: section.name,
-      description: `Todas las noticias de ${section.name} en Diario Dupla`,
+      description: section.description ?? `Todas las noticias de ${section.name} en Diario Dupla`,
     }
   }
 
@@ -114,7 +114,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     if (childSection) {
       return {
         title: childSection.name,
-        description: `Todas las noticias de ${childSection.name} en Diario Dupla`,
+        description: childSection.description ?? `Todas las noticias de ${childSection.name} en Diario Dupla`,
       }
     }
     const parent = await prisma.section.findFirst({
@@ -300,7 +300,7 @@ function SectionTitle({ section }: { section: SectionWithParent }) {
   )
 }
 
-/* ---------- renderer: sección con subsecciones (hero + bloques) ---------- */
+/* ---------- renderer: sección con subsecciones (título + descripción + bloques) ---------- */
 
 function renderSectionWithChildren(
   section: SectionWithParent,
@@ -317,7 +317,6 @@ function renderSectionWithChildren(
     ],
   })
 
-  const hero = allArticles[0] ?? null
   const children = section.children ?? []
 
   // Para cada subsección: artículos + fecha más reciente
@@ -333,7 +332,7 @@ function renderSectionWithChildren(
     return { child, articles: childArticles, latest, active }
   })
 
-  // Ordenar por nota más reciente; ocultar sin actividad
+  // Ordenar por nota más reciente
   const activeBlocks = subsectionData
     .filter((d) => d.active)
     .sort((a, b) => {
@@ -342,7 +341,6 @@ function renderSectionWithChildren(
       return new Date(b.latest).getTime() - new Date(a.latest).getTime()
     })
 
-  // También incluir bloques con artículos pero sin actividad reciente (al final), si los hay
   const inactiveBlocks = subsectionData.filter((d) => !d.active && d.articles.length > 0)
 
   return (
@@ -353,57 +351,9 @@ function renderSectionWithChildren(
           <Breadcrumb section={section} />
           <SectionTitle section={section} />
           {section.description && (
-            <p className="font-cuerpo text-gray-500 text-lg mt-2">{section.description}</p>
+            <p className="font-cuerpo text-gray-500 text-base md:text-lg mt-3 max-w-[700px]">{section.description}</p>
           )}
         </div>
-
-        {/* Nota destacada */}
-        {hero && (() => {
-          const ps = hero.primarySection
-          const artPath = ps ? getSectionPath(ps) : getSectionPath(section)
-          const artLabel = ps?.name ?? section.name
-          const artColor = ps?.color ?? section.color
-          const href = `${artPath}/${hero.slug}`
-          return (
-            <div className="mb-12">
-              <Link href={href} className="block group">
-                <div className="relative w-full aspect-[21/9] rounded-xl overflow-hidden bg-gray-200">
-                  {hero.heroImageUrl ? (
-                    <Image
-                      src={hero.heroImageUrl}
-                      alt={hero.heroImageAlt || hero.title}
-                      fill
-                      sizes="100vw"
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
-                      quality={90}
-                      priority
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
-                      <span className="text-gray-600 font-titular text-3xl">DUPLA</span>
-                    </div>
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-5 md:p-8">
-                    <span
-                      className="inline-block font-cuerpo font-extrabold uppercase tracking-[2px] text-[11px] mb-2"
-                      style={{ color: artColor }}
-                    >
-                      {artLabel}
-                    </span>
-                    <h2 className="font-titular text-2xl md:text-4xl text-white leading-tight">{hero.title}</h2>
-                    {hero.subtitle && (
-                      <p className="font-cuerpo text-gray-300 text-sm md:text-base mt-2 line-clamp-2">{hero.subtitle}</p>
-                    )}
-                    <p className="font-cuerpo text-gray-400 text-xs mt-3">
-                      Por {hero.author.name} · {formatDateShort(hero.publishedAt || hero.createdAt)}
-                    </p>
-                  </div>
-                </div>
-              </Link>
-            </div>
-          )
-        })()}
 
         {/* Bloques por subsección */}
         <div className="space-y-14">
@@ -412,7 +362,6 @@ function renderSectionWithChildren(
               key={child.id}
               subsection={{ ...child, parent: { slug: section.slug } }}
               articles={articles}
-              heroId={hero?.id}
             />
           ))}
           {inactiveBlocks.map(({ child, articles }) => (
@@ -420,12 +369,11 @@ function renderSectionWithChildren(
               key={child.id}
               subsection={{ ...child, parent: { slug: section.slug } }}
               articles={articles}
-              heroId={hero?.id}
             />
           ))}
         </div>
 
-        {activeBlocks.length === 0 && inactiveBlocks.length === 0 && !hero && (
+        {activeBlocks.length === 0 && inactiveBlocks.length === 0 && (
           <p className="text-gray-400 font-cuerpo text-center py-12">
             No hay artículos publicados en esta sección.
           </p>
@@ -476,7 +424,7 @@ function renderSectionListing(
           <Breadcrumb section={section} />
           <SectionTitle section={section} />
           {section.description && (
-            <p className="font-cuerpo text-gray-500 text-lg mt-2">{section.description}</p>
+            <p className="font-cuerpo text-gray-500 text-base md:text-lg mt-3 max-w-[700px]">{section.description}</p>
           )}
         </div>
 

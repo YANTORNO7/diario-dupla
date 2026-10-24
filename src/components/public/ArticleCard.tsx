@@ -15,7 +15,7 @@ type Props = {
   authorName?: string | null
 }
 
-export default function ArticleCard({ title, subtitle, slug, sectionPath, sectionLabel, sectionColor, heroImageUrl, publishedAt, showSection = true, authorName }: Props) {
+export default function ArticleCard({ title, subtitle, slug, sectionPath, sectionLabel, sectionColor, heroImageUrl, publishedAt, showSection = false, authorName }: Props) {
   const href = `${sectionPath}/${slug}`
 
   return (

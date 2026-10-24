@@ -71,18 +71,18 @@ async function main() {
   })
   const brasil = await prisma.section.upsert({
     where: { slug: "brasil" },
-    update: { name: "Fútbol Brasileño", showOnHomepage: true, order: 1 },
-    create: { name: "Fútbol Brasileño", slug: "brasil", color: "#009C3B", order: 1, showOnHomepage: true },
+    update: { name: "Fútbol Brasileño", showOnHomepage: true, order: 1, description: "El Brasileirão, los estaduales y la Seleção, contados para el hincha argentino." },
+    create: { name: "Fútbol Brasileño", slug: "brasil", color: "#009C3B", order: 1, showOnHomepage: true, description: "El Brasileirão, los estaduales y la Seleção, contados para el hincha argentino." },
   })
   const argentina = await prisma.section.upsert({
     where: { slug: "argentina" },
-    update: { name: "Fútbol Argentino", order: 2, showOnHomepage: true },
-    create: { name: "Fútbol Argentino", slug: "argentina", color: "#75AADB", order: 2, showOnHomepage: true },
+    update: { name: "Fútbol Argentino", order: 2, showOnHomepage: true, description: "Todo lo de la Liga Profesional, el ascenso y la Selección: resultados, tablas, previas y lo que pasa en cada club." },
+    create: { name: "Fútbol Argentino", slug: "argentina", color: "#75AADB", order: 2, showOnHomepage: true, description: "Todo lo de la Liga Profesional, el ascenso y la Selección: resultados, tablas, previas y lo que pasa en cada club." },
   })
   const copas = await prisma.section.upsert({
     where: { slug: "copas" },
-    update: { showOnHomepage: true, order: 3 },
-    create: { name: "Copas", slug: "copas", color: "#D4AF37", order: 3, showOnHomepage: true },
+    update: { showOnHomepage: true, order: 3, description: "Libertadores, Sudamericana y todas las competencias donde se cruzan argentinos y brasileños." },
+    create: { name: "Copas", slug: "copas", color: "#D4AF37", order: 3, showOnHomepage: true, description: "Libertadores, Sudamericana y todas las competencias donde se cruzan argentinos y brasileños." },
   })
   await prisma.section.upsert({
     where: { slug: "libertadores" },
@@ -105,8 +105,8 @@ async function main() {
   }
   const deporteMotor = await prisma.section.upsert({
     where: { slug: "deporte-motor" },
-    update: { name: "Deporte motor", showOnHomepage: true, order: 4, color: "#DC2626" },
-    create: { name: "Deporte motor", slug: "deporte-motor", color: "#DC2626", order: 4, showOnHomepage: true },
+    update: { name: "Deporte motor", showOnHomepage: true, order: 4, color: "#DC2626", description: "Todo el deporte motor: carreras, resultados y lo que pasa en las pistas de autos y motos." },
+    create: { name: "Deporte motor", slug: "deporte-motor", color: "#DC2626", order: 4, showOnHomepage: true, description: "Todo el deporte motor: carreras, resultados y lo que pasa en las pistas de autos y motos." },
   })
   await prisma.section.upsert({
     where: { slug: "f1" },
