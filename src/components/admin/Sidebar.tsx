@@ -17,7 +17,7 @@ export default function AdminSidebar() {
     { href: "/admin/clubes", label: "Clubes", adminOnly: false },
     { href: "/admin/placas", label: "Placas IG", adminOnly: false },
     { href: "/admin/goles", label: "Goles", adminOnly: false },
-    { href: "/admin/mi-carrera", label: "Mi carrera", adminOnly: false },
+    { href: "/admin/mi-carrera", label: "Mi ficha", adminOnly: false },
     { href: "/admin/pendientes", label: "Pendientes", adminOnly: true },
     { href: "/admin/estadisticas", label: "Estadísticas", adminOnly: true },
     { href: "/admin/usuarios", label: "Usuarios", adminOnly: true },

@@ -6,10 +6,12 @@ export default async function MiCarreraPage() {
   const session = await auth()
   if (!session?.user) redirect("/admin/login")
 
+  const userName = (session.user as any).name as string
+
   return (
     <div>
-      <h1 className="text-2xl font-bold font-cuerpo mb-6">Mi carrera</h1>
-      <CarreraPanel />
+      <h1 className="text-2xl font-bold font-cuerpo mb-6">Mi ficha</h1>
+      <CarreraPanel userName={userName} />
     </div>
   )
 }

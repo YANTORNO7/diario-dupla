@@ -14,9 +14,8 @@ type CarreraData = {
   ranking: { userId: string; name: string; notasMes: number; nivel: Nivel }[]
 }
 
-export default function CarreraPanel() {
+export default function CarreraPanel({ userName }: { userName: string }) {
   const [data, setData] = useState<CarreraData | null>(null)
-  const [mostrarRanking, setMostrarRanking] = useState(false)
   const [levelUpMsg, setLevelUpMsg] = useState<string | null>(null)
 
   useEffect(() => {
@@ -41,7 +40,7 @@ export default function CarreraPanel() {
     )
   }
 
-  const { total, estesMes, estaSemana, nivelActual, nivelSiguiente, progreso, ranking } = data
+  const { total, estesMes, estaSemana, nivelActual, nivelSiguiente, progreso } = data
   const faltanNotas = nivelSiguiente ? nivelSiguiente.desde - total : 0
 
   return (
@@ -74,6 +73,7 @@ export default function CarreraPanel() {
         <div className="relative w-36 h-36 mb-4 drop-shadow-2xl">
           <Image src={nivelActual.escudo} alt={nivelActual.nombre} fill className="object-contain" />
         </div>
+        <p className="font-cuerpo text-lg font-semibold text-white mb-1">{userName}</p>
         <h1 className="font-titular text-5xl tracking-widest mb-1" style={{ color: nivelActual.color }}>
           {nivelActual.nombre.toUpperCase()}
         </h1>
@@ -158,46 +158,6 @@ export default function CarreraPanel() {
         </div>
       </div>
 
-      {/* Ranking del mes */}
-      <div className="max-w-md mx-auto">
-        <button
-          onClick={() => setMostrarRanking(!mostrarRanking)}
-          className="w-full flex items-center justify-between px-4 py-3 rounded-xl mb-3 transition-colors hover:opacity-90"
-          style={{ background: "#1a2744" }}
-        >
-          <span className="font-titular text-xl tracking-widest" style={{ color: "#F2B632" }}>
-            RANKING DEL MES
-          </span>
-          <span className="text-gray-400 text-sm">{mostrarRanking ? "▲" : "▼"}</span>
-        </button>
-
-        {mostrarRanking && (
-          <div className="rounded-xl overflow-hidden" style={{ background: "#1a2744" }}>
-            {ranking.length === 0 ? (
-              <p className="text-center py-6 font-cuerpo text-sm" style={{ color: "#B8C2D9" }}>
-                No hay notas publicadas este mes.
-              </p>
-            ) : (
-              ranking.map((entry, i) => (
-                <div
-                  key={entry.userId}
-                  className="flex items-center gap-3 px-4 py-3 border-b last:border-0"
-                  style={{ borderColor: "#0B1631" }}
-                >
-                  <span className="font-titular text-2xl w-6 text-center" style={{ color: "#F2B632" }}>
-                    {i + 1}
-                  </span>
-                  <div className="relative w-8 h-8 flex-shrink-0">
-                    <Image src={entry.nivel.escudo} alt={entry.nivel.nombre} fill className="object-contain" />
-                  </div>
-                  <span className="flex-1 truncate font-cuerpo text-sm text-white">{entry.name}</span>
-                  <span className="font-titular text-2xl" style={{ color: "#F2B632" }}>{entry.notasMes}</span>
-                </div>
-              ))
-            )}
-          </div>
-        )}
-      </div>
     </div>
   )
 }
