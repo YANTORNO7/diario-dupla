@@ -15,12 +15,12 @@ type Props = {
   authorName?: string | null
 }
 
-export default function ArticleCard({ title, subtitle, slug, sectionPath, sectionLabel, sectionColor, heroImageUrl, publishedAt, showSection = false, authorName }: Props) {
+export default function ArticleCard({ title, subtitle, slug, sectionPath, sectionLabel, sectionColor, heroImageUrl, publishedAt, showSection = true, authorName }: Props) {
   const href = `${sectionPath}/${slug}`
 
   return (
-    <article className="flex flex-col h-full">
-      <Link href={href} className="block group">
+    <Link href={href} className="block group">
+      <article className="flex flex-col h-full">
         <div className="relative aspect-[16/10] rounded-lg overflow-hidden bg-gray-100 mb-3">
           {heroImageUrl ? (
             <Image
@@ -36,18 +36,15 @@ export default function ArticleCard({ title, subtitle, slug, sectionPath, sectio
               <span className="text-gray-400 font-titular text-xl">DUPLA</span>
             </div>
           )}
+          {showSection && (
+            <span
+              className="absolute top-2 left-2 text-[8px] md:text-[10px] font-cuerpo font-bold uppercase tracking-wider px-1.5 md:px-2 py-0.5 rounded"
+              style={{ backgroundColor: sectionColor, color: "white" }}
+            >
+              {sectionLabel}
+            </span>
+          )}
         </div>
-      </Link>
-      {showSection && (
-        <Link
-          href={sectionPath}
-          className="inline-block mb-1.5 font-cuerpo font-extrabold uppercase tracking-[2px] text-[11px] hover:opacity-75 transition-opacity w-fit"
-          style={{ color: sectionColor }}
-        >
-          {sectionLabel}
-        </Link>
-      )}
-      <Link href={href} className="block group flex-1 flex flex-col">
         <h3 className="font-titular text-lg md:text-xl leading-tight group-hover:text-gray-600 transition-colors">{title}</h3>
         {subtitle && <p className="font-cuerpo text-gray-500 text-sm mt-1 line-clamp-2">{subtitle}</p>}
         {(authorName || publishedAt) && (
@@ -57,7 +54,7 @@ export default function ArticleCard({ title, subtitle, slug, sectionPath, sectio
             {publishedAt && <span>{formatDateShort(publishedAt)}</span>}
           </p>
         )}
-      </Link>
-    </article>
+      </article>
+    </Link>
   )
 }
