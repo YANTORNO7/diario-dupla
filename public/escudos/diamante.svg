@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -18 200 242" width="200" height="242">
+<defs><linearGradient id="g-diamante" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#D6EEFF"/><stop offset=".55" stop-color="#4FA6FF"/><stop offset="1" stop-color="#1B4FC9"/></linearGradient>
+<linearGradient id="s-diamante" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity=".5"/><stop offset=".5" stop-color="#FFFFFF" stop-opacity="0"/></linearGradient></defs>
+<path d="M100 8 L184 36 V104 C184 160 146 196 100 216 C54 196 16 160 16 104 V36 Z" fill="#1B4FC9"/><path d="M100 8 L184 36 V104 C184 160 146 196 100 216 C54 196 16 160 16 104 V36 Z" fill="url(#g-diamante)" transform="translate(0 -3)"/>
+<path d="M100 22 L170 45 V104 C170 151 138 181 100 199 C62 181 30 151 30 104 V45 Z" fill="none" stroke="#0A1F5C" stroke-opacity=".35" stroke-width="3"/>
+<path d="M30 45 L100 22 L170 45 V90 C130 80 70 80 30 100 Z" fill="url(#s-diamante)"/>
+<g transform="translate(100 52)"><g transform="skewX(-8)"><rect x="-38" y="-15" width="76" height="28" fill="#FFFFFF"/></g>
+<text x="0" y="8" text-anchor="middle" font-family="Bebas Neue, sans-serif" font-size="25" letter-spacing="1.5" fill="#0B1631">DUPLA</text>
+<rect x="-38" y="13" width="19" height="4" fill="#74ACDF"/><rect x="-19" y="13" width="19" height="4" fill="#FFFFFF"/><rect x="0" y="13" width="19" height="4" fill="#009C3B"/><rect x="19" y="13" width="19" height="4" fill="#F2B632"/></g><g transform="translate(0 14)"><path d="M100 76 L122 94 L100 132 L78 94 Z" fill="#FFFFFF" opacity=".92"/><path d="M78 94 H122 M100 76 L91 94 L100 132 L109 94 Z" stroke="#1B4FC9" stroke-width="2.5" fill="none"/></g><path d="M4 144 H196 L186 160 L196 176 H4 L14 160 Z" fill="#0B1631" stroke="#FFFFFF" stroke-width="2.5" stroke-linejoin="round"/>
+<text x="100" y="169" text-anchor="middle" font-family="Bebas Neue, sans-serif" font-size="24" letter-spacing="2" fill="#FFFFFF">DIAMANTE</text></svg>

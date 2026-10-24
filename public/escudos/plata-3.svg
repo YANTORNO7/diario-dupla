@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -18 200 242" width="200" height="242">
+<defs><linearGradient id="g-plata-3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F4F7FA"/><stop offset=".55" stop-color="#B9C2CC"/><stop offset="1" stop-color="#6B7682"/></linearGradient>
+<linearGradient id="s-plata-3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity=".5"/><stop offset=".5" stop-color="#FFFFFF" stop-opacity="0"/></linearGradient></defs>
+<path d="M100 8 L184 36 V104 C184 160 146 196 100 216 C54 196 16 160 16 104 V36 Z" fill="#6B7682"/><path d="M100 8 L184 36 V104 C184 160 146 196 100 216 C54 196 16 160 16 104 V36 Z" fill="url(#g-plata-3)" transform="translate(0 -3)"/>
+<path d="M100 22 L170 45 V104 C170 151 138 181 100 199 C62 181 30 151 30 104 V45 Z" fill="none" stroke="#2B3138" stroke-opacity=".35" stroke-width="3"/>
+<path d="M30 45 L100 22 L170 45 V90 C130 80 70 80 30 100 Z" fill="url(#s-plata-3)"/>
+<g transform="translate(100 52)"><g transform="skewX(-8)"><rect x="-38" y="-15" width="76" height="28" fill="#FFFFFF"/></g>
+<text x="0" y="8" text-anchor="middle" font-family="Bebas Neue, sans-serif" font-size="25" letter-spacing="1.5" fill="#0B1631">DUPLA</text>
+<rect x="-38" y="13" width="19" height="4" fill="#74ACDF"/><rect x="-19" y="13" width="19" height="4" fill="#FFFFFF"/><rect x="0" y="13" width="19" height="4" fill="#009C3B"/><rect x="19" y="13" width="19" height="4" fill="#F2B632"/></g><path transform="translate(58 96) scale(.28)" d="M50 0 L61 35 L98 35 L68 57 L79 92 L50 70 L21 92 L32 57 L2 35 L39 35 Z" fill="#2B3138"/><path transform="translate(86 96) scale(.28)" d="M50 0 L61 35 L98 35 L68 57 L79 92 L50 70 L21 92 L32 57 L2 35 L39 35 Z" fill="#2B3138"/><path transform="translate(114 96) scale(.28)" d="M50 0 L61 35 L98 35 L68 57 L79 92 L50 70 L21 92 L32 57 L2 35 L39 35 Z" fill="#2B3138"/><path d="M4 144 H196 L186 160 L196 176 H4 L14 160 Z" fill="#0B1631" stroke="#FFFFFF" stroke-width="2.5" stroke-linejoin="round"/>
+<text x="100" y="169" text-anchor="middle" font-family="Bebas Neue, sans-serif" font-size="24" letter-spacing="2" fill="#FFFFFF">PLATA III</text></svg>
