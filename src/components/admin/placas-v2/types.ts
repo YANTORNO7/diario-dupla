@@ -134,3 +134,5 @@ export type AnyState =
   | { id: '11'; data: NoticiaBrasilState }
   | { id: '12'; data: TablaAnualState }
   | { id: '13'; data: AnuncioState }
+
+export type { M1State, M2State, M3State, M4State, M5State } from './motor/types'

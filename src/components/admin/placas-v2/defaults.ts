@@ -155,6 +155,12 @@ export const TEMPLATE_LIST = [
   { id: '11', label: 'Noticia Brasil', emoji: '🇧🇷' },
   { id: '12', label: 'Tabla anual', emoji: '📊' },
   { id: '13', label: 'Anuncio', emoji: '📢' },
+  // Motor
+  { id: 'M1', label: 'Motor: Podio', emoji: '🏆' },
+  { id: 'M2', label: 'Motor: Piloto', emoji: '🏎️' },
+  { id: 'M3', label: 'Motor: Más rápido', emoji: '⚡' },
+  { id: 'M4', label: 'Motor: Top 3', emoji: '🎯' },
+  { id: 'M5', label: 'Motor: Grilla', emoji: '🚦' },
 ] as const
 
 export type TemplateId = typeof TEMPLATE_LIST[number]['id']

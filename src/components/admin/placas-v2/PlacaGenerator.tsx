@@ -21,6 +21,14 @@ import type {
   NoticiaBrasilState, TablaAnualState, AnuncioState,
   EventRow, TableRow, RecentMatch, Fondo, Franja,
 } from "./types"
+import { MOTOR_TEAMS, TEAM_CATEGORIES, CATEGORY_LABELS, getTeamColor } from "./motor/teams"
+import { MOTOR_PILOTS } from "./motor/pilots"
+import {
+  defaultM1, defaultM2, defaultM3, defaultM4, defaultM5,
+  MOTOR_BG_PRESETS, M2_VARIANTES, MOTOR_DEFAULT_BG, MOTOR_DEFAULT_ACCENT,
+} from "./motor/defaults"
+import { renderM1, renderM2, renderM3, renderM4, renderM5 } from "./motor/renders"
+import type { M1State, M2State, M3State, M4State, M5State, MotorPilot, MotorRow, GrillaRow } from "./motor/types"
 
 // ---- helpers ----
 function uid() { return Math.random().toString(36).slice(2, 8) }
@@ -605,12 +613,450 @@ function AnuncioForm({ state, set }: { state: AnuncioState; set: (s: AnuncioStat
   )
 }
 
+// ---- Motor form components ----
+
+const COMMON_FLAGS = ['🇦🇷','🇧🇷','🇳🇱','🇬🇧','🇩🇪','🇲🇨','🇦🇺','🇲🇽','🇨🇦','🇪🇸','🇫🇷','🇮🇹','🇯🇵','🇹🇭','🇳🇿']
+
+function MotorColorsSection({
+  bgColor, accentColor,
+  onBg, onAccent,
+  defaultBg = MOTOR_DEFAULT_BG,
+  defaultAccent = MOTOR_DEFAULT_ACCENT,
+}: {
+  bgColor: string; accentColor: string
+  onBg: (v: string) => void; onAccent: (v: string) => void
+  defaultBg?: string; defaultAccent?: string
+}) {
+  return (
+    <div className="border rounded-lg p-3 space-y-3 bg-gray-50">
+      <div className="flex items-center justify-between">
+        <Label>Colores</Label>
+        <button
+          onClick={() => { onBg(defaultBg); onAccent(defaultAccent) }}
+          className="text-xs text-gray-400 hover:text-gray-600"
+        >Restablecer</button>
+      </div>
+      <div>
+        <Label>Fondo</Label>
+        <div className="flex flex-wrap gap-1.5 mb-1.5">
+          {MOTOR_BG_PRESETS.map(p => (
+            <button
+              key={p.color}
+              onClick={() => onBg(p.color)}
+              title={p.label}
+              className={`w-7 h-7 rounded border-2 transition-all ${bgColor === p.color ? 'border-[#0B1631] scale-110' : 'border-transparent'}`}
+              style={{ background: p.color }}
+            />
+          ))}
+          <input type="color" value={bgColor} onChange={e => onBg(e.target.value)}
+            className="w-7 h-7 rounded cursor-pointer border border-gray-300" title="Color libre" />
+        </div>
+      </div>
+      <div>
+        <Label>Acento (barras + franja)</Label>
+        <div className="flex items-center gap-2">
+          <input type="color" value={accentColor} onChange={e => onAccent(e.target.value)}
+            className="w-7 h-7 rounded cursor-pointer border border-gray-300" />
+          <span className="text-xs font-mono text-gray-500">{accentColor}</span>
+          <button onClick={() => onAccent('#E10600')}
+            className="text-xs px-2 py-0.5 border rounded hover:bg-gray-100">Rojo</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function MotorPilotSubForm({
+  label, pilot, showPuntos = false,
+  onChange,
+}: {
+  label: string
+  pilot: MotorPilot
+  showPuntos?: boolean
+  onChange: (p: MotorPilot) => void
+}) {
+  const u = (p: Partial<MotorPilot>) => onChange({ ...pilot, ...p })
+  const [catFilter, setCatFilter] = useState<string>('F1')
+
+  async function handleFoto(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (file) u({ foto: await readFile(file) })
+  }
+
+  function handlePilotoChange(val: string) {
+    u({ piloto: val.toUpperCase() })
+    const found = MOTOR_PILOTS.find(p => p.apellido === val.toUpperCase())
+    if (found) {
+      const team = MOTOR_TEAMS.find(t => t.id === found.teamId)
+      u({ piloto: found.apellido, pais: found.pais, equipo: team?.name ?? pilot.equipo, teamId: found.teamId, panelColor: team?.color ?? pilot.panelColor })
+    }
+  }
+
+  function handleTeamChange(teamId: string) {
+    const team = MOTOR_TEAMS.find(t => t.id === teamId)
+    if (team) u({ teamId, equipo: team.name, panelColor: team.color })
+  }
+
+  return (
+    <div className="border rounded-lg p-3 space-y-2.5 bg-white">
+      <p className="text-xs font-bold text-gray-600 uppercase tracking-wide">{label}</p>
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <Label>Apellido</Label>
+          <input
+            list={`pilots-${label}`}
+            value={pilot.piloto}
+            onChange={e => handlePilotoChange(e.target.value)}
+            placeholder="APELLIDO"
+            className="w-full border rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#0B1631] uppercase"
+          />
+          <datalist id={`pilots-${label}`}>
+            {MOTOR_PILOTS.map(p => <option key={p.apellido} value={p.apellido} />)}
+          </datalist>
+        </div>
+        <div>
+          <Label>País (emoji)</Label>
+          <div className="flex gap-1">
+            <input value={pilot.pais} onChange={e => u({ pais: e.target.value })}
+              className="w-14 border rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#0B1631]" />
+            <div className="flex flex-wrap gap-0.5">
+              {COMMON_FLAGS.slice(0, 6).map(f => (
+                <button key={f} onClick={() => u({ pais: f })}
+                  className={`text-base px-0.5 rounded ${pilot.pais === f ? 'bg-gray-200' : ''}`}>{f}</button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <Label>Equipo</Label>
+        <div className="flex gap-2 items-center">
+          <select value={catFilter} onChange={e => setCatFilter(e.target.value)}
+            className="border rounded px-1 py-1.5 text-xs">
+            {TEAM_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+          <select value={pilot.teamId} onChange={e => handleTeamChange(e.target.value)}
+            className="flex-1 border rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#0B1631]">
+            <option value="">Seleccionar…</option>
+            {MOTOR_TEAMS.filter(t => t.category === catFilter).map(t => (
+              <option key={t.id} value={t.id}>{t.name}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <div className="flex-1">
+          <Label>Color del panel</Label>
+          <div className="flex items-center gap-2">
+            <input type="color" value={pilot.panelColor} onChange={e => u({ panelColor: e.target.value })}
+              className="w-7 h-7 rounded cursor-pointer border border-gray-300" />
+            <span className="text-xs font-mono text-gray-500">{pilot.panelColor}</span>
+          </div>
+        </div>
+        {showPuntos && (
+          <div className="w-16">
+            <Label>Puntos</Label>
+            <input value={pilot.puntos} onChange={e => u({ puntos: e.target.value })}
+              className="w-full border rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#0B1631]" />
+          </div>
+        )}
+      </div>
+      <div className="space-y-1.5">
+        <Label>Foto del piloto (PNG recortado ideal)</Label>
+        <label className="flex items-center gap-2 cursor-pointer">
+          <span className="px-3 py-1.5 bg-[#0B1631] text-white rounded text-xs hover:bg-gray-800 transition-colors">
+            {pilot.foto ? 'Cambiar foto' : 'Subir foto'}
+          </span>
+          {pilot.foto && <span className="text-xs text-green-600">✓ cargada</span>}
+          <input type="file" accept="image/*" className="hidden" onChange={handleFoto} />
+        </label>
+        {pilot.foto && (
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Label>Pos. X ({pilot.fotoPosX}%)</Label>
+              <input type="range" min={0} max={100} value={pilot.fotoPosX} onChange={e => u({ fotoPosX: +e.target.value })} className="w-full" />
+            </div>
+            <div>
+              <Label>Zoom ({pilot.fotoScale.toFixed(1)}x)</Label>
+              <input type="range" min={100} max={200} value={Math.round(pilot.fotoScale * 100)} onChange={e => u({ fotoScale: +e.target.value / 100 })} className="w-full" />
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function MotorRowsList({
+  rows, onChange, showPuntos = true,
+}: {
+  rows: MotorRow[]
+  onChange: (rows: MotorRow[]) => void
+  showPuntos?: boolean
+}) {
+  function add() {
+    const pos = String(rows.length + 4)
+    onChange([...rows, { id: uid(), pos, piloto: `PILOTO ${pos}`, equipo: 'EQUIPO', equipoColor: '#E10600', puntos: '0' }])
+  }
+  function remove(id: string) { onChange(rows.filter(r => r.id !== id)) }
+  function upd(id: string, p: Partial<MotorRow>) { onChange(rows.map(r => r.id === id ? { ...r, ...p } : r)) }
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1">
+        <Label>P{rows[0]?.pos ?? 4}–P{rows[rows.length - 1]?.pos ?? 10}</Label>
+        <button onClick={add} className="text-xs px-2 py-0.5 bg-[#0B1631] text-white rounded hover:bg-gray-800">+ Fila</button>
+      </div>
+      <div className="space-y-1">
+        {rows.map(r => (
+          <div key={r.id} className="flex gap-1 items-center">
+            <span className="text-xs text-gray-400 w-5 text-right">{r.pos}</span>
+            <input value={r.piloto} onChange={e => upd(r.id, { piloto: e.target.value })}
+              placeholder="APELLIDO" className="flex-1 border rounded px-1 py-1 text-xs uppercase" />
+            <input value={r.equipo} onChange={e => upd(r.id, { equipo: e.target.value })}
+              placeholder="Equipo" className="w-24 border rounded px-1 py-1 text-xs" />
+            <input type="color" value={r.equipoColor} onChange={e => upd(r.id, { equipoColor: e.target.value })}
+              className="w-6 h-6 rounded cursor-pointer border" title="Color equipo" />
+            {showPuntos && (
+              <input value={r.puntos} onChange={e => upd(r.id, { puntos: e.target.value })}
+                placeholder="Pts" className="w-10 border rounded px-1 py-1 text-xs" />
+            )}
+            <button onClick={() => remove(r.id)} className="text-red-400 text-xs px-0.5">✕</button>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function GrillaRowsList({ rows, onChange }: { rows: GrillaRow[]; onChange: (rows: GrillaRow[]) => void }) {
+  const [pasteText, setPasteText] = useState('')
+  const [showPaste, setShowPaste] = useState(false)
+
+  function add() {
+    const pos = String(rows.length + 1)
+    onChange([...rows, { id: uid(), pos, piloto: `PILOTO ${pos}`, equipo: 'EQUIPO', equipoColor: '#3671C6', tiempo: '—' }])
+  }
+  function remove(id: string) { onChange(rows.filter(r => r.id !== id)) }
+  function upd(id: string, p: Partial<GrillaRow>) { onChange(rows.map(r => r.id === id ? { ...r, ...p } : r)) }
+
+  function parsePaste() {
+    const lines = pasteText.trim().split('\n').filter(Boolean)
+    const parsed: GrillaRow[] = lines.map((line, i) => {
+      const parts = line.split(/[,\t]+/).map(s => s.trim())
+      const piloto = (parts[1] ?? `PILOTO ${i + 1}`).toUpperCase()
+      const equipo = parts[2] ?? 'EQUIPO'
+      const tiempo = parts[3] ?? '—'
+      const found = MOTOR_TEAMS.find(t => t.name.toUpperCase() === equipo.toUpperCase())
+      const equipoColor = found?.color ?? rows[i]?.equipoColor ?? '#3671C6'
+      return { id: uid(), pos: parts[0] ?? String(i + 1), piloto, equipo, equipoColor, tiempo }
+    })
+    onChange(parsed)
+    setShowPaste(false)
+    setPasteText('')
+  }
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1">
+        <Label>Pilotos ({rows.length})</Label>
+        <div className="flex gap-1">
+          <button onClick={() => setShowPaste(!showPaste)} className="text-xs px-2 py-0.5 border rounded hover:bg-gray-50">Pegar lista</button>
+          <button onClick={add} className="text-xs px-2 py-0.5 bg-[#0B1631] text-white rounded hover:bg-gray-800">+ Fila</button>
+        </div>
+      </div>
+      {showPaste && (
+        <div className="mb-2 space-y-1">
+          <p className="text-xs text-gray-500">Una fila por línea: pos, apellido, equipo, tiempo</p>
+          <textarea value={pasteText} onChange={e => setPasteText(e.target.value)}
+            rows={4} placeholder={"1, VERSTAPPEN, Red Bull, 1:26.983\n2, NORRIS, McLaren, 1:27.112"}
+            className="w-full border rounded px-2 py-1.5 text-xs resize-none focus:outline-none focus:ring-1 focus:ring-[#0B1631]" />
+          <button onClick={parsePaste} className="text-xs px-3 py-1 bg-[#0B1631] text-white rounded hover:bg-gray-800">Aplicar</button>
+        </div>
+      )}
+      <div className="space-y-1 max-h-64 overflow-y-auto pr-1">
+        {rows.map(r => (
+          <div key={r.id} className="flex gap-1 items-center">
+            <span className="text-xs text-gray-400 w-5 text-right">{r.pos}</span>
+            <input value={r.piloto} onChange={e => upd(r.id, { piloto: e.target.value.toUpperCase() })}
+              placeholder="APELLIDO" className="flex-1 border rounded px-1 py-1 text-xs uppercase min-w-0" />
+            <input value={r.equipo} onChange={e => upd(r.id, { equipo: e.target.value })}
+              placeholder="Equipo" className="w-20 border rounded px-1 py-1 text-xs" />
+            <input type="color" value={r.equipoColor} onChange={e => upd(r.id, { equipoColor: e.target.value })}
+              className="w-6 h-6 rounded cursor-pointer border" title="Color equipo" />
+            <input value={r.tiempo} onChange={e => upd(r.id, { tiempo: e.target.value })}
+              placeholder="—" className="w-16 border rounded px-1 py-1 text-xs" />
+            <button onClick={() => remove(r.id)} className="text-red-400 text-xs px-0.5">✕</button>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// M1 — Resultado de carrera con podio
+function M1Form({ state, set }: { state: M1State; set: (s: M1State) => void }) {
+  const u = (p: Partial<M1State>) => set({ ...state, ...p })
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-3 gap-2">
+        <Field label="Fecha" value={state.fecha} onChange={v => u({ fecha: v })} placeholder="DOM 13/04" />
+        <Field label="GP" value={state.gp} onChange={v => u({ gp: v })} placeholder="JAPÓN" />
+        <Field label="Categoría" value={state.categoria} onChange={v => u({ categoria: v })} placeholder="F1" />
+      </div>
+      <MotorPilotSubForm label="1° Lugar" pilot={state.p1} showPuntos onChange={v => u({ p1: v })} />
+      <MotorPilotSubForm label="2° Lugar" pilot={state.p2} showPuntos onChange={v => u({ p2: v })} />
+      <MotorPilotSubForm label="3° Lugar" pilot={state.p3} showPuntos onChange={v => u({ p3: v })} />
+      <MotorRowsList rows={state.rows} onChange={v => u({ rows: v })} />
+      <MotorColorsSection bgColor={state.bgColor} accentColor={state.accentColor}
+        onBg={v => u({ bgColor: v })} onAccent={v => u({ accentColor: v })} />
+    </div>
+  )
+}
+
+// M2 — Piloto destacado
+function M2Form({ state, set }: { state: M2State; set: (s: M2State) => void }) {
+  const u = (p: Partial<M2State>) => set({ ...state, ...p })
+
+  async function handleFoto(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (file) u({ foto: await readFile(file) })
+  }
+
+  function handleTeamChange(teamId: string) {
+    const team = MOTOR_TEAMS.find(t => t.id === teamId)
+    if (team) u({ teamId, equipo: team.name, panelColor: team.color })
+  }
+
+  function handleVarianteChange(value: string) {
+    const v = M2_VARIANTES.find(x => x.value === value)
+    if (v && value !== 'LIBRE') {
+      u({ variante: value, palabraGigante: value, lineaDatos: v.linea })
+    } else {
+      u({ variante: value })
+    }
+  }
+
+  const [catFilter, setCatFilter] = useState('F1')
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <Label>Variante</Label>
+        <select value={state.variante} onChange={e => handleVarianteChange(e.target.value)}
+          className="w-full border rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#0B1631]">
+          {M2_VARIANTES.map(v => <option key={v.value} value={v.value}>{v.label}</option>)}
+        </select>
+      </div>
+      <Field label="Palabra gigante" value={state.palabraGigante} onChange={v => u({ palabraGigante: v.toUpperCase() })} placeholder="GANADOR" />
+      <Field label="Nombre del piloto (espaciado)" value={state.piloto} onChange={v => u({ piloto: v })} placeholder="NOMBRE DEL PILOTO" />
+      <div>
+        <Label>Equipo</Label>
+        <div className="flex gap-2 items-center">
+          <select value={catFilter} onChange={e => setCatFilter(e.target.value)}
+            className="border rounded px-1 py-1.5 text-xs">
+            {TEAM_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+          <select value={state.teamId} onChange={e => handleTeamChange(e.target.value)}
+            className="flex-1 border rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#0B1631]">
+            <option value="">Seleccionar…</option>
+            {MOTOR_TEAMS.filter(t => t.category === catFilter).map(t => (
+              <option key={t.id} value={t.id}>{t.name}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <Label>Color del fondo/panel</Label>
+        <input type="color" value={state.panelColor} onChange={e => u({ panelColor: e.target.value })}
+          className="w-7 h-7 rounded cursor-pointer border border-gray-300" />
+        <span className="text-xs font-mono text-gray-500">{state.panelColor}</span>
+      </div>
+      <Field label="Línea de datos" value={state.lineaDatos} onChange={v => u({ lineaDatos: v })} placeholder="FECHA X // GP DE PAÍS" />
+      <div className="space-y-2">
+        <Label>Foto del piloto (PNG recortado ideal)</Label>
+        <label className="flex items-center gap-2 cursor-pointer">
+          <span className="px-3 py-1.5 bg-[#0B1631] text-white rounded text-xs hover:bg-gray-800">
+            {state.foto ? 'Cambiar foto' : 'Subir foto'}
+          </span>
+          {state.foto && <span className="text-xs text-green-600">✓ cargada</span>}
+          <input type="file" accept="image/*" className="hidden" onChange={handleFoto} />
+        </label>
+        {state.foto && (
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Label>Pos. X ({state.fotoPosX}%)</Label>
+              <input type="range" min={0} max={100} value={state.fotoPosX} onChange={e => u({ fotoPosX: +e.target.value })} className="w-full" />
+            </div>
+            <div>
+              <Label>Zoom ({state.fotoScale.toFixed(1)}x)</Label>
+              <input type="range" min={100} max={200} value={Math.round(state.fotoScale * 100)} onChange={e => u({ fotoScale: +e.target.value / 100 })} className="w-full" />
+            </div>
+          </div>
+        )}
+      </div>
+      <MotorColorsSection bgColor={state.bgColor} accentColor={state.accentColor}
+        onBg={v => u({ bgColor: v })} onAccent={v => u({ accentColor: v })} />
+    </div>
+  )
+}
+
+// M3 — El más rápido
+function M3Form({ state, set }: { state: M3State; set: (s: M3State) => void }) {
+  const u = (p: Partial<M3State>) => set({ ...state, ...p })
+  return (
+    <div className="space-y-4">
+      <Field label="Sesión" value={state.sesion} onChange={v => u({ sesion: v })} placeholder="ENSAYOS LIBRES 1" />
+      <MotorPilotSubForm label="Piloto" pilot={state.p1} onChange={v => u({ p1: v })} />
+      <MotorColorsSection bgColor={state.bgColor} accentColor={state.accentColor}
+        onBg={v => u({ bgColor: v })} onAccent={v => u({ accentColor: v })} />
+    </div>
+  )
+}
+
+// M4 — Los más rápidos (top 3 sesión)
+function M4Form({ state, set }: { state: M4State; set: (s: M4State) => void }) {
+  const u = (p: Partial<M4State>) => set({ ...state, ...p })
+  return (
+    <div className="space-y-4">
+      <Field label="Sesión" value={state.sesion} onChange={v => u({ sesion: v })} placeholder="CLASIFICACIÓN" />
+      <MotorPilotSubForm label="1° Lugar" pilot={state.p1} onChange={v => u({ p1: v })} />
+      <MotorPilotSubForm label="2° Lugar" pilot={state.p2} onChange={v => u({ p2: v })} />
+      <MotorPilotSubForm label="3° Lugar" pilot={state.p3} onChange={v => u({ p3: v })} />
+      <MotorColorsSection bgColor={state.bgColor} accentColor={state.accentColor}
+        onBg={v => u({ bgColor: v })} onAccent={v => u({ accentColor: v })} />
+    </div>
+  )
+}
+
+// M5 — Grilla de largada
+function M5Form({ state, set }: { state: M5State; set: (s: M5State) => void }) {
+  const u = (p: Partial<M5State>) => set({ ...state, ...p })
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-2">
+        <Field label="Categoría" value={state.categoria} onChange={v => u({ categoria: v })} placeholder="FÓRMULA 1" />
+        <Field label="GP" value={state.gp} onChange={v => u({ gp: v })} placeholder="GP DE NOMBRE" />
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <Field label="Circuito" value={state.circuito} onChange={v => u({ circuito: v })} placeholder="NOMBRE CIRCUITO" />
+        <Field label="Fecha" value={state.fecha} onChange={v => u({ fecha: v })} placeholder="DD/MM" />
+      </div>
+      <Field label="Destacar piloto (nombre exacto, opcional)" value={state.destacado} onChange={v => u({ destacado: v })} placeholder="NOMBRE PILOTO" />
+      <GrillaRowsList rows={state.rows} onChange={v => u({ rows: v })} />
+      <MotorColorsSection bgColor={state.bgColor} accentColor={state.accentColor}
+        onBg={v => u({ bgColor: v })} onAccent={v => u({ accentColor: v })} />
+    </div>
+  )
+}
+
 // ---- State union ----
 type AllStates = {
   '01': GolState; '02': ResultadoState; '03': ResultadoState; '04': ExpulsionState
   '05': FraseState; '06': PreviaState; '07': NoticiaState; '08': FormacionState
   '09': CaraACaraState; '10': FotoSitioState; '11': NoticiaBrasilState
   '12': TablaAnualState; '13': AnuncioState
+  'M1': M1State; 'M2': M2State; 'M3': M3State; 'M4': M4State; 'M5': M5State
 }
 
 function getDefault(id: TemplateId): AllStates[typeof id] {
@@ -619,6 +1065,7 @@ function getDefault(id: TemplateId): AllStates[typeof id] {
     '05': defaultFrase, '06': defaultPrevia, '07': defaultNoticia, '08': defaultFormacion,
     '09': defaultCaraACara, '10': defaultFotoSitio, '11': defaultNoticiaBrasil,
     '12': defaultTablaAnual, '13': defaultAnuncio,
+    'M1': defaultM1, 'M2': defaultM2, 'M3': defaultM3, 'M4': defaultM4, 'M5': defaultM5,
   }
   return map[id]() as AllStates[typeof id]
 }
@@ -638,6 +1085,11 @@ function renderHtml(id: TemplateId, state: unknown): string {
     '11': s => render11NoticiaBrasil(s as NoticiaBrasilState),
     '12': s => render12TablaAnual(s as TablaAnualState),
     '13': s => render13Anuncio(s as AnuncioState),
+    'M1': s => renderM1(s as M1State),
+    'M2': s => renderM2(s as M2State),
+    'M3': s => renderM3(s as M3State),
+    'M4': s => renderM4(s as M4State),
+    'M5': s => renderM5(s as M5State),
   }
   return map[id](state)
 }
@@ -986,6 +1438,11 @@ export default function PlacaGenerator() {
       case '11': return <NoticiaBrasilForm {...props as Parameters<typeof NoticiaBrasilForm>[0]} />
       case '12': return <TablaAnualForm {...props as Parameters<typeof TablaAnualForm>[0]} />
       case '13': return <AnuncioForm {...props as Parameters<typeof AnuncioForm>[0]} />
+      case 'M1': return <M1Form {...props as Parameters<typeof M1Form>[0]} />
+      case 'M2': return <M2Form {...props as Parameters<typeof M2Form>[0]} />
+      case 'M3': return <M3Form {...props as Parameters<typeof M3Form>[0]} />
+      case 'M4': return <M4Form {...props as Parameters<typeof M4Form>[0]} />
+      case 'M5': return <M5Form {...props as Parameters<typeof M5Form>[0]} />
       default: return null
     }
   }
