@@ -51,7 +51,7 @@ export async function PUT(
       where: { id },
       data: {
         status: "PUBLISHED",
-        publishedAt: new Date(),
+        publishedAt: existing.publishedAt ?? new Date(),
         rejectionNote: null,
       },
       include: {
