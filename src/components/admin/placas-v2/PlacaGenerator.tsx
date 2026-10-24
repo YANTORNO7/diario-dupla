@@ -677,10 +677,28 @@ function MotorPilotSubForm({
 }) {
   const u = (p: Partial<MotorPilot>) => onChange({ ...pilot, ...p })
   const [catFilter, setCatFilter] = useState<string>('F1')
+  const [removing, setRemoving] = useState(false)
 
   async function handleFoto(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (file) u({ foto: await readFile(file) })
+  }
+
+  async function handleRemoveBg() {
+    if (!pilot.foto) return
+    setRemoving(true)
+    try {
+      const { removeBackground } = await import('@imgly/background-removal')
+      const blob = await fetch(pilot.foto).then(r => r.blob())
+      const result = await removeBackground(blob)
+      const reader = new FileReader()
+      reader.onload = () => u({ foto: reader.result as string })
+      reader.readAsDataURL(result)
+    } catch (e) {
+      console.error('Error al quitar fondo:', e)
+    } finally {
+      setRemoving(false)
+    }
   }
 
   function handlePilotoChange(val: string) {
@@ -763,18 +781,33 @@ function MotorPilotSubForm({
       </div>
       <div className="space-y-1.5">
         <Label>Foto del piloto (PNG recortado ideal)</Label>
-        <label className="flex items-center gap-2 cursor-pointer">
-          <span className="px-3 py-1.5 bg-[#0B1631] text-white rounded text-xs hover:bg-gray-800 transition-colors">
-            {pilot.foto ? 'Cambiar foto' : 'Subir foto'}
-          </span>
-          {pilot.foto && <span className="text-xs text-green-600">✓ cargada</span>}
-          <input type="file" accept="image/*" className="hidden" onChange={handleFoto} />
-        </label>
+        <div className="flex flex-wrap items-center gap-2">
+          <label className="cursor-pointer">
+            <span className="px-3 py-1.5 bg-[#0B1631] text-white rounded text-xs hover:bg-gray-800 transition-colors inline-block">
+              {pilot.foto ? 'Cambiar foto' : 'Subir foto'}
+            </span>
+            <input type="file" accept="image/*" className="hidden" onChange={handleFoto} />
+          </label>
+          {pilot.foto && (
+            <button
+              onClick={handleRemoveBg}
+              disabled={removing}
+              className="px-3 py-1.5 border border-gray-300 rounded text-xs hover:bg-gray-50 disabled:opacity-50 transition-colors"
+            >
+              {removing ? 'Procesando…' : 'Quitar fondo'}
+            </button>
+          )}
+          {pilot.foto && !removing && <span className="text-xs text-green-600">✓ cargada</span>}
+        </div>
         {pilot.foto && (
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <div>
               <Label>Pos. X ({pilot.fotoPosX}%)</Label>
               <input type="range" min={0} max={100} value={pilot.fotoPosX} onChange={e => u({ fotoPosX: +e.target.value })} className="w-full" />
+            </div>
+            <div>
+              <Label>Pos. Y ({pilot.fotoPosY}%)</Label>
+              <input type="range" min={0} max={100} value={pilot.fotoPosY} onChange={e => u({ fotoPosY: +e.target.value })} className="w-full" />
             </div>
             <div>
               <Label>Zoom ({pilot.fotoScale.toFixed(1)}x)</Label>
@@ -917,10 +950,28 @@ function M1Form({ state, set }: { state: M1State; set: (s: M1State) => void }) {
 // M2 — Piloto destacado
 function M2Form({ state, set }: { state: M2State; set: (s: M2State) => void }) {
   const u = (p: Partial<M2State>) => set({ ...state, ...p })
+  const [removing, setRemoving] = useState(false)
 
   async function handleFoto(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (file) u({ foto: await readFile(file) })
+  }
+
+  async function handleRemoveBg() {
+    if (!state.foto) return
+    setRemoving(true)
+    try {
+      const { removeBackground } = await import('@imgly/background-removal')
+      const blob = await fetch(state.foto).then(r => r.blob())
+      const result = await removeBackground(blob)
+      const reader = new FileReader()
+      reader.onload = () => u({ foto: reader.result as string })
+      reader.readAsDataURL(result)
+    } catch (e) {
+      console.error('Error al quitar fondo:', e)
+    } finally {
+      setRemoving(false)
+    }
   }
 
   function handleTeamChange(teamId: string) {
@@ -975,18 +1026,33 @@ function M2Form({ state, set }: { state: M2State; set: (s: M2State) => void }) {
       <Field label="Línea de datos" value={state.lineaDatos} onChange={v => u({ lineaDatos: v })} placeholder="FECHA X // GP DE PAÍS" />
       <div className="space-y-2">
         <Label>Foto del piloto (PNG recortado ideal)</Label>
-        <label className="flex items-center gap-2 cursor-pointer">
-          <span className="px-3 py-1.5 bg-[#0B1631] text-white rounded text-xs hover:bg-gray-800">
-            {state.foto ? 'Cambiar foto' : 'Subir foto'}
-          </span>
-          {state.foto && <span className="text-xs text-green-600">✓ cargada</span>}
-          <input type="file" accept="image/*" className="hidden" onChange={handleFoto} />
-        </label>
+        <div className="flex flex-wrap items-center gap-2">
+          <label className="cursor-pointer">
+            <span className="px-3 py-1.5 bg-[#0B1631] text-white rounded text-xs hover:bg-gray-800 inline-block">
+              {state.foto ? 'Cambiar foto' : 'Subir foto'}
+            </span>
+            <input type="file" accept="image/*" className="hidden" onChange={handleFoto} />
+          </label>
+          {state.foto && (
+            <button
+              onClick={handleRemoveBg}
+              disabled={removing}
+              className="px-3 py-1.5 border border-gray-300 rounded text-xs hover:bg-gray-50 disabled:opacity-50 transition-colors"
+            >
+              {removing ? 'Procesando…' : 'Quitar fondo'}
+            </button>
+          )}
+          {state.foto && !removing && <span className="text-xs text-green-600">✓ cargada</span>}
+        </div>
         {state.foto && (
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <div>
               <Label>Pos. X ({state.fotoPosX}%)</Label>
               <input type="range" min={0} max={100} value={state.fotoPosX} onChange={e => u({ fotoPosX: +e.target.value })} className="w-full" />
+            </div>
+            <div>
+              <Label>Pos. Y ({state.fotoPosY}%)</Label>
+              <input type="range" min={0} max={100} value={state.fotoPosY} onChange={e => u({ fotoPosY: +e.target.value })} className="w-full" />
             </div>
             <div>
               <Label>Zoom ({state.fotoScale.toFixed(1)}x)</Label>
@@ -1409,18 +1475,22 @@ export default function PlacaGenerator() {
     const container = previewContainerRef.current
     if (!container) return
     const update = () => {
-      const containerW = container.clientWidth
-      if (!containerW) return
-      const availableW = containerW - 16
-      const scaleByW = availableW / w
-      const hardMax = w === 1170 ? 0.45 : 0.5
-      setPreviewScale(Math.min(scaleByW, hardMax))
+      const rect = container.getBoundingClientRect()
+      if (!rect.width) return
+      const availW = rect.width - 32
+      // Account for header bar (~60px) + label + button + padding
+      const availH = window.innerHeight - 180
+      const scaleByW = availW / w
+      const scaleByH = availH / h
+      const cap = w === 1170 ? 0.5 : 0.55
+      setPreviewScale(Math.min(scaleByW, scaleByH, cap))
     }
     update()
     const observer = new ResizeObserver(update)
     observer.observe(container)
-    return () => observer.disconnect()
-  }, [w])
+    window.addEventListener('resize', update)
+    return () => { observer.disconnect(); window.removeEventListener('resize', update) }
+  }, [w, h])
 
   function renderForm() {
     const props = { state: currentState, set: setState }
@@ -1544,7 +1614,7 @@ export default function PlacaGenerator() {
         {/* Preview panel — right column, sticky */}
         <div
           ref={previewContainerRef}
-          className="flex-1 min-w-0 flex flex-col items-center gap-2 p-2 md:gap-3 md:p-4 sticky top-0 self-start"
+          className="flex-1 min-w-0 flex flex-col items-center gap-2 p-2 md:gap-3 md:p-4 sticky top-0 self-start overflow-x-hidden"
         >
           <p className="hidden md:block text-xs text-gray-400">{w}×{h}px — vista previa</p>
           <div

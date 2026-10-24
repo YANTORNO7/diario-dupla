@@ -16,7 +16,7 @@ export function defaultMotorPilot(panelColor = '#E8002D', puntos = '0'): MotorPi
     panelColor,
     foto: '',
     fotoPosX: 50,
-    fotoPosY: 20,
+    fotoPosY: 100,
     fotoScale: 1,
     puntos,
   }
@@ -78,7 +78,7 @@ export function defaultM2(): M2State {
     lineaDatos: 'FECHA X // GP DE PAÍS',
     foto: '',
     fotoPosX: 50,
-    fotoPosY: 20,
+    fotoPosY: 100,
     fotoScale: 1,
   }
 }

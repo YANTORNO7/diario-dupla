@@ -42,16 +42,16 @@ function pilotFotoInPanel(p: MotorPilot): string {
   if (!p.foto) {
     return `<svg viewBox="0 0 400 460" preserveAspectRatio="xMidYMax meet" style="position:absolute;left:0;right:0;bottom:0;width:100%;height:100%"><path d="${PILOT_PATH}" fill="rgba(255,255,255,.22)"/></svg>`
   }
-  const sc = p.fotoScale !== 1 ? `transform:scale(${p.fotoScale});transform-origin:${p.fotoPosX}% bottom;` : ''
-  return `<img src="${p.foto}" alt="" style="position:absolute;left:0;right:0;bottom:0;width:100%;height:100%;object-fit:contain;object-position:${p.fotoPosX}% bottom;${sc}">`
+  const sc = p.fotoScale !== 1 ? `transform:scale(${p.fotoScale});transform-origin:${p.fotoPosX}% ${p.fotoPosY}%;` : ''
+  return `<img src="${p.foto}" alt="" style="position:absolute;left:0;right:0;bottom:0;width:100%;height:100%;object-fit:contain;object-position:${p.fotoPosX}% ${p.fotoPosY}%;${sc}">`
 }
 
 function pilotFotoFull(foto: string, posX: number, posY: number, scale: number): string {
   if (!foto) {
     return `<svg viewBox="0 0 400 460" preserveAspectRatio="xMidYMax meet" style="position:absolute;left:0;right:0;bottom:0;width:100%;height:100%"><path d="${PILOT_PATH}" fill="rgba(255,255,255,.22)"/></svg>`
   }
-  const sc = scale !== 1 ? `transform:scale(${scale});transform-origin:${posX}% bottom;` : ''
-  return `<img src="${foto}" alt="" style="position:absolute;left:0;right:0;bottom:0;width:100%;height:100%;object-fit:contain;object-position:${posX}% bottom;${sc}">`
+  const sc = scale !== 1 ? `transform:scale(${scale});transform-origin:${posX}% ${posY}%;` : ''
+  return `<img src="${foto}" alt="" style="position:absolute;left:0;right:0;bottom:0;width:100%;height:100%;object-fit:contain;object-position:${posX}% ${posY}%;${sc}">`
 }
 
 function nameBar(color: string, flag: string, apellido: string, fontSize = 40): string {
