@@ -40,7 +40,7 @@ export default function ArticleList({ articles, userRole }: { articles: Article[
         alert(data.error || `Error ${res.status}`)
         return
       }
-      window.location.reload()
+      router.refresh()
     } catch (e) {
       alert("Error de conexión: " + String(e))
     } finally {
