@@ -31,8 +31,14 @@ export default function ArticleList({ articles, userRole }: { articles: Article[
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ publishedAt: new Date().toISOString() }),
       })
-      if (!res.ok) { alert("Error al subir el artículo"); return }
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        alert(data.error || `Error ${res.status}`)
+        return
+      }
       router.refresh()
+    } catch (e) {
+      alert("Error de conexión: " + String(e))
     } finally {
       setPromoting(null)
     }
