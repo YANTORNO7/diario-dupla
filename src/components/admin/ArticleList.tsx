@@ -37,6 +37,7 @@ export default function ArticleList({ articles, userRole }: { articles: Article[
         return
       }
       router.refresh()
+      window.scrollTo({ top: 0, behavior: "smooth" })
     } catch (e) {
       alert("Error de conexión: " + String(e))
     } finally {
