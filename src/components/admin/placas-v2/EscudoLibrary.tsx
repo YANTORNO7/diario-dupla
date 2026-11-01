@@ -3,7 +3,10 @@ import { useState, useEffect, useRef } from "react"
 
 type SavedEscudo = { id: string; name: string; url: string }
 const LS_KEY = "dupla-escudos-v2"
-const LS_MIGRATED_KEY = "dupla-escudos-migrated"
+
+function loadLocal(): SavedEscudo[] {
+  try { return JSON.parse(localStorage.getItem(LS_KEY) || "[]") } catch { return [] }
+}
 
 export default function EscudoLibrary({
   onSelect,
@@ -12,62 +15,23 @@ export default function EscudoLibrary({
   onSelect: (url: string) => void
   onClose: () => void
 }) {
-  const [library, setLibrary] = useState<SavedEscudo[]>([])
+  const [shared, setShared] = useState<SavedEscudo[]>([])
+  const [local, setLocal] = useState<SavedEscudo[]>([])
   const [name, setName] = useState("")
   const [uploading, setUploading] = useState(false)
-  const [migrating, setMigrating] = useState(false)
+  const [sharing, setSharing] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     fetch("/api/shared-escudos")
       .then(r => r.json())
-      .then((shared: SavedEscudo[]) => {
-        setLibrary(shared)
-        // Migrar localStorage automaticamente se ainda não foi feito
-        const alreadyMigrated = localStorage.getItem(LS_MIGRATED_KEY)
-        if (!alreadyMigrated) {
-          try {
-            const local: SavedEscudo[] = JSON.parse(localStorage.getItem(LS_KEY) || "[]")
-            if (local.length > 0) {
-              migrateLocal(local)
-            } else {
-              localStorage.setItem(LS_MIGRATED_KEY, "1")
-            }
-          } catch { localStorage.setItem(LS_MIGRATED_KEY, "1") }
-        }
-      })
+      .then(setShared)
       .catch(() => {})
+    setLocal(loadLocal())
   }, [])
 
-  async function migrateLocal(local: SavedEscudo[]) {
-    setMigrating(true)
-    const added: SavedEscudo[] = []
-    for (const e of local) {
-      try {
-        // Converter base64 data URL para blob
-        const res = await fetch(e.url)
-        const blob = await res.blob()
-        const file = new File([blob], `${e.name}.png`, { type: blob.type || "image/png" })
-
-        const formData = new FormData()
-        formData.append("file", file)
-        formData.append("skipOptimize", "true")
-        const uploadRes = await fetch("/api/upload", { method: "POST", body: formData })
-        if (!uploadRes.ok) continue
-        const { url } = await uploadRes.json()
-
-        const saveRes = await fetch("/api/shared-escudos", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: e.name, url }),
-        })
-        if (saveRes.ok) added.push(await saveRes.json())
-      } catch { /* continua com próximo */ }
-    }
-    setLibrary(prev => [...prev, ...added])
-    localStorage.setItem(LS_MIGRATED_KEY, "1")
-    setMigrating(false)
-  }
+  // Escudos locais que ainda não estão na biblioteca compartilhada
+  const localOnly = local.filter(l => !shared.some(s => s.name === l.name))
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -87,9 +51,9 @@ export default function EscudoLibrary({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: escudoName, url }),
       })
-      if (!saveRes.ok) { alert("Error al guardar en biblioteca"); return }
+      if (!saveRes.ok) { alert("Error al guardar"); return }
       const newEscudo = await saveRes.json()
-      setLibrary(prev => [...prev, newEscudo])
+      setShared(prev => [...prev, newEscudo])
       setName("")
       if (fileRef.current) fileRef.current.value = ""
     } finally {
@@ -97,10 +61,40 @@ export default function EscudoLibrary({
     }
   }
 
-  async function remove(id: string) {
-    await fetch(`/api/shared-escudos/${id}`, { method: "DELETE" })
-    setLibrary(prev => prev.filter(e => e.id !== id))
+  async function shareLocal(escudo: SavedEscudo) {
+    setSharing(escudo.id)
+    try {
+      const res = await fetch(escudo.url)
+      const blob = await res.blob()
+      const file = new File([blob], `${escudo.name}.png`, { type: "image/png" })
+      const formData = new FormData()
+      formData.append("file", file)
+      formData.append("skipOptimize", "true")
+      const uploadRes = await fetch("/api/upload", { method: "POST", body: formData })
+      if (!uploadRes.ok) { alert("Error al subir"); return }
+      const { url } = await uploadRes.json()
+      const saveRes = await fetch("/api/shared-escudos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: escudo.name, url }),
+      })
+      if (!saveRes.ok) { alert("Error al compartir"); return }
+      const newEscudo = await saveRes.json()
+      setShared(prev => [...prev, newEscudo])
+    } finally {
+      setSharing(null)
+    }
   }
+
+  async function removeShared(id: string) {
+    await fetch(`/api/shared-escudos/${id}`, { method: "DELETE" })
+    setShared(prev => prev.filter(e => e.id !== id))
+  }
+
+  const allItems = [
+    ...shared.map(e => ({ ...e, type: "shared" as const })),
+    ...localOnly.map(e => ({ ...e, type: "local" as const })),
+  ]
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
@@ -114,29 +108,39 @@ export default function EscudoLibrary({
         </div>
 
         <div className="flex-1 overflow-y-auto p-4">
-          {migrating && (
-            <p className="text-xs text-blue-500 text-center py-2">Importando escudos guardados...</p>
-          )}
-          {!migrating && library.length === 0 && (
+          {allItems.length === 0 && (
             <p className="text-sm text-gray-400 text-center py-6">No hay escudos guardados todavía.</p>
           )}
+          {localOnly.length > 0 && (
+            <p className="text-xs text-amber-600 mb-3">Tenés escudos guardados localmente. Presioná &quot;compartir&quot; para que todos los vean.</p>
+          )}
           <div className="grid grid-cols-4 gap-3">
-            {library.map(e => (
+            {allItems.map(e => (
               <div key={e.id} className="flex flex-col items-center gap-1 group">
                 <button
                   onClick={() => { onSelect(e.url); onClose() }}
-                  className="w-16 h-16 rounded-lg border-2 border-transparent hover:border-[#0B1631] bg-gray-100 flex items-center justify-center overflow-hidden transition-colors"
+                  className={`w-16 h-16 rounded-lg border-2 border-transparent hover:border-[#0B1631] flex items-center justify-center overflow-hidden transition-colors ${e.type === "local" ? "bg-amber-50" : "bg-gray-100"}`}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={e.url} alt={e.name} className="w-14 h-14 object-contain" />
                 </button>
                 <span className="text-xs text-gray-500 text-center leading-tight max-w-full truncate px-1">{e.name}</span>
-                <button
-                  onClick={() => remove(e.id)}
-                  className="text-xs text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  quitar
-                </button>
+                {e.type === "local" ? (
+                  <button
+                    onClick={() => shareLocal(e)}
+                    disabled={sharing === e.id}
+                    className="text-xs text-amber-600 hover:text-amber-800 disabled:opacity-50"
+                  >
+                    {sharing === e.id ? "..." : "compartir"}
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => removeShared(e.id)}
+                    className="text-xs text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    quitar
+                  </button>
+                )}
               </div>
             ))}
           </div>
