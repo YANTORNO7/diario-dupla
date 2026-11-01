@@ -23,13 +23,17 @@ export default function ArticleList({ articles, userRole }: { articles: Article[
   const [deleting, setDeleting] = useState<string | null>(null)
   const [promoting, setPromoting] = useState<string | null>(null)
 
-  async function handlePromote(id: string) {
+  async function handlePromote(id: string, idx: number) {
+    if (idx === 0) return
+    const above = articles[idx - 1]
+    const aboveDate = new Date(above.publishedAt ?? above.createdAt)
+    const newDate = new Date(aboveDate.getTime() + 1)
     setPromoting(id)
     try {
       const res = await fetch(`/api/articles/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ publishedAt: new Date().toISOString() }),
+        body: JSON.stringify({ publishedAt: newDate.toISOString() }),
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
@@ -126,7 +130,7 @@ export default function ArticleList({ articles, userRole }: { articles: Article[
             </tr>
           </thead>
           <tbody>
-            {articles.map((article) => {
+            {articles.map((article, idx) => {
               const sectionLabel = getSectionLabel(article)
               const sectionColor = getSectionColor(article)
               const badge = getStatusBadge(article.status)
@@ -166,9 +170,9 @@ export default function ArticleList({ articles, userRole }: { articles: Article[
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-2">
-                      {userRole === "ADMIN" && article.status === "PUBLISHED" && (
+                      {userRole === "ADMIN" && article.status === "PUBLISHED" && idx > 0 && (
                         <button
-                          onClick={() => handlePromote(article.id)}
+                          onClick={() => handlePromote(article.id, idx)}
                           disabled={promoting === article.id}
                           className="text-xs text-indigo-600 hover:underline disabled:opacity-50"
                           title="Mover al tope de la lista"
