@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
@@ -22,6 +22,8 @@ export default function ArticleList({ articles, userRole }: { articles: Article[
   const router = useRouter()
   const [deleting, setDeleting] = useState<string | null>(null)
   const [promoting, setPromoting] = useState<string | null>(null)
+  const [now, setNow] = useState(0)
+  useEffect(() => { setNow(Date.now()) }, [])
 
   async function handlePromote(id: string, idx: number) {
     if (idx === 0) return
@@ -170,7 +172,7 @@ export default function ArticleList({ articles, userRole }: { articles: Article[
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-2">
-                      {userRole === "ADMIN" && article.status === "PUBLISHED" && idx > 0 && (
+                      {userRole === "ADMIN" && article.status === "PUBLISHED" && idx > 0 && now > 0 && now - new Date(article.publishedAt ?? article.createdAt).getTime() < 2 * 24 * 60 * 60 * 1000 && (
                         <button
                           onClick={() => handlePromote(article.id, idx)}
                           disabled={promoting === article.id}
