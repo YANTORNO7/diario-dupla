@@ -112,7 +112,15 @@ export default function EscudoLibrary({
             <p className="text-sm text-gray-400 text-center py-6">No hay escudos guardados todavía.</p>
           )}
           {localOnly.length > 0 && (
-            <p className="text-xs text-amber-600 mb-3">Tenés escudos guardados localmente. Presioná &quot;compartir&quot; para que todos los vean.</p>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs text-amber-600">Tenés {localOnly.length} escudo(s) solo visibles para vos.</p>
+              <button
+                onClick={() => localOnly.forEach(e => shareLocal(e))}
+                className="text-xs text-white bg-amber-500 hover:bg-amber-600 px-2 py-1 rounded transition-colors"
+              >
+                Compartir todos
+              </button>
+            </div>
           )}
           <div className="grid grid-cols-4 gap-3">
             {allItems.map(e => (
