@@ -1,4 +1,4 @@
-export const revalidate = 60
+export const revalidate = 30
 
 import { prisma } from "@/lib/prisma"
 import Header from "@/components/public/Header"
@@ -12,7 +12,7 @@ export default async function HomePage() {
   const [featured, latest, navSections] = await Promise.all([
     prisma.article.findFirst({
       where: { status: "PUBLISHED", featured: true },
-      orderBy: { publishedAt: "desc" },
+      orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
       include: {
         tags: true,
         author: { select: { name: true } },
@@ -21,7 +21,7 @@ export default async function HomePage() {
     }),
     prisma.article.findMany({
       where: { status: "PUBLISHED" },
-      orderBy: { publishedAt: "desc" },
+      orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
       take: 6,
       include: {
         tags: true,
@@ -51,7 +51,7 @@ export default async function HomePage() {
             { secondarySections: { some: { id: section.id } } },
           ],
         },
-        orderBy: { publishedAt: "desc" },
+        orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
         take: 3,
         include: {
           tags: true,

@@ -1,4 +1,4 @@
-export const revalidate = 60
+export const revalidate = 30
 
 import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation"

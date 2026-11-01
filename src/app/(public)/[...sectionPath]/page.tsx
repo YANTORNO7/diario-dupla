@@ -1,4 +1,4 @@
-export const revalidate = 60
+export const revalidate = 30
 
 import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation"
@@ -9,6 +9,8 @@ import ArticleCard from "@/components/public/ArticleCard"
 import SubsectionBlock from "@/components/public/SubsectionBlock"
 import TagBadge from "@/components/public/TagBadge"
 import ShareButtons from "@/components/public/ShareButtons"
+import SignupPrompt from "@/components/public/SignupPrompt"
+import WelcomeBanner from "@/components/public/WelcomeBanner"
 import { formatDate, formatDateShort } from "@/lib/utils"
 import { getSectionPath, getArticlePath } from "@/lib/sections"
 import { SITE_URL, SITE_NAME } from "@/lib/constants"
@@ -645,6 +647,8 @@ function renderArticle(article: ArticleWithRelations, section: SectionWithParent
           </div>
         </section>
       )}
+      <SignupPrompt />
+      <WelcomeBanner />
     </>
   )
 }
