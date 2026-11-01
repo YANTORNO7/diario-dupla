@@ -21,6 +21,22 @@ type Article = {
 export default function ArticleList({ articles, userRole }: { articles: Article[]; userRole: string }) {
   const router = useRouter()
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [promoting, setPromoting] = useState<string | null>(null)
+
+  async function handlePromote(id: string) {
+    setPromoting(id)
+    try {
+      const res = await fetch(`/api/articles/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ publishedAt: new Date().toISOString() }),
+      })
+      if (!res.ok) { alert("Error al subir el artículo"); return }
+      router.refresh()
+    } finally {
+      setPromoting(null)
+    }
+  }
 
   async function handleDelete(id: string) {
     if (!confirm("¿Estás seguro de eliminar este artículo?")) return
@@ -140,10 +156,20 @@ export default function ArticleList({ articles, userRole }: { articles: Article[
                     </span>
                   </td>
                   <td className="px-4 py-3 text-gray-500 hidden lg:table-cell">
-                    {new Date(article.createdAt).toLocaleDateString("es-AR")}
+                    {new Date(article.publishedAt ?? article.createdAt).toLocaleDateString("es-AR")}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-2">
+                      {userRole === "ADMIN" && article.status === "PUBLISHED" && (
+                        <button
+                          onClick={() => handlePromote(article.id)}
+                          disabled={promoting === article.id}
+                          className="text-xs text-indigo-600 hover:underline disabled:opacity-50"
+                          title="Mover al tope de la lista"
+                        >
+                          {promoting === article.id ? "..." : "↑ Subir"}
+                        </button>
+                      )}
                       <Link href={`/admin/articulos/${article.id}/editar`} className="text-xs text-blue-600 hover:underline">
                         Editar
                       </Link>
