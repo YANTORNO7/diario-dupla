@@ -24,7 +24,6 @@ export default function ArticleList({ articles, userRole }: { articles: Article[
   const [promoting, setPromoting] = useState<string | null>(null)
 
   async function handlePromote(id: string) {
-    alert("clicou: " + id)
     setPromoting(id)
     try {
       const res = await fetch(`/api/articles/${id}`, {
@@ -167,7 +166,7 @@ export default function ArticleList({ articles, userRole }: { articles: Article[
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-2">
-                      {userRole === "ADMIN" && article.status === "PUBLISHED" && Date.now() - new Date(article.publishedAt ?? article.createdAt).getTime() < 2 * 24 * 60 * 60 * 1000 && (
+                      {userRole === "ADMIN" && article.status === "PUBLISHED" && (
                         <button
                           onClick={() => handlePromote(article.id)}
                           disabled={promoting === article.id}
