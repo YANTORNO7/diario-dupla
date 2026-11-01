@@ -3,15 +3,7 @@ import { useState, useEffect, useRef } from "react"
 
 type SavedEscudo = { id: string; name: string; url: string }
 const LS_KEY = "dupla-escudos-v2"
-
-function loadLibrary(): SavedEscudo[] {
-  try {
-    return JSON.parse(localStorage.getItem(LS_KEY) || "[]")
-  } catch { return [] }
-}
-function saveLibrary(lib: SavedEscudo[]) {
-  localStorage.setItem(LS_KEY, JSON.stringify(lib))
-}
+const LS_MIGRATED_KEY = "dupla-escudos-migrated"
 
 export default function EscudoLibrary({
   onSelect,
@@ -22,34 +14,92 @@ export default function EscudoLibrary({
 }) {
   const [library, setLibrary] = useState<SavedEscudo[]>([])
   const [name, setName] = useState("")
+  const [uploading, setUploading] = useState(false)
+  const [migrating, setMigrating] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => { setLibrary(loadLibrary()) }, [])
+  useEffect(() => {
+    fetch("/api/shared-escudos")
+      .then(r => r.json())
+      .then((shared: SavedEscudo[]) => {
+        setLibrary(shared)
+        // Migrar localStorage automaticamente se ainda não foi feito
+        const alreadyMigrated = localStorage.getItem(LS_MIGRATED_KEY)
+        if (!alreadyMigrated) {
+          try {
+            const local: SavedEscudo[] = JSON.parse(localStorage.getItem(LS_KEY) || "[]")
+            if (local.length > 0) {
+              migrateLocal(local)
+            } else {
+              localStorage.setItem(LS_MIGRATED_KEY, "1")
+            }
+          } catch { localStorage.setItem(LS_MIGRATED_KEY, "1") }
+        }
+      })
+      .catch(() => {})
+  }, [])
 
-  function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
-    const reader = new FileReader()
-    reader.onload = () => {
-      const url = reader.result as string
-      const newEscudo: SavedEscudo = {
-        id: Math.random().toString(36).slice(2),
-        name: name.trim() || file.name.replace(/\.[^.]+$/, ""),
-        url,
-      }
-      const updated = [...library, newEscudo]
-      setLibrary(updated)
-      saveLibrary(updated)
-      setName("")
-      if (fileRef.current) fileRef.current.value = ""
+  async function migrateLocal(local: SavedEscudo[]) {
+    setMigrating(true)
+    const added: SavedEscudo[] = []
+    for (const e of local) {
+      try {
+        // Converter base64 data URL para blob
+        const res = await fetch(e.url)
+        const blob = await res.blob()
+        const file = new File([blob], `${e.name}.png`, { type: blob.type || "image/png" })
+
+        const formData = new FormData()
+        formData.append("file", file)
+        formData.append("skipOptimize", "true")
+        const uploadRes = await fetch("/api/upload", { method: "POST", body: formData })
+        if (!uploadRes.ok) continue
+        const { url } = await uploadRes.json()
+
+        const saveRes = await fetch("/api/shared-escudos", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: e.name, url }),
+        })
+        if (saveRes.ok) added.push(await saveRes.json())
+      } catch { /* continua com próximo */ }
     }
-    reader.readAsDataURL(file)
+    setLibrary(prev => [...prev, ...added])
+    localStorage.setItem(LS_MIGRATED_KEY, "1")
+    setMigrating(false)
   }
 
-  function remove(id: string) {
-    const updated = library.filter(e => e.id !== id)
-    setLibrary(updated)
-    saveLibrary(updated)
+  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+      formData.append("skipOptimize", "true")
+      const uploadRes = await fetch("/api/upload", { method: "POST", body: formData })
+      if (!uploadRes.ok) { alert("Error al subir imagen"); return }
+      const { url } = await uploadRes.json()
+
+      const escudoName = name.trim() || file.name.replace(/\.[^.]+$/, "")
+      const saveRes = await fetch("/api/shared-escudos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: escudoName, url }),
+      })
+      if (!saveRes.ok) { alert("Error al guardar en biblioteca"); return }
+      const newEscudo = await saveRes.json()
+      setLibrary(prev => [...prev, newEscudo])
+      setName("")
+      if (fileRef.current) fileRef.current.value = ""
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  async function remove(id: string) {
+    await fetch(`/api/shared-escudos/${id}`, { method: "DELETE" })
+    setLibrary(prev => prev.filter(e => e.id !== id))
   }
 
   return (
@@ -64,7 +114,10 @@ export default function EscudoLibrary({
         </div>
 
         <div className="flex-1 overflow-y-auto p-4">
-          {library.length === 0 && (
+          {migrating && (
+            <p className="text-xs text-blue-500 text-center py-2">Importando escudos guardados...</p>
+          )}
+          {!migrating && library.length === 0 && (
             <p className="text-sm text-gray-400 text-center py-6">No hay escudos guardados todavía.</p>
           )}
           <div className="grid grid-cols-4 gap-3">
@@ -98,14 +151,15 @@ export default function EscudoLibrary({
               placeholder="Nombre (ej: Boca)"
               className="flex-1 border rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-[#0B1631]"
             />
-            <label className="px-3 py-1.5 bg-[#0B1631] text-white rounded text-sm cursor-pointer hover:bg-gray-800 transition-colors">
-              Subir
+            <label className={`px-3 py-1.5 rounded text-sm cursor-pointer transition-colors text-white ${uploading ? "bg-gray-400 cursor-wait" : "bg-[#0B1631] hover:bg-gray-800"}`}>
+              {uploading ? "Subiendo..." : "Subir"}
               <input
                 ref={fileRef}
                 type="file"
                 accept="image/png,image/webp,image/avif"
                 className="hidden"
                 onChange={handleUpload}
+                disabled={uploading}
               />
             </label>
           </div>

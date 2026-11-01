@@ -15,6 +15,7 @@ model User {
   password  String
   name      String
   role      String   @default("EDITOR") // ADMIN | EDITOR
+  active    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   articles  Article[]
@@ -143,7 +144,9 @@ model Image {
 model Subscriber {
   id                String    @id @default(cuid())
   email             String    @unique
-  password          String
+  password          String?
+  googleId          String?   @unique @map("google_id")
+  signupSource      String    @default("email") @map("signup_source")
   name              String
   newsletterOptIn   Boolean   @default(true)
   emailVerified     Boolean   @default(false)
@@ -152,6 +155,15 @@ model Subscriber {
   updatedAt         DateTime  @updatedAt
 
   @@map("subscribers")
+}
+
+model SharedEscudo {
+  id        String   @id @default(cuid())
+  name      String
+  url       String
+  createdAt DateTime @default(now())
+
+  @@map("shared_escudos")
 }
 
 model NewsletterLog {
