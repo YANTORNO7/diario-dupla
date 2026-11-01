@@ -24,6 +24,7 @@ export default function ArticleList({ articles, userRole }: { articles: Article[
   const [promoting, setPromoting] = useState<string | null>(null)
 
   async function handlePromote(id: string) {
+    alert("clicou: " + id)
     setPromoting(id)
     try {
       const res = await fetch(`/api/articles/${id}`, {
