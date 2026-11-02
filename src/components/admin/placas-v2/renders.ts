@@ -8,6 +8,12 @@ import type {
   NoticiaBrasilState, TablaAnualState, AnuncioState, EventRow, TableRow
 } from './types'
 
+// Ajusta o font-size do nome do time baseado no comprimento (Bebas Neue ~0.52 ratio)
+function teamFontSize(name: string, maxPx: number, colWidth: number): number {
+  const needed = Math.floor(colWidth / (name.length * 0.52))
+  return Math.min(maxPx, Math.max(22, needed))
+}
+
 function renderEventRow(ev: EventRow): string {
   const icon = ev.type === 'gol' ? BALL_SVG : ev.type === 'amarilla' ? YELLOW_CARD : RED_CARD
   return `<div style="display: flex; align-items: center; gap: 8px; margin-top: 2px">
@@ -63,13 +69,13 @@ ${logo(d.fondo)}
 <div style="margin-top: 34px; width: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: center">
 <div style="display: flex; flex-direction: column; align-items: center; gap: 12px">
 ${escudoImg(d.escudo1, 130, 130)}
-<div style="font-family: 'Bebas Neue', sans-serif; font-size: 48px; line-height: 1; letter-spacing: 2px">${d.team1}</div>
+<div style="font-family: 'Bebas Neue', sans-serif; font-size: ${teamFontSize(d.team1, 48, 270)}px; line-height: 1; letter-spacing: 2px; white-space: nowrap">${d.team1}</div>
 ${ev1.map(renderEventRow).join('')}
 </div>
 <div style="font-family: 'Bebas Neue', sans-serif; font-size: 220px; line-height: 0.85; text-align: center; letter-spacing: 4px">${d.score1}<span style="color: #F2B632; padding: 0 18px">-</span>${d.score2}</div>
 <div style="display: flex; flex-direction: column; align-items: center; gap: 12px">
 ${escudoImg(d.escudo2, 130, 130)}
-<div style="font-family: 'Bebas Neue', sans-serif; font-size: 48px; line-height: 1; letter-spacing: 2px">${d.team2}</div>
+<div style="font-family: 'Bebas Neue', sans-serif; font-size: ${teamFontSize(d.team2, 48, 270)}px; line-height: 1; letter-spacing: 2px; white-space: nowrap">${d.team2}</div>
 ${ev2.map(renderEventRow).join('')}
 </div>
 </div>
@@ -140,7 +146,7 @@ ${logo(d.fondo)}
 <div style="margin-top: 36px; width: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: center">
 <div style="display: flex; flex-direction: column; align-items: center; gap: 18px">
 ${escudoImg(d.escudo1, 230, 250)}
-<div style="font-family: 'Bebas Neue', sans-serif; font-size: 64px; line-height: 1; letter-spacing: 2px">${d.team1}</div>
+<div style="font-family: 'Bebas Neue', sans-serif; font-size: ${teamFontSize(d.team1, 64, 290)}px; line-height: 1; letter-spacing: 2px; white-space: nowrap">${d.team1}</div>
 </div>
 <div style="display: flex; flex-direction: column; align-items: center; gap: 10px">
 <div style="width: 3px; height: 70px; background: #F2B632"></div>
@@ -149,7 +155,7 @@ ${escudoImg(d.escudo1, 230, 250)}
 </div>
 <div style="display: flex; flex-direction: column; align-items: center; gap: 18px">
 ${escudoImg(d.escudo2, 250, 250)}
-<div style="font-family: 'Bebas Neue', sans-serif; font-size: 64px; line-height: 1; letter-spacing: 2px">${d.team2}</div>
+<div style="font-family: 'Bebas Neue', sans-serif; font-size: ${teamFontSize(d.team2, 64, 290)}px; line-height: 1; letter-spacing: 2px; white-space: nowrap">${d.team2}</div>
 </div>
 </div>
 <div style="margin-top: 44px; display: flex; align-items: center; gap: 30px; font-family: 'Bebas Neue', sans-serif; font-size: 50px; line-height: 1; letter-spacing: 2px">
