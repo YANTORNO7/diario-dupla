@@ -59,6 +59,9 @@ export type FraseState = CommonFields & {
   quote: string
   attribution: string
   context: string
+  categorySize?: number
+  quoteSize?: number
+  attributionSize?: number
 }
 
 export type PreviaState = CommonFields & {
@@ -72,6 +75,9 @@ export type NoticiaState = CommonFields & {
   category: string
   titleBebas: string
   subtitle: string
+  categorySize?: number
+  titleSize?: number
+  subtitleSize?: number
 }
 
 export type FormacionState = CommonFields & {
@@ -102,6 +108,8 @@ export type NoticiaBrasilState = CommonFields & {
   category: string
   titlePart1: string
   titleHighlight: string
+  categorySize?: number
+  titleSize?: number
 }
 
 export type TablaAnualState = CommonFields & {

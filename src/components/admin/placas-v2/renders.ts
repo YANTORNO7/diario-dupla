@@ -121,12 +121,12 @@ ${fotoImg(d.foto, 1080, 930, d.fotoPosX, d.fotoPosY, d.fotoScale)}
 <div style="position: absolute; left: 0; top: 0; width: 1080px; height: 950px; background: linear-gradient(180deg, rgba(${rgba},0.5) 0%, rgba(${rgba},0) 18%, rgba(${rgba},0) 56%, rgba(${rgba},0.85) 84%, ${bg} 100%)"><img src="${d.escudo1 || 'data:image/svg+xml;charset=utf-8,<svg xmlns=&apos;http://www.w3.org/2000/svg&apos; width=&apos;160&apos; height=&apos;160&apos;><rect width=&apos;160&apos; height=&apos;160&apos; fill=&apos;transparent&apos;/></svg>'}" alt="" style="position: absolute; top: 760px; left: 856px; width: 160px; height: 160px; object-fit: contain"></div>
 ${logo(d.fondo)}
 <div style="position: absolute; left: 64px; right: 64px; top: 930px; display: flex; flex-direction: column">
-<div style="font-size: 22px; font-weight: 800; letter-spacing: 5px; color: #F2B632">${d.category}</div>
+<div style="font-size: ${d.categorySize ?? 22}px; font-weight: 800; letter-spacing: 5px; color: #F2B632">${d.category}</div>
 <div style="margin-top: 30px; display: flex; gap: 20px; align-items: flex-start">
 <div style="font-family: 'Bebas Neue', sans-serif; font-size: 120px; line-height: 0.75; color: #F2B632">"</div>
 <div style="display: flex; flex-direction: column; gap: 14px">
-<div style="font-size: 50px; font-weight: 600; font-style: italic; line-height: 1.25">${d.quote}<span style="font-family: 'Bebas Neue', sans-serif; font-style: normal; font-size: 96px; line-height: 0; color: #F2B632; vertical-align: -34px; margin-left: 8px">"</span></div>
-<div style="font-size: 20px; font-weight: 800; letter-spacing: 3px; color: #B8C2D9">${d.attribution} <span style="font-weight: 600; letter-spacing: 1px">${d.context}</span></div>
+<div style="font-size: ${d.quoteSize ?? 50}px; font-weight: 600; font-style: italic; line-height: 1.25; overflow-wrap: break-word">${d.quote}<span style="font-family: 'Bebas Neue', sans-serif; font-style: normal; font-size: 96px; line-height: 0; color: #F2B632; vertical-align: -34px; margin-left: 8px">"</span></div>
+<div style="font-size: ${d.attributionSize ?? 20}px; font-weight: 800; letter-spacing: 3px; color: #B8C2D9">${d.attribution} <span style="font-weight: 600; letter-spacing: 1px">${d.context}</span></div>
 </div>
 </div>
 </div>
@@ -177,9 +177,9 @@ ${fotoImg(d.foto, 1080, 900, d.fotoPosX, d.fotoPosY, d.fotoScale)}
 <div style="position: absolute; left: 0; top: 0; width: 1080px; height: 920px; background: linear-gradient(180deg, rgba(${rgba},0.5) 0%, rgba(${rgba},0) 18%, rgba(${rgba},0) 55%, rgba(${rgba},0.85) 82%, ${bg} 100%)"></div>
 ${logo(d.fondo)}
 <div style="position: absolute; left: 64px; right: 64px; top: 840px; display: flex; flex-direction: column">
-<div style="font-size: 22px; font-weight: 800; letter-spacing: 5px; color: #F2B632">${d.category}</div>
-<div style="font-family: 'Bebas Neue', sans-serif; font-size: 112px; line-height: 0.9; margin-top: 12px">${d.titleBebas}</div>
-<div style="margin-top: 26px; font-size: 48px; font-weight: 600; line-height: 1.3; color: #FFFFFF; text-wrap: balance">${d.subtitle}</div>
+<div style="font-size: ${d.categorySize ?? 22}px; font-weight: 800; letter-spacing: 5px; color: #F2B632">${d.category}</div>
+<div style="font-family: 'Bebas Neue', sans-serif; font-size: ${d.titleSize ?? 112}px; line-height: 0.9; margin-top: 12px; overflow-wrap: break-word">${d.titleBebas}</div>
+<div style="margin-top: 26px; font-size: ${d.subtitleSize ?? 48}px; font-weight: 600; line-height: 1.3; color: #FFFFFF; overflow-wrap: break-word">${d.subtitle}</div>
 </div>
 ${franjaBottom(d.franja)}
 </div>`)
@@ -258,8 +258,8 @@ ${fotoImg(d.foto, 1080, 860, d.fotoPosX, d.fotoPosY, d.fotoScale)}
 <div style="position: absolute; left: 0; top: 0; width: 1080px; height: 880px; background: linear-gradient(180deg, rgba(${rgba},0.5) 0%, rgba(${rgba},0) 18%, rgba(${rgba},0) 58%, rgba(${rgba},0.85) 84%, ${bg} 100%)"></div>
 ${logo(d.fondo)}
 <div style="position: absolute; left: 64px; right: 64px; top: 830px; display: flex; flex-direction: column">
-<div style="font-size: 22px; font-weight: 800; letter-spacing: 5px; color: #F2B632">${d.category}</div>
-<div style="font-family: 'Bebas Neue', sans-serif; font-size: 132px; line-height: 0.9; margin-top: 14px">${d.titlePart1}<span style="color: #F2B632">${d.titleHighlight}</span></div>
+<div style="font-size: ${d.categorySize ?? 22}px; font-weight: 800; letter-spacing: 5px; color: #F2B632">${d.category}</div>
+<div style="font-family: 'Bebas Neue', sans-serif; font-size: ${d.titleSize ?? 132}px; line-height: 0.9; margin-top: 14px; overflow-wrap: break-word">${d.titlePart1}<span style="color: #F2B632">${d.titleHighlight}</span></div>
 </div>
 ${franjaBottom(d.franja)}
 </div>`)

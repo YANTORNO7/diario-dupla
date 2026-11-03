@@ -33,6 +33,15 @@ import type { M1State, M2State, M3State, M4State, M5State, MotorPilot, MotorRow,
 // ---- helpers ----
 function uid() { return Math.random().toString(36).slice(2, 8) }
 
+function dataUrlToBlob(dataUrl: string): Blob {
+  const [head, data] = dataUrl.split(',')
+  const mime = head.match(/:(.*?);/)?.[1] ?? 'image/png'
+  const bstr = atob(data)
+  const u8 = new Uint8Array(bstr.length)
+  for (let i = 0; i < bstr.length; i++) u8[i] = bstr.charCodeAt(i)
+  return new Blob([u8], { type: mime })
+}
+
 function readFile(file: File): Promise<string> {
   return new Promise(res => {
     const r = new FileReader()
@@ -343,6 +352,44 @@ function ExpulsionForm({ state, set }: { state: ExpulsionState; set: (s: Expulsi
   )
 }
 
+function FontSizeControl({ label, value, defaultValue, onChange }: {
+  label: string; value: number | undefined; defaultValue: number; onChange: (v: number) => void
+}) {
+  const current = value ?? defaultValue
+  const min = Math.round(defaultValue * 0.5)
+  const max = Math.round(defaultValue * 2)
+  const currentRef = useRef(current)
+  useEffect(() => { currentRef.current = current }, [current])
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  function stopRepeat() {
+    if (intervalRef.current !== null) { clearInterval(intervalRef.current); intervalRef.current = null }
+  }
+  function startRepeat(delta: number) {
+    const step = () => { const next = Math.min(max, Math.max(min, currentRef.current + delta)); onChange(next) }
+    step()
+    intervalRef.current = setInterval(step, 100)
+  }
+  useEffect(() => () => stopRepeat(), [])
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-gray-500 flex-1">{label}</span>
+        <button className="w-6 h-6 rounded border text-sm font-bold leading-none hover:bg-gray-100 select-none"
+          onMouseDown={() => startRepeat(-1)} onMouseUp={stopRepeat} onMouseLeave={stopRepeat}>−</button>
+        <span className="text-xs font-mono w-8 text-center tabular-nums">{current}</span>
+        <button className="w-6 h-6 rounded border text-sm font-bold leading-none hover:bg-gray-100 select-none"
+          onMouseDown={() => startRepeat(1)} onMouseUp={stopRepeat} onMouseLeave={stopRepeat}>+</button>
+        {current !== defaultValue && (
+          <button className="text-xs text-gray-400 hover:text-gray-700 underline" onClick={() => onChange(defaultValue)}>Restablecer</button>
+        )}
+      </div>
+      <input type="range" min={min} max={max} value={current}
+        onChange={e => onChange(Number(e.target.value))}
+        className="w-full h-1 accent-[#0B1631]" />
+    </div>
+  )
+}
+
 function FraseForm({ state, set }: { state: FraseState; set: (s: FraseState) => void }) {
   const u = (p: Partial<FraseState>) => set({ ...state, ...p })
   return (
@@ -351,8 +398,11 @@ function FraseForm({ state, set }: { state: FraseState; set: (s: FraseState) => 
         onFoto={v => u({ foto: v })} onPosX={v => u({ fotoPosX: v })} onPosY={v => u({ fotoPosY: v })} onScale={v => u({ fotoScale: v })} />
       <EscudoField label="Escudo (esquina inferior derecha)" value={state.escudo1} onChange={v => u({ escudo1: v })} />
       <Field label="Categoría (ej: COMPETICIÓN · PARTIDO)" value={state.category} onChange={v => u({ category: v })} />
+      <FontSizeControl label="Tamaño categoría" value={state.categorySize} defaultValue={22} onChange={v => u({ categorySize: v })} />
       <Textarea label="Cita" value={state.quote} onChange={v => u({ quote: v })} />
+      <FontSizeControl label="Tamaño cita" value={state.quoteSize} defaultValue={50} onChange={v => u({ quoteSize: v })} />
       <Field label="Nombre del jugador" value={state.attribution} onChange={v => u({ attribution: v })} />
+      <FontSizeControl label="Tamaño nombre" value={state.attributionSize} defaultValue={20} onChange={v => u({ attributionSize: v })} />
       <Field label="Contexto (ej: · tras el partido)" value={state.context} onChange={v => u({ context: v })} />
       <FondoField value={state.fondo} onChange={v => u({ fondo: v })} />
       <FranjaField value={state.franja} onChange={v => u({ franja: v })} />
@@ -393,8 +443,11 @@ function NoticiaForm({ state, set }: { state: NoticiaState; set: (s: NoticiaStat
       <FotoField foto={state.foto} posX={state.fotoPosX} posY={state.fotoPosY} scale={state.fotoScale}
         onFoto={v => u({ foto: v })} onPosX={v => u({ fotoPosX: v })} onPosY={v => u({ fotoPosY: v })} onScale={v => u({ fotoScale: v })} />
       <Field label="Categoría / sección" value={state.category} onChange={v => u({ category: v })} />
+      <FontSizeControl label="Tamaño categoría" value={state.categorySize} defaultValue={22} onChange={v => u({ categorySize: v })} />
       <Textarea label="Título (Bebas Neue, mayúsculas)" value={state.titleBebas} onChange={v => u({ titleBebas: v })} />
+      <FontSizeControl label="Tamaño título" value={state.titleSize} defaultValue={112} onChange={v => u({ titleSize: v })} />
       <Textarea label="Bajada" value={state.subtitle} onChange={v => u({ subtitle: v })} />
+      <FontSizeControl label="Tamaño bajada" value={state.subtitleSize} defaultValue={48} onChange={v => u({ subtitleSize: v })} />
       <FondoField value={state.fondo} onChange={v => u({ fondo: v })} />
       <FranjaField value={state.franja} onChange={v => u({ franja: v })} />
     </div>
@@ -506,8 +559,10 @@ function NoticiaBrasilForm({ state, set }: { state: NoticiaBrasilState; set: (s:
       <FotoField foto={state.foto} posX={state.fotoPosX} posY={state.fotoPosY} scale={state.fotoScale}
         onFoto={v => u({ foto: v })} onPosX={v => u({ fotoPosX: v })} onPosY={v => u({ fotoPosY: v })} onScale={v => u({ fotoScale: v })} />
       <Field label="Categoría / sección" value={state.category} onChange={v => u({ category: v })} />
+      <FontSizeControl label="Tamaño categoría" value={state.categorySize} defaultValue={22} onChange={v => u({ categorySize: v })} />
       <Textarea label="Inicio del título (texto blanco)" value={state.titlePart1} onChange={v => u({ titlePart1: v })} />
-      <Field label="Final del título (texto amarillo)" value={state.titleHighlight} onChange={v => u({ titleHighlight: v })} />
+      <Textarea label="Final del título (texto amarillo)" value={state.titleHighlight} onChange={v => u({ titleHighlight: v })} />
+      <FontSizeControl label="Tamaño título" value={state.titleSize} defaultValue={132} onChange={v => u({ titleSize: v })} />
       <FondoField value={state.fondo} onChange={v => u({ fondo: v })} />
       <FranjaField value={state.franja} onChange={v => u({ franja: v })} />
     </div>
@@ -678,6 +733,7 @@ function MotorPilotSubForm({
   const u = (p: Partial<MotorPilot>) => onChange({ ...pilot, ...p })
   const [catFilter, setCatFilter] = useState<string>('F1')
   const [removing, setRemoving] = useState(false)
+  const [removeError, setRemoveError] = useState(false)
 
   async function handleFoto(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -687,16 +743,24 @@ function MotorPilotSubForm({
   async function handleRemoveBg() {
     if (!pilot.foto) return
     setRemoving(true)
+    setRemoveError(false)
     try {
       const { removeBackground } = await import('@imgly/background-removal')
-      const blob = await fetch(pilot.foto).then(r => r.blob())
+      const blob = dataUrlToBlob(pilot.foto)
       const result = await removeBackground(blob)
       const reader = new FileReader()
-      reader.onload = () => u({ foto: reader.result as string })
+      reader.onload = () => {
+        u({ foto: reader.result as string })
+        setRemoving(false)
+      }
+      reader.onerror = () => {
+        setRemoveError(true)
+        setRemoving(false)
+      }
       reader.readAsDataURL(result)
     } catch (e) {
       console.error('Error al quitar fondo:', e)
-    } finally {
+      setRemoveError(true)
       setRemoving(false)
     }
   }
@@ -797,7 +861,8 @@ function MotorPilotSubForm({
               {removing ? 'Procesando…' : 'Quitar fondo'}
             </button>
           )}
-          {pilot.foto && !removing && <span className="text-xs text-green-600">✓ cargada</span>}
+          {pilot.foto && !removing && !removeError && <span className="text-xs text-green-600">✓ cargada</span>}
+          {removeError && <span className="text-xs text-red-500">Error al quitar fondo</span>}
         </div>
         {pilot.foto && (
           <div className="grid grid-cols-3 gap-2">
@@ -951,6 +1016,7 @@ function M1Form({ state, set }: { state: M1State; set: (s: M1State) => void }) {
 function M2Form({ state, set }: { state: M2State; set: (s: M2State) => void }) {
   const u = (p: Partial<M2State>) => set({ ...state, ...p })
   const [removing, setRemoving] = useState(false)
+  const [removeError, setRemoveError] = useState(false)
 
   async function handleFoto(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -960,16 +1026,24 @@ function M2Form({ state, set }: { state: M2State; set: (s: M2State) => void }) {
   async function handleRemoveBg() {
     if (!state.foto) return
     setRemoving(true)
+    setRemoveError(false)
     try {
       const { removeBackground } = await import('@imgly/background-removal')
-      const blob = await fetch(state.foto).then(r => r.blob())
+      const blob = dataUrlToBlob(state.foto)
       const result = await removeBackground(blob)
       const reader = new FileReader()
-      reader.onload = () => u({ foto: reader.result as string })
+      reader.onload = () => {
+        u({ foto: reader.result as string })
+        setRemoving(false)
+      }
+      reader.onerror = () => {
+        setRemoveError(true)
+        setRemoving(false)
+      }
       reader.readAsDataURL(result)
     } catch (e) {
       console.error('Error al quitar fondo:', e)
-    } finally {
+      setRemoveError(true)
       setRemoving(false)
     }
   }
@@ -1042,7 +1116,8 @@ function M2Form({ state, set }: { state: M2State; set: (s: M2State) => void }) {
               {removing ? 'Procesando…' : 'Quitar fondo'}
             </button>
           )}
-          {state.foto && !removing && <span className="text-xs text-green-600">✓ cargada</span>}
+          {state.foto && !removing && !removeError && <span className="text-xs text-green-600">✓ cargada</span>}
+          {removeError && <span className="text-xs text-red-500">Error al quitar fondo</span>}
         </div>
         {state.foto && (
           <div className="grid grid-cols-3 gap-2">
