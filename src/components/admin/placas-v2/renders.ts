@@ -1,11 +1,12 @@
 import {
   FONDO_COLORS, docWrap, logo, franjaBottom, fotoImg, escudoImg,
-  BALL_SVG, YELLOW_CARD, RED_CARD
+  getFranjaInner, BALL_SVG, YELLOW_CARD, RED_CARD
 } from './helpers'
 import type {
   GolState, ResultadoState, ExpulsionState, FraseState, PreviaState,
   NoticiaState, FormacionState, CaraACaraState, FotoSitioState,
-  NoticiaBrasilState, TablaAnualState, AnuncioState, EventRow, TableRow
+  NoticiaBrasilState, TablaAnualState, AnuncioState, EventRow, TableRow,
+  PartidosHoyState, ClasificadoState, MatchRow,
 } from './types'
 
 // Ajusta o font-size do nome do time baseado no comprimento (Bebas Neue ~0.52 ratio)
@@ -308,5 +309,72 @@ ${escudoImg(d.escudo1, 110, 110)}
 <div style="margin-top: 26px; font-size: 22px; font-weight: 600; letter-spacing: 3px; color: #C9CDD4; text-align: center">${d.subtitle}</div>
 </div>
 ${franjaBottom(d.franja)}
+</div>`)
+}
+
+export function render14PartidosHoy(d: PartidosHoyState): string {
+  const isArg = d.modelo === 'arg'
+  const bg = isArg ? '#0B1631' : '#111214'
+  const fondo = isArg ? 'azul' : 'negro'
+  const deHoyColor = isArg ? '#74ACDF' : '#009C3B'
+  const circle1Color = isArg ? 'rgba(116,172,223,0.07)' : 'rgba(0,156,59,0.08)'
+  const franjaInner = isArg
+    ? `<div style="flex:1;background:#74ACDF"></div><div style="flex:1;background:#FFFFFF"></div><div style="flex:1;background:#74ACDF"></div>`
+    : `<div style="flex:1;background:#009C3B"></div><div style="flex:1;background:#FFDF00"></div><div style="flex:1;background:#009C3B"></div>`
+  const n = Math.max(1, d.matches.length)
+  const rowH = Math.min(220, Math.max(60, Math.floor((714 - (n - 1) * 14) / n)))
+  const escudoSz = Math.round(rowH * 0.5)
+  const hourFontSize = Math.min(76, Math.round(rowH * 0.55))
+
+  function renderMatch(m: MatchRow): string {
+    return `<div style="display:flex;align-items:stretch;height:${rowH}px;background:rgba(255,255,255,0.06);border-left:8px solid #F2B632">
+<div style="width:190px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,0.25)">
+<div style="font-family:'Bebas Neue',sans-serif;font-size:${hourFontSize}px;line-height:1;color:#F2B632">${m.hour}</div>
+<div style="font-size:15px;font-weight:800;letter-spacing:4px;color:#B8BCC4;margin-top:4px">HS</div>
+</div>
+<div style="flex:1;display:grid;grid-template-columns:1fr 70px 1fr;align-items:center;padding:0 24px">
+<div style="display:flex;flex-direction:column;align-items:center;gap:12px;overflow:hidden">${escudoImg(m.localEscudo, escudoSz, escudoSz)}<div style="font-family:'Bebas Neue',sans-serif;font-size:40px;line-height:1;letter-spacing:1px;white-space:nowrap">${m.localName}</div></div>
+<div style="font-family:'Bebas Neue',sans-serif;font-size:44px;color:#F2B632;text-align:center">VS</div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:12px;overflow:hidden">${escudoImg(m.visitorEscudo, escudoSz, escudoSz)}<div style="font-family:'Bebas Neue',sans-serif;font-size:40px;line-height:1;letter-spacing:1px;white-space:nowrap">${m.visitorName}</div></div>
+</div>
+</div>`
+  }
+
+  return docWrap(`<div style="width:1080px;height:1350px;position:relative;overflow:hidden;background:${bg};color:#FFFFFF;font-family:'Archivo',sans-serif">
+<div style="position:absolute;right:-160px;top:-160px;width:620px;height:620px;border-radius:50%;border:70px solid ${circle1Color}"></div>
+<div style="position:absolute;right:-40px;top:-40px;width:380px;height:380px;border-radius:50%;border:30px solid rgba(242,182,50,0.08)"></div>
+${logo(fondo as 'azul' | 'negro')}
+<div style="position:absolute;left:60px;right:60px;top:190px">
+<div style="display:inline-block;background:#F2B632;color:${bg};font-size:22px;font-weight:800;letter-spacing:5px;padding:10px 22px 9px 22px">${d.competition}</div>
+<div style="margin-top:16px;font-family:'Bebas Neue',sans-serif;font-size:132px;line-height:0.85;letter-spacing:2px;transform:skewX(-6deg);transform-origin:left;text-shadow:0 6px 0 rgba(0,0,0,0.3)">LOS PARTIDOS<br><span style="color:${deHoyColor}">DE HOY</span></div>
+<div style="margin-top:18px;font-size:20px;font-weight:800;letter-spacing:5px;color:#B8BCC4">${d.dateLabel}</div>
+<div style="margin-top:28px;display:flex;flex-direction:column;gap:14px">
+${d.matches.map(renderMatch).join('\n')}
+</div>
+</div>
+<div style="position:absolute;left:60px;right:60px;bottom:28px;height:8px;display:flex;border-radius:4px;overflow:hidden">${franjaInner}</div>
+</div>`)
+}
+
+export function render15Clasificado(d: ClasificadoState): string {
+  const { bg, rgba } = FONDO_COLORS[d.fondo]
+  const compLen = d.competition.length || 1
+  const compFontSize = Math.min(190, Math.max(60, Math.floor(950 / (compLen * 0.42))))
+  const franjaInner = getFranjaInner(d.franja)
+  const logoComp = d.competitionLogo
+    ? `<div style="position:absolute;left:0;right:0;top:1195px;text-align:center"><img src="${d.competitionLogo}" style="height:96px;object-fit:contain;filter:drop-shadow(0 4px 10px rgba(0,0,0,.5))"></div>`
+    : ''
+  return docWrap(`<div style="width:1080px;height:1350px;position:relative;overflow:hidden;background:${bg};color:#FFF;font-family:'Archivo',sans-serif">
+${fotoImg(d.foto, 1080, 1100, d.fotoPosX, d.fotoPosY, d.fotoScale)}
+<div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(${rgba},.5) 0%,rgba(${rgba},0) 14%,rgba(${rgba},0) 46%,rgba(${rgba},.9) 64%,${bg} 74%)"></div>
+<div style="position:absolute;left:0;right:0;top:750px;text-align:center">${escudoImg(d.escudo1, 120, 120, ' filter:drop-shadow(0 6px 12px rgba(0,0,0,.5));')}</div>
+<div style="position:absolute;left:0;right:0;top:885px;text-align:center;font-size:34px;font-weight:800;letter-spacing:20px;padding-left:20px">${d.badgeText}</div>
+<div style="position:absolute;left:0;right:0;top:930px;text-align:center;font-family:'Bebas Neue',sans-serif;line-height:.86;transform:skewX(-6deg)">
+<div style="font-size:${compFontSize}px;color:#F2B632;letter-spacing:3px;text-shadow:0 8px 0 rgba(0,0,0,.4)">${d.competition}</div>
+<div style="font-size:110px;color:#FFF;letter-spacing:8px;text-shadow:0 8px 0 rgba(0,0,0,.4)">${d.year}</div>
+</div>
+${logoComp}
+${logo(d.fondo)}
+<div style="position:absolute;left:60px;right:60px;bottom:36px;height:8px;display:flex;border-radius:4px;overflow:hidden">${franjaInner}</div>
 </div>`)
 }

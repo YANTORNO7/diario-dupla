@@ -1,7 +1,8 @@
 import type {
   GolState, ResultadoState, ExpulsionState, FraseState, PreviaState,
   NoticiaState, FormacionState, CaraACaraState, FotoSitioState,
-  NoticiaBrasilState, TablaAnualState, AnuncioState
+  NoticiaBrasilState, TablaAnualState, AnuncioState,
+  MatchRow, PartidosHoyState, ClasificadoState,
 } from './types'
 
 const common = {
@@ -140,6 +141,27 @@ export function defaultAnuncio(): AnuncioState {
     subtitle: 'Subtítulo o descripción de la noticia',
   }
 }
+export function defaultPartidosHoy(): PartidosHoyState {
+  function matchRow(): MatchRow {
+    return { id: uid(), hour: '00:00', localEscudo: '', localName: 'LOCAL', visitorEscudo: '', visitorName: 'VISITANTE' }
+  }
+  return {
+    modelo: 'arg',
+    competition: 'COMPETICIÓN · RONDA',
+    dateLabel: 'DÍA DD/MM · HORARIO DE ARGENTINA',
+    matches: [matchRow(), matchRow()],
+  }
+}
+export function defaultClasificado(): ClasificadoState {
+  return {
+    ...common,
+    escudo1: '',
+    badgeText: 'CLASIFICADO',
+    competition: 'LIBERTADORES',
+    year: '2027',
+    competitionLogo: '',
+  }
+}
 
 export const TEMPLATE_LIST = [
   { id: '01', label: 'Gol', emoji: '⚽' },
@@ -155,6 +177,8 @@ export const TEMPLATE_LIST = [
   { id: '11', label: 'Noticia destacada', emoji: '⭐' },
   { id: '12', label: 'Tabla anual', emoji: '📊' },
   { id: '13', label: 'Anuncio', emoji: '📢' },
+  { id: '14', label: 'Partidos de hoy', emoji: '🗓️' },
+  { id: '15', label: 'Clasificado', emoji: '🏆' },
   // Motor
   { id: 'M1', label: 'Motor: Podio', emoji: '🏆' },
   { id: 'M2', label: 'Motor: Piloto', emoji: '🏎️' },

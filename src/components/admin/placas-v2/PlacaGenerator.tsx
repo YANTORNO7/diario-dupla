@@ -7,18 +7,20 @@ import {
   defaultGol, defaultResultado, defaultEntretiempo, defaultExpulsion,
   defaultFrase, defaultPrevia, defaultNoticia, defaultFormacion,
   defaultCaraACara, defaultFotoSitio, defaultNoticiaBrasil,
-  defaultTablaAnual, defaultAnuncio, TEMPLATE_LIST, type TemplateId,
+  defaultTablaAnual, defaultAnuncio, defaultPartidosHoy, defaultClasificado,
+  TEMPLATE_LIST, type TemplateId,
 } from "./defaults"
 import {
   render01Gol, render02ResultadoFinal, render03Entretiempo, render04Expulsion,
   render05Frase, render06Previa, render07Noticia, render08Formacion,
   render09CaraACara, render10FotoSitio, render11NoticiaBrasil,
-  render12TablaAnual, render13Anuncio,
+  render12TablaAnual, render13Anuncio, render14PartidosHoy, render15Clasificado,
 } from "./renders"
 import type {
   GolState, ResultadoState, ExpulsionState, FraseState, PreviaState,
   NoticiaState, FormacionState, CaraACaraState, FotoSitioState,
   NoticiaBrasilState, TablaAnualState, AnuncioState,
+  PartidosHoyState, ClasificadoState, MatchRow,
   EventRow, TableRow, RecentMatch, Fondo, Franja,
 } from "./types"
 import { MOTOR_TEAMS, TEAM_CATEGORIES, CATEGORY_LABELS, getTeamColor } from "./motor/teams"
@@ -668,6 +670,91 @@ function AnuncioForm({ state, set }: { state: AnuncioState; set: (s: AnuncioStat
   )
 }
 
+// ---- Partidos de hoy form ----
+
+function MatchRowsList({ matches, onChange }: { matches: MatchRow[]; onChange: (m: MatchRow[]) => void }) {
+  function add() {
+    onChange([...matches, { id: uid(), hour: '00:00', localEscudo: '', localName: 'LOCAL', visitorEscudo: '', visitorName: 'VISITANTE' }])
+  }
+  function remove(id: string) { onChange(matches.filter(m => m.id !== id)) }
+  function upd(id: string, p: Partial<MatchRow>) {
+    onChange(matches.map(m => m.id === id ? { ...m, ...p } : m))
+  }
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-2">
+        <Label>Partidos</Label>
+        <button onClick={add} className="text-xs px-2 py-1 bg-[#0B1631] text-white rounded hover:bg-gray-800">+ Partido</button>
+      </div>
+      {matches.map((m, i) => (
+        <div key={m.id} className="border rounded-lg p-2 mb-2 space-y-2 bg-gray-50">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-gray-500">Partido {i + 1}</span>
+            <button onClick={() => remove(m.id)} className="text-red-400 text-xs hover:text-red-600">✕</button>
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Hora</label>
+            <input value={m.hour} onChange={e => upd(m.id, { hour: e.target.value })} placeholder="00:00"
+              className="border rounded px-2 py-1 text-xs w-20 focus:outline-none focus:ring-1 focus:ring-[#0B1631]" />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-1">
+              <EscudoField label="Escudo local" value={m.localEscudo} onChange={v => upd(m.id, { localEscudo: v })} />
+              <input value={m.localName} onChange={e => upd(m.id, { localName: e.target.value })} placeholder="LOCAL"
+                className="w-full border rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-[#0B1631]" />
+            </div>
+            <div className="space-y-1">
+              <EscudoField label="Escudo visita" value={m.visitorEscudo} onChange={v => upd(m.id, { visitorEscudo: v })} />
+              <input value={m.visitorName} onChange={e => upd(m.id, { visitorName: e.target.value })} placeholder="VISITANTE"
+                className="w-full border rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-[#0B1631]" />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function PartidosHoyForm({ state, set }: { state: PartidosHoyState; set: (s: PartidosHoyState) => void }) {
+  const u = (p: Partial<PartidosHoyState>) => set({ ...state, ...p })
+  return (
+    <div className="space-y-4">
+      <div>
+        <Label>Modelo</Label>
+        <div className="flex gap-2">
+          {([['arg', '#0B1631', 'Argentina'], ['bra', '#111214', 'Brasil']] as const).map(([v, color, name]) => (
+            <button key={v} onClick={() => u({ modelo: v })}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded border text-sm font-medium transition-colors ${state.modelo === v ? 'border-[#0B1631] bg-[#0B1631] text-white' : 'border-gray-200 hover:bg-gray-50'}`}>
+              <span className="w-3 h-3 rounded-full inline-block" style={{ background: color }} />
+              {name}
+            </button>
+          ))}
+        </div>
+      </div>
+      <Field label="Competición (ej: TORNEO CLAUSURA · FECHA 15)" value={state.competition} onChange={v => u({ competition: v })} />
+      <Field label="Línea de fecha (ej: LUNES 02/11 · HORARIO DE ARGENTINA)" value={state.dateLabel} onChange={v => u({ dateLabel: v })} />
+      <MatchRowsList matches={state.matches} onChange={v => u({ matches: v })} />
+    </div>
+  )
+}
+
+function ClasificadoForm({ state, set }: { state: ClasificadoState; set: (s: ClasificadoState) => void }) {
+  const u = (p: Partial<ClasificadoState>) => set({ ...state, ...p })
+  return (
+    <div className="space-y-4">
+      <FotoField foto={state.foto} posX={state.fotoPosX} posY={state.fotoPosY} scale={state.fotoScale}
+        onFoto={v => u({ foto: v })} onPosX={v => u({ fotoPosX: v })} onPosY={v => u({ fotoPosY: v })} onScale={v => u({ fotoScale: v })} />
+      <EscudoField label="Escudo del club" value={state.escudo1} onChange={v => u({ escudo1: v })} />
+      <Field label="Badge (ej: CLASIFICADO, CAMPEÓN, ASCENDIDO)" value={state.badgeText} onChange={v => u({ badgeText: v })} />
+      <Field label="Competición (ej: LIBERTADORES)" value={state.competition} onChange={v => u({ competition: v })} />
+      <Field label="Año / subtítulo (ej: 2027)" value={state.year} onChange={v => u({ year: v })} />
+      <EscudoField label="Logo de competición (opcional)" value={state.competitionLogo} onChange={v => u({ competitionLogo: v })} />
+      <FondoField value={state.fondo} onChange={v => u({ fondo: v })} />
+      <FranjaField value={state.franja} onChange={v => u({ franja: v })} />
+    </div>
+  )
+}
+
 // ---- Motor form components ----
 
 const COMMON_FLAGS = ['🇦🇷','🇧🇷','🇳🇱','🇬🇧','🇩🇪','🇲🇨','🇦🇺','🇲🇽','🇨🇦','🇪🇸','🇫🇷','🇮🇹','🇯🇵','🇹🇭','🇳🇿']
@@ -1197,6 +1284,7 @@ type AllStates = {
   '05': FraseState; '06': PreviaState; '07': NoticiaState; '08': FormacionState
   '09': CaraACaraState; '10': FotoSitioState; '11': NoticiaBrasilState
   '12': TablaAnualState; '13': AnuncioState
+  '14': PartidosHoyState; '15': ClasificadoState
   'M1': M1State; 'M2': M2State; 'M3': M3State; 'M4': M4State; 'M5': M5State
 }
 
@@ -1206,6 +1294,7 @@ function getDefault(id: TemplateId): AllStates[typeof id] {
     '05': defaultFrase, '06': defaultPrevia, '07': defaultNoticia, '08': defaultFormacion,
     '09': defaultCaraACara, '10': defaultFotoSitio, '11': defaultNoticiaBrasil,
     '12': defaultTablaAnual, '13': defaultAnuncio,
+    '14': defaultPartidosHoy, '15': defaultClasificado,
     'M1': defaultM1, 'M2': defaultM2, 'M3': defaultM3, 'M4': defaultM4, 'M5': defaultM5,
   }
   return map[id]() as AllStates[typeof id]
@@ -1226,6 +1315,8 @@ function renderHtml(id: TemplateId, state: unknown): string {
     '11': s => render11NoticiaBrasil(s as NoticiaBrasilState),
     '12': s => render12TablaAnual(s as TablaAnualState),
     '13': s => render13Anuncio(s as AnuncioState),
+    '14': s => render14PartidosHoy(s as PartidosHoyState),
+    '15': s => render15Clasificado(s as ClasificadoState),
     'M1': s => renderM1(s as M1State),
     'M2': s => renderM2(s as M2State),
     'M3': s => renderM3(s as M3State),
@@ -1583,6 +1674,8 @@ export default function PlacaGenerator() {
       case '11': return <NoticiaBrasilForm {...props as Parameters<typeof NoticiaBrasilForm>[0]} />
       case '12': return <TablaAnualForm {...props as Parameters<typeof TablaAnualForm>[0]} />
       case '13': return <AnuncioForm {...props as Parameters<typeof AnuncioForm>[0]} />
+      case '14': return <PartidosHoyForm {...props as Parameters<typeof PartidosHoyForm>[0]} />
+      case '15': return <ClasificadoForm {...props as Parameters<typeof ClasificadoForm>[0]} />
       case 'M1': return <M1Form {...props as Parameters<typeof M1Form>[0]} />
       case 'M2': return <M2Form {...props as Parameters<typeof M2Form>[0]} />
       case 'M3': return <M3Form {...props as Parameters<typeof M3Form>[0]} />

@@ -128,6 +128,30 @@ export type AnuncioState = CommonFields & {
   subtitle: string
 }
 
+export type MatchRow = {
+  id: string
+  hour: string
+  localEscudo: string
+  localName: string
+  visitorEscudo: string
+  visitorName: string
+}
+
+export type PartidosHoyState = {
+  modelo: 'arg' | 'bra'
+  competition: string
+  dateLabel: string
+  matches: MatchRow[]
+}
+
+export type ClasificadoState = CommonFields & {
+  escudo1: string
+  badgeText: string
+  competition: string
+  year: string
+  competitionLogo: string
+}
+
 export type AnyState =
   | { id: '01'; data: GolState }
   | { id: '02'; data: ResultadoState }
@@ -142,5 +166,7 @@ export type AnyState =
   | { id: '11'; data: NoticiaBrasilState }
   | { id: '12'; data: TablaAnualState }
   | { id: '13'; data: AnuncioState }
+  | { id: '14'; data: PartidosHoyState }
+  | { id: '15'; data: ClasificadoState }
 
 export type { M1State, M2State, M3State, M4State, M5State } from './motor/types'
