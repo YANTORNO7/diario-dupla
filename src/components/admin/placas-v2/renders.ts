@@ -64,18 +64,18 @@ function renderResultadoBase(d: ResultadoState, badge: string): string {
 ${fotoImg(d.foto, 1080, 960, d.fotoPosX, d.fotoPosY, d.fotoScale)}
 <div style="position: absolute; left: 0; top: 0; width: 1080px; height: 980px; background: linear-gradient(180deg, rgba(${rgba},0.55) 0%, rgba(${rgba},0) 16%, rgba(${rgba},0) 55%, rgba(${rgba},0.85) 82%, ${bg} 100%)"></div>
 ${logo(d.fondo)}
-<div style="position: absolute; left: 64px; right: 64px; top: 868px; display: flex; flex-direction: column; align-items: center">
+<div style="position: absolute; left: 64px; right: 64px; top: 828px; display: flex; flex-direction: column; align-items: center">
 <div style="background: #F2B632; color: ${bg}; font-size: 22px; font-weight: 800; letter-spacing: 5px; padding: 10px 22px 9px 22px">${badge}</div>
-<div style="margin-top: 34px; width: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: center">
+<div style="margin-top: 34px; width: 100%; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); column-gap: 24px; align-items: center">
 <div style="display: flex; flex-direction: column; align-items: center; gap: 12px">
 ${escudoImg(d.escudo1, 130, 130)}
-<div style="font-family: 'Bebas Neue', sans-serif; font-size: 48px; line-height: 1.1; letter-spacing: 2px; text-align: center; max-width: 300px; word-break: break-word">${d.team1}</div>
+<div style="font-family: 'Bebas Neue', sans-serif; font-size: 48px; line-height: 1; letter-spacing: 2px; text-align: center; overflow-wrap: break-word; width: 100%">${d.team1}</div>
 <div style="max-height: 112px; overflow: hidden; display: flex; flex-direction: column; align-items: center">${ev1.map(renderEventRow).join('')}</div>
 </div>
 <div style="font-family: 'Bebas Neue', sans-serif; font-size: 220px; line-height: 0.85; text-align: center; letter-spacing: 4px">${d.score1}<span style="color: #F2B632; padding: 0 18px">-</span>${d.score2}</div>
 <div style="display: flex; flex-direction: column; align-items: center; gap: 12px">
 ${escudoImg(d.escudo2, 130, 130)}
-<div style="font-family: 'Bebas Neue', sans-serif; font-size: 48px; line-height: 1.1; letter-spacing: 2px; text-align: center; max-width: 300px; word-break: break-word">${d.team2}</div>
+<div style="font-family: 'Bebas Neue', sans-serif; font-size: 48px; line-height: 1; letter-spacing: 2px; text-align: center; overflow-wrap: break-word; width: 100%">${d.team2}</div>
 <div style="max-height: 112px; overflow: hidden; display: flex; flex-direction: column; align-items: center">${ev2.map(renderEventRow).join('')}</div>
 </div>
 </div>
