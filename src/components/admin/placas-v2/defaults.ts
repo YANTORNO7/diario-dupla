@@ -152,7 +152,7 @@ export const TEMPLATE_LIST = [
   { id: '08', label: 'Formación', emoji: '📋' },
   { id: '09', label: 'Cara a cara', emoji: '⚔️' },
   { id: '10', label: 'Foto sitio', emoji: '🖼️' },
-  { id: '11', label: 'Noticia destacada', emoji: '🇧🇷' },
+  { id: '11', label: 'Noticia destacada', emoji: '⭐' },
   { id: '12', label: 'Tabla anual', emoji: '📊' },
   { id: '13', label: 'Anuncio', emoji: '📢' },
   // Motor
