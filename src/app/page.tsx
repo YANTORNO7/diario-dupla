@@ -9,7 +9,8 @@ import SectionBlock from "@/components/public/SectionBlock"
 import { getNavSections, getSectionPath } from "@/lib/sections"
 
 export default async function HomePage() {
-  const [featured, latest, navSections] = await Promise.all([
+  // Fetch more than needed so the JS sort (day + createdAt) has enough candidates
+  const [featured, latestRaw, navSections] = await Promise.all([
     prisma.article.findFirst({
       where: { status: "PUBLISHED", featured: true },
       orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
@@ -21,8 +22,8 @@ export default async function HomePage() {
     }),
     prisma.article.findMany({
       where: { status: "PUBLISHED" },
-      orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
-      take: 6,
+      orderBy: [{ createdAt: "desc" }],
+      take: 30,
       include: {
         tags: true,
         author: { select: { name: true } },
@@ -31,6 +32,15 @@ export default async function HomePage() {
     }),
     getNavSections(),
   ])
+
+  // Ordenar por día (YYYY-MM-DD) de publishedAt DESC, desempate por createdAt DESC.
+  // Esto evita que artículos con publishedAt inflado a fechas futuras dominen el feed.
+  const latest = [...latestRaw].sort((a, b) => {
+    const dayA = (a.publishedAt ?? a.createdAt).toISOString().slice(0, 10)
+    const dayB = (b.publishedAt ?? b.createdAt).toISOString().slice(0, 10)
+    if (dayA !== dayB) return dayA < dayB ? 1 : -1
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  })
 
   // Load top-level sections flagged for homepage
   const homepageSections = await prisma.section.findMany({

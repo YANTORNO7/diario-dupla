@@ -29,7 +29,11 @@ export default function ArticleList({ articles, userRole }: { articles: Article[
     if (idx === 0) return
     const above = articles[idx - 1]
     const aboveDate = new Date(above.publishedAt ?? above.createdAt)
-    const newDate = new Date(aboveDate.getTime() + 1)
+    // Cap to now: si el artículo de arriba tiene una fecha futura (bug cascada),
+    // no propagamos esa fecha al artículo promovido.
+    const cap = new Date()
+    const rawDate = new Date(aboveDate.getTime() + 1)
+    const newDate = rawDate > cap ? new Date(cap.getTime() + 1) : rawDate
     setPromoting(id)
     try {
       const res = await fetch(`/api/articles/${id}`, {
