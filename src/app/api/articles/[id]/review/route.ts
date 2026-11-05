@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { requireAdminAPI } from "@/lib/auth-guard"
+import { parseDateInput } from "@/lib/utils"
 import { sendNewsletter } from "@/lib/newsletter"
 import { notifyAuthor } from "@/lib/notify-author"
 import { pingGoogle } from "@/lib/ping-google"
@@ -15,9 +16,10 @@ export async function PUT(
 
   const { id } = await params
   const body = await request.json()
-  const { action, rejectionNote } = body as {
+  const { action, rejectionNote, publishedAt } = body as {
     action: "approve" | "reject"
     rejectionNote?: string
+    publishedAt?: string
   }
 
   if (!action || (action !== "approve" && action !== "reject")) {
@@ -47,11 +49,21 @@ export async function PUT(
   }
 
   if (action === "approve") {
+    // Si la fecha elegida es hoy, usar la hora exacta actual para que el artículo
+    // aparezca al tope de los publicados ese día (parseDateInput fija mediodía UTC).
+    let resolvedPublishedAt: Date
+    if (publishedAt) {
+      const parsed = parseDateInput(publishedAt)
+      const todayStr = new Date().toISOString().slice(0, 10)
+      resolvedPublishedAt = parsed.toISOString().slice(0, 10) === todayStr ? new Date() : parsed
+    } else {
+      resolvedPublishedAt = existing.publishedAt ?? new Date()
+    }
     const article = await prisma.article.update({
       where: { id },
       data: {
         status: "PUBLISHED",
-        publishedAt: existing.publishedAt ?? new Date(),
+        publishedAt: resolvedPublishedAt,
         rejectionNote: null,
       },
       include: {
@@ -62,8 +74,8 @@ export async function PUT(
       },
     })
 
-    // Disparar newsletter
-    sendNewsletter(article.id).catch(console.error)
+    // Disparar newsletter (await para garantir envio antes de fechar a função)
+    await sendNewsletter(article.id)
 
     // Notificar autor por email
     notifyAuthor(existing.author.email, existing.title, "approve").catch(console.error)
