@@ -12,23 +12,22 @@ export async function GET() {
   const articles = await prisma.article.findMany({
     where: {
       status: "PUBLISHED",
-      publishedAt: { gte: twelveMonthsAgo },
+      createdAt: { gte: twelveMonthsAgo },
     },
     select: {
-      publishedAt: true,
+      createdAt: true,
       author: { select: { id: true, name: true } },
     },
-    orderBy: { publishedAt: "desc" },
+    orderBy: { createdAt: "desc" },
   })
 
-  // Agrupar por autor + mês
+  // Agrupar por autor + mês usando createdAt (inmutable, no afectado por Subir)
   const statsMap: Record<string, Record<string, number>> = {}
   const authorsMap: Record<string, string> = {}
 
   for (const article of articles) {
-    if (!article.publishedAt) continue
     const authorId = article.author.id
-    const month = `${article.publishedAt.getFullYear()}-${String(article.publishedAt.getMonth() + 1).padStart(2, "0")}`
+    const month = `${article.createdAt.getFullYear()}-${String(article.createdAt.getMonth() + 1).padStart(2, "0")}`
 
     authorsMap[authorId] = article.author.name
 
