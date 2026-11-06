@@ -14,6 +14,37 @@ type ReportSummary = {
 
 type ReportFull = ReportSummary & { htmlContent: string }
 
+function getCycleWeeks(): { label: string; monday: string }[] {
+  const pad = (n: number) => String(n).padStart(2, "0")
+  // Fecha actual en ART (UTC-3)
+  const nowART = new Date(Date.now() - 3 * 60 * 60 * 1000)
+  const artDay = nowART.getUTCDate()
+  let cycleYear = nowART.getUTCFullYear()
+  let cycleMonth = nowART.getUTCMonth() + 1
+  if (artDay < 10) {
+    cycleMonth--
+    if (cycleMonth === 0) { cycleMonth = 12; cycleYear-- }
+  }
+  // Inicio del ciclo: día 10 a las 00:00 ART = 03:00 UTC
+  const cycleStart = new Date(Date.UTC(cycleYear, cycleMonth - 1, 10, 3, 0, 0, 0))
+  const dow = cycleStart.getUTCDay()
+  const daysToMonday = dow === 1 ? 0 : dow === 0 ? 1 : 8 - dow
+  let monday = new Date(cycleStart.getTime() + daysToMonday * 24 * 60 * 60 * 1000)
+
+  const weeks: { label: string; monday: string }[] = []
+  let weekNum = 1
+  while (monday.getTime() <= nowART.getTime()) {
+    const nextMonday = new Date(monday.getTime() + 7 * 24 * 60 * 60 * 1000)
+    weeks.push({
+      label: `Semana ${weekNum} · ${pad(monday.getUTCDate())}/${pad(monday.getUTCMonth() + 1)} — ${pad(nextMonday.getUTCDate())}/${pad(nextMonday.getUTCMonth() + 1)}`,
+      monday: `${monday.getUTCFullYear()}-${pad(monday.getUTCMonth() + 1)}-${pad(monday.getUTCDate())}`,
+    })
+    monday = nextMonday
+    weekNum++
+  }
+  return weeks
+}
+
 export default function ReportsTab() {
   const [reports, setReports] = useState<ReportSummary[]>([])
   const [loading, setLoading] = useState(true)
@@ -78,13 +109,42 @@ export default function ReportsTab() {
     }
   }
 
+  // Renderiza el HTML del informe en el documento principal para que html-to-image
+  // pueda acceder a las fuentes (@font-face del iframe no son visibles para toPng)
+  async function captureReport(): Promise<string> {
+    if (!viewing) throw new Error("Sin informe")
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(viewing.htmlContent, "text/html")
+
+    // Extraer solo las reglas @font-face para inyectarlas en el doc principal
+    let fontFaceCSS = ""
+    for (const style of doc.querySelectorAll("style")) {
+      const matches = (style.textContent || "").match(/@font-face\s*\{[\s\S]*?\}/g) || []
+      fontFaceCSS += matches.join("\n")
+    }
+    const fontStyle = document.createElement("style")
+    fontStyle.textContent = fontFaceCSS
+    document.head.appendChild(fontStyle)
+
+    const container = document.createElement("div")
+    container.style.cssText = "position:fixed;left:-9999px;top:0;width:800px;background:#fff;font-family:'Archivo',Arial,sans-serif;color:#1a1a1a;overflow:visible"
+    container.innerHTML = doc.body.innerHTML
+    document.body.appendChild(container)
+
+    await document.fonts.ready
+    await new Promise(r => setTimeout(r, 300))
+
+    const dataUrl = await toPng(container, { pixelRatio: 2, backgroundColor: "#ffffff" })
+
+    document.body.removeChild(container)
+    document.head.removeChild(fontStyle)
+    return dataUrl
+  }
+
   async function downloadPNG() {
-    const iframe = iframeRef.current
-    if (!iframe || !viewing) return
-    const inner = iframe.contentDocument?.body
-    if (!inner) return
+    if (!viewing) return
     try {
-      const dataUrl = await toPng(inner, { pixelRatio: 2, backgroundColor: "#ffffff" })
+      const dataUrl = await captureReport()
       const a = document.createElement("a")
       a.href = dataUrl
       a.download = `${viewing.title}.png`
@@ -95,12 +155,9 @@ export default function ReportsTab() {
   }
 
   async function downloadPDF() {
-    const iframe = iframeRef.current
-    if (!iframe || !viewing) return
-    const inner = iframe.contentDocument?.body
-    if (!inner) return
+    if (!viewing) return
     try {
-      const dataUrl = await toPng(inner, { pixelRatio: 2, backgroundColor: "#ffffff" })
+      const dataUrl = await captureReport()
       const { default: jsPDF } = await import("jspdf")
       const pdf = new jsPDF("p", "mm", "a4")
       const pdfW = pdf.internal.pageSize.getWidth()
@@ -128,14 +185,16 @@ export default function ReportsTab() {
       <div className="flex flex-wrap gap-4 bg-white border rounded-lg p-4">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-sm font-semibold text-gray-700">Semanal:</span>
-          <input
-            type="date"
+          <select
             value={weeklyDate}
             onChange={e => setWeeklyDate(e.target.value)}
-            placeholder="Lunes de la semana"
             className="text-xs border rounded px-2 py-1"
-          />
-          <span className="text-xs text-gray-400">(lunes de la semana; vacío = semana pasada)</span>
+          >
+            <option value="">Semana pasada (auto)</option>
+            {getCycleWeeks().map(w => (
+              <option key={w.monday} value={w.monday}>{w.label}</option>
+            ))}
+          </select>
           <button
             onClick={() => generate("weekly")}
             disabled={generating === "weekly"}
