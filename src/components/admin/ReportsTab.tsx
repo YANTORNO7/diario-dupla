@@ -109,35 +109,35 @@ export default function ReportsTab() {
     }
   }
 
-  // Renderiza el HTML del informe en el documento principal para que html-to-image
-  // pueda acceder a las fuentes (@font-face del iframe no son visibles para toPng)
+  // Crea un iframe con Blob URL (mismo origen) para que html-to-image pueda
+  // acceder al contentDocument y leer los @font-face correctamente
   async function captureReport(): Promise<string> {
     if (!viewing) throw new Error("Sin informe")
-    const parser = new DOMParser()
-    const doc = parser.parseFromString(viewing.htmlContent, "text/html")
 
-    // Extraer solo las reglas @font-face para inyectarlas en el doc principal
-    let fontFaceCSS = ""
-    for (const style of doc.querySelectorAll("style")) {
-      const matches = (style.textContent || "").match(/@font-face\s*\{[\s\S]*?\}/g) || []
-      fontFaceCSS += matches.join("\n")
-    }
-    const fontStyle = document.createElement("style")
-    fontStyle.textContent = fontFaceCSS
-    document.head.appendChild(fontStyle)
+    const blob = new Blob([viewing.htmlContent], { type: "text/html;charset=utf-8" })
+    const blobUrl = URL.createObjectURL(blob)
 
-    const container = document.createElement("div")
-    container.style.cssText = "position:fixed;left:-9999px;top:0;width:800px;background:#fff;font-family:'Archivo',Arial,sans-serif;color:#1a1a1a;overflow:visible"
-    container.innerHTML = doc.body.innerHTML
-    document.body.appendChild(container)
+    const iframe = document.createElement("iframe")
+    iframe.style.cssText = "position:fixed;left:0;top:0;width:800px;height:4000px;border:none;opacity:0.001;pointer-events:none;z-index:9999"
+    document.body.appendChild(iframe)
+    iframe.src = blobUrl
 
-    await document.fonts.ready
-    await new Promise(r => setTimeout(r, 300))
+    await new Promise<void>(resolve => { iframe.onload = () => resolve() })
 
-    const dataUrl = await toPng(container, { pixelRatio: 2, backgroundColor: "#ffffff" })
+    const inner = iframe.contentDocument?.body
+    if (!inner) { URL.revokeObjectURL(blobUrl); document.body.removeChild(iframe); throw new Error("Sin contenido") }
 
-    document.body.removeChild(container)
-    document.head.removeChild(fontStyle)
+    // Ajustar al alto real del contenido
+    iframe.style.height = `${inner.scrollHeight + 20}px`
+
+    // Esperar fuentes del iframe y un pequeño delay de render
+    await (iframe.contentDocument as Document & { fonts?: FontFaceSet }).fonts?.ready
+    await new Promise(r => setTimeout(r, 600))
+
+    const dataUrl = await toPng(inner, { pixelRatio: 2, backgroundColor: "#ffffff" })
+
+    URL.revokeObjectURL(blobUrl)
+    document.body.removeChild(iframe)
     return dataUrl
   }
 
