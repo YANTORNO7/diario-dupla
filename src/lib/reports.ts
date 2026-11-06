@@ -92,13 +92,41 @@ export function getPreviousMonth(now = new Date()): { year: number; month: numbe
   return { year: y, month: m }
 }
 
+// Número de semana dentro del ciclo mensual (el ciclo empieza el día 10 de cada mes).
+// Semana 1 = primer lunes desde el día 10; semana 2 = siguiente lunes, etc.
+function getWeekNumberInCycle(artMonday: Date): number {
+  const day = artMonday.getUTCDate()
+  let month = artMonday.getUTCMonth() + 1
+  let year = artMonday.getUTCFullYear()
+
+  // Determinar qué ciclo contiene este lunes
+  if (day < 10) {
+    month -= 1
+    if (month === 0) { month = 12; year -= 1 }
+  }
+
+  // Inicio del ciclo: día 10 del mes del ciclo
+  const cycleStart = new Date(Date.UTC(year, month - 1, 10))
+
+  // Primer lunes en o después del inicio del ciclo
+  const dow = cycleStart.getUTCDay() // 0=dom … 6=sáb
+  const daysToMonday = dow === 1 ? 0 : dow === 0 ? 1 : 8 - dow
+  const firstMonday = new Date(cycleStart.getTime() + daysToMonday * 24 * 60 * 60 * 1000)
+
+  const diff = artMonday.getTime() - firstMonday.getTime()
+  return Math.floor(diff / (7 * 24 * 60 * 60 * 1000)) + 1
+}
+
 function generateTitle(type: "weekly" | "monthly", start: Date, end: Date): string {
   if (type === "weekly") {
     const s = utcToARTDate(start)
     const e = utcToARTDate(end)
-    const monthName = MONTHS_ES[e.getUTCMonth()]
-    const year = e.getUTCFullYear()
-    return `SEMANA DEL ${pad2(s.getUTCDate())}/${pad2(s.getUTCMonth() + 1)} AL ${pad2(e.getUTCDate())}/${pad2(e.getUTCMonth() + 1)} · ${monthName} ${year}`
+    const weekNum = getWeekNumberInCycle(s)
+    // Mes del ciclo: si el lunes está antes del 10, pertenece al ciclo del mes anterior
+    const cycleMonthIdx = s.getUTCDate() < 10 ? (s.getUTCMonth() === 0 ? 11 : s.getUTCMonth() - 1) : s.getUTCMonth()
+    const cycleYear = s.getUTCDate() < 10 && s.getUTCMonth() === 0 ? s.getUTCFullYear() - 1 : s.getUTCFullYear()
+    const monthName = MONTHS_ES[cycleMonthIdx]
+    return `SEMANA ${weekNum} · DEL ${pad2(s.getUTCDate())}/${pad2(s.getUTCMonth() + 1)} AL ${pad2(e.getUTCDate())}/${pad2(e.getUTCMonth() + 1)} · ${monthName} ${cycleYear}`
   } else {
     const s = utcToARTDate(start)
     return `INFORME MENSUAL · ${MONTHS_ES[s.getUTCMonth()]} ${s.getUTCFullYear()}`
