@@ -293,19 +293,22 @@ body { background:#fff; width:800px; font-family:'Archivo',Arial,sans-serif; col
 </head>
 <body>
 <!-- HEADER -->
-<div style="background:#0B1631;padding:28px 36px 24px">
-  <div style="font-family:'Bebas Neue',cursive;font-size:36px;letter-spacing:4px;color:#F2B632">
-    DIARIO <span style="color:#fff">DUPLA</span>
+<div style="background:#0B1631;padding:24px 36px 22px;display:flex;align-items:center;justify-content:space-between">
+  <div>
+    <div style="font-family:'Bebas Neue',cursive;font-size:36px;letter-spacing:4px;color:#F2B632">
+      DIARIO <span style="color:#fff">DUPLA</span>
+    </div>
+    <div style="font-family:'Bebas Neue',cursive;font-size:22px;letter-spacing:2px;color:#fff;margin-top:6px">${title}</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.65);margin-top:4px">${periodLabel}</div>
   </div>
-  <div style="font-family:'Bebas Neue',cursive;font-size:22px;letter-spacing:2px;color:#fff;margin-top:6px">${title}</div>
-  <div style="font-size:12px;color:rgba(255,255,255,0.65);margin-top:4px">${periodLabel}</div>
+  <img src="https://diariodupla.com/icon.png" alt="Dupla" style="width:72px;height:72px;object-fit:contain;border-radius:8px;flex-shrink:0" />
 </div>
 
 <!-- CARDS -->
 <div style="display:flex;gap:12px;padding:20px 36px;background:#f8f9fa">
   <div style="flex:1;background:#fff;border-radius:8px;padding:18px 14px;border:1px solid #e9ecef;text-align:center">
     <div style="font-family:'Bebas Neue',cursive;font-size:48px;color:#0B1631;line-height:1">${totalNotes}</div>
-    <div style="font-size:10px;font-weight:700;color:#6c757d;letter-spacing:1px;text-transform:uppercase;margin-top:4px">Notas en el período</div>
+    <div style="font-size:10px;font-weight:700;color:#6c757d;letter-spacing:1px;text-transform:uppercase;margin-top:4px">Total colaboradores</div>
   </div>
   <div style="flex:1;background:#fff;border-radius:8px;padding:18px 14px;border:1px solid #e9ecef;text-align:center">
     <div style="font-family:'Bebas Neue',cursive;font-size:48px;color:#0B1631;line-height:1">${activeCollaborators}</div>
@@ -317,14 +320,15 @@ body { background:#fff; width:800px; font-family:'Archivo',Arial,sans-serif; col
   </div>
 </div>
 
-${adminCount > 0 ? `<!-- NOTA STAFF -->
-<div style="margin:0 36px 4px;padding:8px 12px;background:#f8f9fa;border:1px solid #e9ecef;border-radius:6px;display:flex;align-items:center;gap:8px">
-  <span style="font-family:'Bebas Neue',cursive;font-size:13px;letter-spacing:1px;color:#6c757d">NOTAS DEL STAFF EN EL PERÍODO:</span>
-  <span style="font-family:'Bebas Neue',cursive;font-size:18px;color:#0B1631">${adminCount}</span>
+${adminCount > 0 ? `<!-- NOTA ADMIN -->
+<div style="margin:0 36px 4px;padding:8px 14px;background:#f8f9fa;border:1px solid #e9ecef;border-radius:6px;display:flex;align-items:center;gap:10px">
+  <span style="font-family:'Bebas Neue',cursive;font-size:13px;letter-spacing:1px;color:#6c757d">ADMIN</span>
+  <span style="font-family:'Bebas Neue',cursive;font-size:20px;color:#0B1631">${adminCount}</span>
+  <span style="font-size:11px;color:#9ca3af;margin-left:4px">notas en el período</span>
 </div>` : ''}
 
 <!-- TABLE -->
-<div style="padding:4px 36px 28px">
+<div style="padding:4px 36px 20px">
   <table style="width:100%;border-collapse:collapse">
     <thead>
       <tr style="background:#0B1631;color:#fff">
@@ -338,6 +342,11 @@ ${adminCount > 0 ? `<!-- NOTA STAFF -->
       ${totalRow}
     </tbody>
   </table>
+</div>
+
+<!-- FIRMA -->
+<div style="padding:16px 36px 20px;display:flex;justify-content:flex-end">
+  <img src="https://diariodupla.com/firma-bart-yantorno.png" alt="Bart Yantorno" style="height:52px;object-fit:contain" />
 </div>
 
 <!-- FRANJA -->
