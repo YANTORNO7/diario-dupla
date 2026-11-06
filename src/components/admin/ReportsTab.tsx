@@ -112,7 +112,17 @@ export default function ReportsTab() {
   async function captureReport(): Promise<string> {
     if (!viewing) throw new Error("Sin informe")
 
-    const blob = new Blob([viewing.htmlContent], { type: "text/html;charset=utf-8" })
+    // html-to-image sabe fetchear fuentes de Google Fonts automáticamente.
+    // Si el HTML no tiene el link tag (embedding server-side falló), lo inyectamos.
+    let html = viewing.htmlContent
+    if (!html.includes("fonts.googleapis.com")) {
+      html = html.replace(
+        "</head>",
+        '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Archivo:ital,wght@0,400;0,600;0,800;1,600&display=swap"></head>'
+      )
+    }
+
+    const blob = new Blob([html], { type: "text/html;charset=utf-8" })
     const blobUrl = URL.createObjectURL(blob)
 
     const iframe = document.createElement("iframe")
@@ -129,22 +139,10 @@ export default function ReportsTab() {
       throw new Error("Sin contenido")
     }
 
-    // Inyectar fuentes base64 desde el cliente e invocar load() en cada FontFace
-    try {
-      const fontCSS = await fetch("/api/font-embed").then(r => r.text())
-      if (fontCSS && fontCSS.length > 5000) {
-        const s = contentDoc.createElement("style")
-        s.textContent = fontCSS
-        contentDoc.head.prepend(s)
-        // Esperar dos frames para que el browser parsee el <style> y registre las fuentes
-        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))
-        // Cargar explícitamente cada FontFace registrada en el iframe
-        await Promise.all([...contentDoc.fonts.values()].map(f => f.load().catch(() => {})))
-      }
-    } catch { /* usar lo que haya */ }
-
     iframe.style.height = `${inner.scrollHeight + 20}px`
-    await new Promise(r => setTimeout(r, 400))
+    // Esperar que las fuentes terminen de cargar en el iframe
+    await contentDoc.fonts.ready
+    await new Promise(r => setTimeout(r, 500))
 
     const dataUrl = await toPng(inner, { pixelRatio: 2, backgroundColor: "#ffffff" })
 
