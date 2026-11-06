@@ -112,42 +112,31 @@ export default function ReportsTab() {
   async function captureReport(): Promise<string> {
     if (!viewing) throw new Error("Sin informe")
 
-    // html-to-image sabe fetchear fuentes de Google Fonts automáticamente.
-    // Si el HTML no tiene el link tag (embedding server-side falló), lo inyectamos.
-    let html = viewing.htmlContent
-    if (!html.includes("fonts.googleapis.com")) {
-      html = html.replace(
-        "</head>",
-        '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Archivo:ital,wght@0,400;0,600;0,800;1,600&display=swap"></head>'
-      )
+    // Parsear el HTML del informe y poner el contenido en el documento actual.
+    // Así html-to-image opera en el mismo document y accede a las fuentes sin problemas.
+    const parser = new DOMParser()
+    const reportDoc = parser.parseFromString(viewing.htmlContent, "text/html")
+
+    const container = document.createElement("div")
+    container.style.cssText = "position:absolute;left:-9999px;top:0;width:800px;background:#fff;font-family:'Archivo',Arial,sans-serif;color:#1a1a1a"
+    container.innerHTML = reportDoc.body.innerHTML
+    document.body.appendChild(container)
+
+    // Cargar Google Fonts en el documento actual si no están ya
+    const GF = "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Archivo:ital,wght@0,400;0,600;0,800;1,600&display=swap"
+    if (!document.querySelector(`link[href="${GF}"]`)) {
+      const link = document.createElement("link")
+      link.rel = "stylesheet"
+      link.href = GF
+      document.head.appendChild(link)
     }
 
-    const blob = new Blob([html], { type: "text/html;charset=utf-8" })
-    const blobUrl = URL.createObjectURL(blob)
+    await document.fonts.ready
+    await new Promise(r => setTimeout(r, 400))
 
-    const iframe = document.createElement("iframe")
-    iframe.style.cssText = "position:fixed;left:0;top:0;width:800px;height:4000px;border:none;opacity:0.001;pointer-events:none;z-index:9999"
-    document.body.appendChild(iframe)
-    iframe.src = blobUrl
+    const dataUrl = await toPng(container, { pixelRatio: 2, backgroundColor: "#ffffff" })
 
-    await new Promise<void>(resolve => { iframe.onload = () => resolve() })
-
-    const contentDoc = iframe.contentDocument
-    const inner = contentDoc?.body
-    if (!inner || !contentDoc) {
-      URL.revokeObjectURL(blobUrl); document.body.removeChild(iframe)
-      throw new Error("Sin contenido")
-    }
-
-    iframe.style.height = `${inner.scrollHeight + 20}px`
-    // Esperar que las fuentes terminen de cargar en el iframe
-    await contentDoc.fonts.ready
-    await new Promise(r => setTimeout(r, 500))
-
-    const dataUrl = await toPng(inner, { pixelRatio: 2, backgroundColor: "#ffffff" })
-
-    URL.revokeObjectURL(blobUrl)
-    document.body.removeChild(iframe)
+    document.body.removeChild(container)
     return dataUrl
   }
 
