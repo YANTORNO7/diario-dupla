@@ -114,6 +114,7 @@ export async function computeReportData(
     where: {
       status: "PUBLISHED",
       publishedAt: { gte: periodStart, lte: periodEnd },
+      author: { role: "EDITOR" },
     },
     select: {
       authorId: true,
@@ -132,6 +133,7 @@ export async function computeReportData(
       where: {
         status: "PUBLISHED",
         publishedAt: { gte: monthStart, lte: periodEnd },
+        author: { role: "EDITOR" },
       },
       select: {
         authorId: true,
