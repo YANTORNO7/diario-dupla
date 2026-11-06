@@ -10,7 +10,18 @@ export async function GET() {
   const userId = (session.user as any).id as string
 
   const now = new Date()
-  const inicioMes = new Date(now.getFullYear(), now.getMonth(), 1)
+
+  // Ciclo mensual igual que Estadísticas: desde el día 10 (10 actual o 10 del mes anterior si estamos en días 1-9)
+  const utcDay = now.getUTCDate()
+  let cycleYear = now.getUTCFullYear()
+  let cycleMonth = now.getUTCMonth() + 1
+  if (utcDay < 10) {
+    cycleMonth -= 1
+    if (cycleMonth === 0) { cycleMonth = 12; cycleYear -= 1 }
+  }
+  // ART 00:00 del día 10 = UTC 03:00
+  const inicioCiclo = new Date(Date.UTC(cycleYear, cycleMonth - 1, 10, 3, 0, 0, 0))
+
   const inicioSemana = new Date(now)
   inicioSemana.setDate(now.getDate() - now.getDay())
   inicioSemana.setHours(0, 0, 0, 0)
@@ -23,7 +34,7 @@ export async function GET() {
       where: {
         authorId: userId,
         status: "PUBLISHED",
-        publishedAt: { gte: inicioMes },
+        createdAt: { gte: inicioCiclo },
       },
     }),
     prisma.article.count({
@@ -37,7 +48,7 @@ export async function GET() {
       by: ["authorId"],
       where: {
         status: "PUBLISHED",
-        publishedAt: { gte: inicioMes },
+        createdAt: { gte: inicioCiclo },
       },
       _count: { id: true },
       orderBy: { _count: { id: "desc" } },
