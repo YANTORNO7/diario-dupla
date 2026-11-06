@@ -112,29 +112,33 @@ export default function ReportsTab() {
   async function captureReport(): Promise<string> {
     if (!viewing) throw new Error("Sin informe")
 
-    // Parsear el HTML del informe y poner el contenido en el documento actual.
-    // Así html-to-image opera en el mismo document y accede a las fuentes sin problemas.
+    // Renderizar en el documento actual: html-to-image accede a las fuentes sin restricciones
     const parser = new DOMParser()
     const reportDoc = parser.parseFromString(viewing.htmlContent, "text/html")
 
     const container = document.createElement("div")
-    container.style.cssText = "position:absolute;left:-9999px;top:0;width:800px;background:#fff;font-family:'Archivo',Arial,sans-serif;color:#1a1a1a"
+    container.style.cssText = "position:fixed;left:0;top:0;width:800px;background:#fff;font-family:'Archivo',Arial,sans-serif;color:#1a1a1a;z-index:-9999;pointer-events:none"
     container.innerHTML = reportDoc.body.innerHTML
     document.body.appendChild(container)
 
-    // Cargar Google Fonts en el documento actual si no están ya
-    const GF = "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Archivo:ital,wght@0,400;0,600;0,800;1,600&display=swap"
-    if (!document.querySelector(`link[href="${GF}"]`)) {
-      const link = document.createElement("link")
-      link.rel = "stylesheet"
-      link.href = GF
-      document.head.appendChild(link)
-    }
+    // Cargar fuentes base64 en el documento actual y esperar cada FontFace
+    try {
+      const fontCSS = await fetch("/api/font-embed").then(r => r.text())
+      if (fontCSS && fontCSS.length > 5000) {
+        const s = document.createElement("style")
+        s.textContent = fontCSS
+        document.head.appendChild(s)
+        // Dos frames para que el browser parsee el <style> y registre los FontFace
+        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))
+        await Promise.all([...document.fonts.values()].map(f => f.load().catch(() => {})))
+      }
+    } catch { /* usar fallback */ }
 
-    await document.fonts.ready
-    await new Promise(r => setTimeout(r, 400))
+    await new Promise(r => setTimeout(r, 300))
 
-    const dataUrl = await toPng(container, { pixelRatio: 2, backgroundColor: "#ffffff" })
+    const w = container.scrollWidth
+    const h = container.scrollHeight
+    const dataUrl = await toPng(container, { pixelRatio: 2, backgroundColor: "#ffffff", width: w, height: h })
 
     document.body.removeChild(container)
     return dataUrl
