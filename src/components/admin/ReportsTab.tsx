@@ -110,7 +110,8 @@ export default function ReportsTab() {
   }
 
   // Crea un iframe con Blob URL (mismo origen) para que html-to-image pueda
-  // acceder al contentDocument y leer los @font-face correctamente
+  // acceder al contentDocument y leer los @font-face correctamente.
+  // Las fuentes se inyectan desde el cliente (evita problemas del loopback server-side).
   async function captureReport(): Promise<string> {
     if (!viewing) throw new Error("Sin informe")
 
@@ -127,10 +128,19 @@ export default function ReportsTab() {
     const inner = iframe.contentDocument?.body
     if (!inner) { URL.revokeObjectURL(blobUrl); document.body.removeChild(iframe); throw new Error("Sin contenido") }
 
+    // Inyectar fuentes frescas desde el cliente (más confiable que la embedding server-side)
+    try {
+      const fontCSS = await fetch("/api/font-embed").then(r => r.text())
+      if (fontCSS && !fontCSS.includes("error")) {
+        const s = iframe.contentDocument!.createElement("style")
+        s.textContent = fontCSS
+        iframe.contentDocument!.head.prepend(s)
+      }
+    } catch { /* si falla, usar lo que haya en el HTML */ }
+
     // Ajustar al alto real del contenido
     iframe.style.height = `${inner.scrollHeight + 20}px`
 
-    // Esperar fuentes del iframe y un pequeño delay de render
     await (iframe.contentDocument as Document & { fonts?: FontFaceSet }).fonts?.ready
     await new Promise(r => setTimeout(r, 600))
 
