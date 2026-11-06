@@ -21,18 +21,40 @@ export async function GET() {
     orderBy: { createdAt: "desc" },
   })
 
-  // Agrupar por autor + mês usando createdAt (inmutable, no afectado por Subir)
+  // Ciclo del 10 al 9: artículos del día 1-9 cuentan en el mes anterior
+  // Ej: Nov 1-9 → "Octubre", Nov 10+ → "Noviembre"
+  function getPeriodKey(date: Date): string {
+    const day = date.getUTCDate()
+    let year = date.getUTCFullYear()
+    let month = date.getUTCMonth() + 1
+    if (day < 10) {
+      month -= 1
+      if (month === 0) { month = 12; year -= 1 }
+    }
+    return `${year}-${String(month).padStart(2, "0")}`
+  }
+
+  // Período actual (el ciclo en curso)
+  const now = new Date()
+  let currentYear = now.getUTCFullYear()
+  let currentMonth = now.getUTCMonth() + 1
+  if (now.getUTCDate() < 10) {
+    currentMonth -= 1
+    if (currentMonth === 0) { currentMonth = 12; currentYear -= 1 }
+  }
+
+  // Agrupar por autor + período (createdAt, inmutable)
   const statsMap: Record<string, Record<string, number>> = {}
   const authorsMap: Record<string, string> = {}
 
   for (const article of articles) {
     const authorId = article.author.id
-    const month = `${article.createdAt.getFullYear()}-${String(article.createdAt.getMonth() + 1).padStart(2, "0")}`
+    const period = getPeriodKey(article.createdAt)
 
     authorsMap[authorId] = article.author.name
 
     if (!statsMap[authorId]) statsMap[authorId] = {}
-    statsMap[authorId][month] = (statsMap[authorId][month] || 0) + 1
+    statsMap[authorId][period] = (statsMap[authorId][period] || 0) + 1
   }
 
   const stats = Object.entries(statsMap).map(([authorId, months]) => ({
@@ -45,12 +67,13 @@ export async function GET() {
   // Ordenar por total descendente
   stats.sort((a, b) => b.total - a.total)
 
-  // Gerar lista dos últimos 6 meses
+  // Últimos 6 períodos (del 10 al 9) hasta el período actual
   const monthLabels: string[] = []
-  const now = new Date()
   for (let i = 5; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
-    monthLabels.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`)
+    let y = currentYear
+    let m = currentMonth - i
+    while (m <= 0) { m += 12; y -= 1 }
+    monthLabels.push(`${y}-${String(m).padStart(2, "0")}`)
   }
 
   return NextResponse.json({ stats, monthLabels })
