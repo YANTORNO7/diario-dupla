@@ -20,6 +20,7 @@ export type ReportData = {
   totalNotes: number
   activeCollaborators: number
   totalPortadas: number
+  adminCount: number
   rows: ReportRow[]
 }
 
@@ -152,15 +153,22 @@ export async function computeReportData(
     },
   })
 
-  // Para semanal: también necesitamos el acumulado del mes calendario
+  // Para semanal: acumulado del ciclo mensual (desde el día 10 del ciclo hasta fin del período)
   let monthArticles: typeof articles = []
   if (type === "weekly") {
-    const artEnd = utcToARTDate(periodEnd)
-    const monthStart = artDayStartUTC(artEnd.getUTCFullYear(), artEnd.getUTCMonth() + 1, 1)
+    const artStart = utcToARTDate(periodStart)
+    const artDay = artStart.getUTCDate()
+    let cycleMonth = artStart.getUTCMonth() + 1
+    let cycleYear = artStart.getUTCFullYear()
+    if (artDay < 10) {
+      cycleMonth -= 1
+      if (cycleMonth === 0) { cycleMonth = 12; cycleYear -= 1 }
+    }
+    const cycleStart = artDayStartUTC(cycleYear, cycleMonth, 10)
     monthArticles = await prisma.article.findMany({
       where: {
         status: "PUBLISHED",
-        publishedAt: { gte: monthStart, lte: periodEnd },
+        publishedAt: { gte: cycleStart, lte: periodEnd },
         author: { role: "EDITOR" },
       },
       select: {
@@ -210,14 +218,23 @@ export async function computeReportData(
   const totalPortadas = rows.reduce((s, r) => s + r.portadas, 0)
   const title = generateTitle(type, periodStart, periodEnd)
 
+  // Notas del staff (ADMIN) en el período
+  const adminCount = await prisma.article.count({
+    where: {
+      status: "PUBLISHED",
+      publishedAt: { gte: periodStart, lte: periodEnd },
+      author: { role: "ADMIN" },
+    },
+  })
+
   return {
     type, title, periodStart, periodEnd,
-    totalNotes, activeCollaborators, totalPortadas, rows,
+    totalNotes, activeCollaborators, totalPortadas, adminCount, rows,
   }
 }
 
 export function generateReportHTML(data: ReportData): string {
-  const { type, title, periodStart, periodEnd, totalNotes, activeCollaborators, totalPortadas, rows } = data
+  const { type, title, periodStart, periodEnd, totalNotes, activeCollaborators, totalPortadas, adminCount, rows } = data
   const maxCount = rows[0]?.periodCount || 1
 
   const artStart = utcToARTDate(periodStart)
@@ -299,6 +316,12 @@ body { background:#fff; width:800px; font-family:'Archivo',Arial,sans-serif; col
     <div style="font-size:10px;font-weight:700;color:#6c757d;letter-spacing:1px;text-transform:uppercase;margin-top:4px">Portadas principales</div>
   </div>
 </div>
+
+${adminCount > 0 ? `<!-- NOTA STAFF -->
+<div style="margin:0 36px 4px;padding:8px 12px;background:#f8f9fa;border:1px solid #e9ecef;border-radius:6px;display:flex;align-items:center;gap:8px">
+  <span style="font-family:'Bebas Neue',cursive;font-size:13px;letter-spacing:1px;color:#6c757d">NOTAS DEL STAFF EN EL PERÍODO:</span>
+  <span style="font-family:'Bebas Neue',cursive;font-size:18px;color:#0B1631">${adminCount}</span>
+</div>` : ''}
 
 <!-- TABLE -->
 <div style="padding:4px 36px 28px">
