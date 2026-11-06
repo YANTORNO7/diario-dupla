@@ -1,4 +1,25 @@
 import { prisma } from "./prisma"
+import fs from "fs"
+import path from "path"
+
+async function getFontCSS(): Promise<string> {
+  try {
+    const res = await fetch("https://diariodupla.com/api/font-embed")
+    if (!res.ok) return ""
+    return await res.text()
+  } catch {
+    return ""
+  }
+}
+
+function getPublicImageBase64(filename: string): string {
+  try {
+    const buf = fs.readFileSync(path.join(process.cwd(), "public", filename))
+    return `data:image/png;base64,${buf.toString("base64")}`
+  } catch {
+    return ""
+  }
+}
 
 // ART = UTC-3 (sin DST)
 const ART_OFFSET_MS = 3 * 60 * 60 * 1000
@@ -127,7 +148,9 @@ function generateTitle(type: "weekly" | "monthly", start: Date, end: Date): stri
     const cycleMonthIdx = s.getUTCDate() < 10 ? (s.getUTCMonth() === 0 ? 11 : s.getUTCMonth() - 1) : s.getUTCMonth()
     const cycleYear = s.getUTCDate() < 10 && s.getUTCMonth() === 0 ? s.getUTCFullYear() - 1 : s.getUTCFullYear()
     const monthName = MONTHS_ES[cycleMonthIdx]
-    return `SEMANA ${weekNum} · DEL ${pad2(s.getUTCDate())}/${pad2(s.getUTCMonth() + 1)} AL ${pad2(e.getUTCDate())}/${pad2(e.getUTCMonth() + 1)} · ${monthName} ${cycleYear}`
+    // El período va de lunes a lunes: mostrar el lunes siguiente al domingo de cierre
+    const nextMonday = new Date(Date.UTC(e.getUTCFullYear(), e.getUTCMonth(), e.getUTCDate() + 1))
+    return `SEMANA ${weekNum} · DEL ${pad2(s.getUTCDate())}/${pad2(s.getUTCMonth() + 1)} AL ${pad2(nextMonday.getUTCDate())}/${pad2(nextMonday.getUTCMonth() + 1)} · ${monthName} ${cycleYear}`
   } else {
     const s = utcToARTDate(start)
     return `INFORME MENSUAL · ${MONTHS_ES[s.getUTCMonth()]} ${s.getUTCFullYear()}`
@@ -233,14 +256,20 @@ export async function computeReportData(
   }
 }
 
-export function generateReportHTML(data: ReportData): string {
+export function generateReportHTML(
+  data: ReportData,
+  fontCSS = "",
+  logoSrc = "https://diariodupla.com/icon.png",
+  firmaSrc = "https://diariodupla.com/firma-bart-yantorno.png"
+): string {
   const { type, title, periodStart, periodEnd, totalNotes, activeCollaborators, totalPortadas, adminCount, rows } = data
   const maxCount = rows[0]?.periodCount || 1
 
   const artStart = utcToARTDate(periodStart)
   const artEnd = utcToARTDate(periodEnd)
+  const nextMondayART = new Date(Date.UTC(artEnd.getUTCFullYear(), artEnd.getUTCMonth(), artEnd.getUTCDate() + 1))
   const periodLabel = type === "weekly"
-    ? `Lunes ${pad2(artStart.getUTCDate())}/${pad2(artStart.getUTCMonth() + 1)}/${artStart.getUTCFullYear()} — Domingo ${pad2(artEnd.getUTCDate())}/${pad2(artEnd.getUTCMonth() + 1)}/${artEnd.getUTCFullYear()}`
+    ? `Lunes ${pad2(artStart.getUTCDate())}/${pad2(artStart.getUTCMonth() + 1)}/${artStart.getUTCFullYear()} — Lunes ${pad2(nextMondayART.getUTCDate())}/${pad2(nextMondayART.getUTCMonth() + 1)}/${nextMondayART.getUTCFullYear()}`
     : `${pad2(artStart.getUTCDate())}/${pad2(artStart.getUTCMonth() + 1)}/${artStart.getUTCFullYear()} — ${pad2(artEnd.getUTCDate())}/${pad2(artEnd.getUTCMonth() + 1)}/${artEnd.getUTCFullYear()}`
 
   const col2Header = type === "weekly" ? "SEMANA" : "MES"
@@ -283,10 +312,8 @@ export function generateReportHTML(data: ReportData): string {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Archivo:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
+${fontCSS}
 * { margin:0; padding:0; box-sizing:border-box; }
 body { background:#fff; width:800px; font-family:'Archivo',Arial,sans-serif; color:#1a1a1a; }
 </style>
@@ -301,7 +328,7 @@ body { background:#fff; width:800px; font-family:'Archivo',Arial,sans-serif; col
     <div style="font-family:'Bebas Neue',cursive;font-size:22px;letter-spacing:2px;color:#fff;margin-top:6px">${title}</div>
     <div style="font-size:12px;color:rgba(255,255,255,0.65);margin-top:4px">${periodLabel}</div>
   </div>
-  <img src="https://diariodupla.com/icon.png" alt="Dupla" style="width:72px;height:72px;object-fit:contain;border-radius:8px;flex-shrink:0" />
+  <img src="${logoSrc}" alt="Dupla" style="width:72px;height:72px;object-fit:contain;border-radius:8px;flex-shrink:0" />
 </div>
 
 <!-- CARDS -->
@@ -346,7 +373,7 @@ ${adminCount > 0 ? `<!-- NOTA ADMIN -->
 
 <!-- FIRMA -->
 <div style="padding:16px 36px 20px;display:flex;justify-content:flex-end">
-  <img src="https://diariodupla.com/firma-bart-yantorno.png" alt="Bart Yantorno" style="height:52px;object-fit:contain" />
+  <img src="${firmaSrc}" alt="Bart Yantorno" style="height:52px;object-fit:contain" />
 </div>
 
 <!-- FRANJA -->
@@ -362,7 +389,12 @@ ${adminCount > 0 ? `<!-- NOTA ADMIN -->
 }
 
 export async function saveReport(data: ReportData): Promise<string> {
-  const html = generateReportHTML(data)
+  const [fontCSS, logoSrc, firmaSrc] = await Promise.all([
+    getFontCSS(),
+    Promise.resolve(getPublicImageBase64("icon.png")),
+    Promise.resolve(getPublicImageBase64("firma-bart-yantorno.png")),
+  ])
+  const html = generateReportHTML(data, fontCSS, logoSrc, firmaSrc)
   const record = await prisma.collaboratorReport.create({
     data: {
       type: data.type,
