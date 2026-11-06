@@ -109,9 +109,6 @@ export default function ReportsTab() {
     }
   }
 
-  // Crea un iframe con Blob URL (mismo origen) para que html-to-image pueda
-  // acceder al contentDocument y leer los @font-face correctamente.
-  // Las fuentes se inyectan desde el cliente (evita problemas del loopback server-side).
   async function captureReport(): Promise<string> {
     if (!viewing) throw new Error("Sin informe")
 
@@ -125,24 +122,29 @@ export default function ReportsTab() {
 
     await new Promise<void>(resolve => { iframe.onload = () => resolve() })
 
-    const inner = iframe.contentDocument?.body
-    if (!inner) { URL.revokeObjectURL(blobUrl); document.body.removeChild(iframe); throw new Error("Sin contenido") }
+    const contentDoc = iframe.contentDocument
+    const inner = contentDoc?.body
+    if (!inner || !contentDoc) {
+      URL.revokeObjectURL(blobUrl); document.body.removeChild(iframe)
+      throw new Error("Sin contenido")
+    }
 
-    // Inyectar fuentes frescas desde el cliente (más confiable que la embedding server-side)
+    // Inyectar fuentes base64 desde el cliente e invocar load() en cada FontFace
     try {
       const fontCSS = await fetch("/api/font-embed").then(r => r.text())
-      if (fontCSS && !fontCSS.includes("error")) {
-        const s = iframe.contentDocument!.createElement("style")
+      if (fontCSS && fontCSS.length > 5000) {
+        const s = contentDoc.createElement("style")
         s.textContent = fontCSS
-        iframe.contentDocument!.head.prepend(s)
+        contentDoc.head.prepend(s)
+        // Esperar dos frames para que el browser parsee el <style> y registre las fuentes
+        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))
+        // Cargar explícitamente cada FontFace registrada en el iframe
+        await Promise.all([...contentDoc.fonts.values()].map(f => f.load().catch(() => {})))
       }
-    } catch { /* si falla, usar lo que haya en el HTML */ }
+    } catch { /* usar lo que haya */ }
 
-    // Ajustar al alto real del contenido
     iframe.style.height = `${inner.scrollHeight + 20}px`
-
-    await (iframe.contentDocument as Document & { fonts?: FontFaceSet }).fonts?.ready
-    await new Promise(r => setTimeout(r, 600))
+    await new Promise(r => setTimeout(r, 400))
 
     const dataUrl = await toPng(inner, { pixelRatio: 2, backgroundColor: "#ffffff" })
 
