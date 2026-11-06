@@ -1,6 +1,6 @@
 import { requireAdmin } from "@/lib/auth-guard"
 import { redirect } from "next/navigation"
-import CollaboratorStats from "@/components/admin/CollaboratorStats"
+import EstadisticasTabs from "@/components/admin/EstadisticasTabs"
 
 export default async function EstadisticasPage() {
   const session = await requireAdmin()
@@ -9,7 +9,7 @@ export default async function EstadisticasPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold font-cuerpo mb-6">Estadísticas de publicación</h1>
-      <CollaboratorStats />
+      <EstadisticasTabs />
     </div>
   )
 }
