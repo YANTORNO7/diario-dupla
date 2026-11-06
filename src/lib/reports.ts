@@ -373,7 +373,7 @@ ${adminCount > 0 ? `<!-- NOTA ADMIN -->
 
 <!-- FIRMA -->
 <div style="padding:16px 36px 20px;display:flex;justify-content:flex-end">
-  <img src="${firmaSrc}" alt="Bart Yantorno" style="height:52px;object-fit:contain" />
+  <img src="${firmaSrc}" alt="Bart Yantorno" style="height:32px;object-fit:contain" />
 </div>
 
 <!-- FRANJA -->
