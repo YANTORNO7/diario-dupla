@@ -82,12 +82,11 @@ export function getWeekBounds(monday: Date): { start: Date; end: Date } {
   }
 }
 
-// Retorna { start, end } en UTC para el mes calendario en ART
+// Retorna { start, end } en UTC para el ciclo mensual (día 10 → día 9 del mes siguiente) en ART
 export function getMonthBounds(year: number, month: number): { start: Date; end: Date } {
-  const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate()
   return {
-    start: artDayStartUTC(year, month, 1),
-    end: artDayEndUTC(year, month, lastDay),
+    start: artDayStartUTC(year, month, 10),
+    end: artDayEndUTC(year, month + 1, 9),
   }
 }
 

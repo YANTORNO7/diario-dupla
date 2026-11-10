@@ -91,9 +91,8 @@ export default function ReportsTab() {
         body = { type, periodStart: monday.toISOString(), periodEnd: sunday.toISOString() }
       } else if (type === "monthly" && monthlyMonth) {
         const [y, m] = monthlyMonth.split("-").map(Number)
-        const lastDay = new Date(Date.UTC(y, m, 0)).getUTCDate()
-        const start = new Date(Date.UTC(y, m - 1, 1, 3, 0, 0))
-        const end   = new Date(Date.UTC(y, m - 1, lastDay + 1, 2, 59, 59, 999))
+        const start = new Date(Date.UTC(y, m - 1, 10, 3, 0, 0))
+        const end   = new Date(Date.UTC(y, m, 10, 2, 59, 59, 999))
         body = { type, periodStart: start.toISOString(), periodEnd: end.toISOString() }
       }
 
