@@ -303,7 +303,12 @@ export function generateReportHTML(
   const totalRow = `
     <tr style="background:#f1f3f5;font-weight:700">
       <td style="padding:10px 14px;font-size:13px;font-family:'Bebas Neue',cursive;letter-spacing:1px">TOTAL</td>
-      <td style="padding:10px 14px;text-align:center;font-size:14px;font-family:'Bebas Neue',cursive">${totalNotes}</td>
+      <td style="padding:10px 14px;width:200px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="flex:1"></div>
+          <span style="font-weight:700;font-size:14px;font-family:'Bebas Neue',cursive;min-width:20px;text-align:right">${totalNotes}</span>
+        </div>
+      </td>
       <td style="padding:10px 14px;text-align:center;font-size:13px">—</td>
     </tr>`
 
@@ -340,10 +345,6 @@ body { background:#fff; width:800px; font-family:'Archivo',Arial,sans-serif; col
   <div style="flex:1;background:#fff;border-radius:8px;padding:18px 14px;border:1px solid #e9ecef;text-align:center">
     <div style="font-family:'Bebas Neue',cursive;font-size:48px;color:#0B1631;line-height:1">${activeCollaborators}</div>
     <div style="font-size:10px;font-weight:700;color:#6c757d;letter-spacing:1px;text-transform:uppercase;margin-top:4px">Colaboradores activos</div>
-  </div>
-  <div style="flex:1;background:#fff;border-radius:8px;padding:18px 14px;border:1px solid #e9ecef;text-align:center">
-    <div style="font-family:'Bebas Neue',cursive;font-size:48px;color:#0B1631;line-height:1">${totalPortadas}</div>
-    <div style="font-size:10px;font-weight:700;color:#6c757d;letter-spacing:1px;text-transform:uppercase;margin-top:4px">Portadas principales</div>
   </div>
 </div>
 
