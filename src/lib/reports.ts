@@ -164,13 +164,13 @@ export async function computeReportData(
   const articles = await prisma.article.findMany({
     where: {
       status: "PUBLISHED",
-      publishedAt: { gte: periodStart, lte: periodEnd },
+      createdAt: { gte: periodStart, lte: periodEnd },
       author: { role: "EDITOR" },
     },
     select: {
       authorId: true,
       featured: true,
-      publishedAt: true,
+      createdAt: true,
       author: { select: { id: true, name: true } },
     },
   })
@@ -190,13 +190,13 @@ export async function computeReportData(
     monthArticles = await prisma.article.findMany({
       where: {
         status: "PUBLISHED",
-        publishedAt: { gte: cycleStart, lte: periodEnd },
+        createdAt: { gte: cycleStart, lte: periodEnd },
         author: { role: "EDITOR" },
       },
       select: {
         authorId: true,
         featured: true,
-        publishedAt: true,
+        createdAt: true,
         author: { select: { id: true, name: true } },
       },
     })
@@ -244,7 +244,7 @@ export async function computeReportData(
   const adminCount = await prisma.article.count({
     where: {
       status: "PUBLISHED",
-      publishedAt: { gte: periodStart, lte: periodEnd },
+      createdAt: { gte: periodStart, lte: periodEnd },
       author: { role: "ADMIN" },
     },
   })
