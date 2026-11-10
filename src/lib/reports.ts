@@ -324,7 +324,7 @@ body { background:#fff; width:800px; font-family:'Archivo',Arial,sans-serif; col
 </head>
 <body>
 <!-- HEADER -->
-<div style="background:#0B1631;padding:24px 36px 22px;display:flex;align-items:center;justify-content:space-between">
+<div style="background:${type === 'monthly' ? '#0D3321' : '#0B1631'};padding:24px 36px 22px;display:flex;align-items:center;justify-content:space-between">
   <div>
     <div style="font-family:'Bebas Neue',cursive;font-size:36px;letter-spacing:4px;color:#F2B632">
       DIARIO <span style="color:#fff">DUPLA</span>
@@ -358,7 +358,7 @@ ${adminCount > 0 ? `<!-- NOTA ADMIN -->
 <div style="padding:4px 36px 20px">
   <table style="width:100%;border-collapse:collapse">
     <thead>
-      <tr style="background:#0B1631;color:#fff">
+      <tr style="background:${type === 'monthly' ? '#0D3321' : '#0B1631'};color:#fff">
         <th style="padding:10px 14px;text-align:left;font-family:'Bebas Neue',cursive;font-size:14px;letter-spacing:1px">COLABORADOR</th>
         <th style="padding:10px 14px;text-align:left;font-family:'Bebas Neue',cursive;font-size:14px;letter-spacing:1px">${col2Header}</th>
         <th style="padding:10px 14px;text-align:center;font-family:'Bebas Neue',cursive;font-size:14px;letter-spacing:1px">${col3Header}</th>
