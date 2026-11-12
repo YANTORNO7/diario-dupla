@@ -37,7 +37,7 @@ export default function HeroArticle({ title, subtitle, slug, sectionPath, sectio
           <span className="hidden md:inline-block text-xs font-cuerpo font-bold uppercase tracking-wider px-2 py-1 rounded mb-3" style={{ backgroundColor: sectionColor, color: "white" }}>
             {sectionLabel}
           </span>
-          <h2 className="font-titular text-lg md:text-4xl lg:text-5xl text-white leading-tight">{title}</h2>
+          <h2 className="font-titular text-lg md:text-3xl lg:text-4xl text-white leading-tight">{title}</h2>
           {subtitle && <p className="font-cuerpo text-gray-300 mt-2 text-sm md:text-base line-clamp-2">{subtitle}</p>}
         </div>
       </article>
