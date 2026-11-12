@@ -56,7 +56,7 @@ async function main() {
   // --- Sections ---
   const laDupla = await prisma.section.upsert({
     where: { slug: "la-dupla" },
-    update: { order: 0, description: "La sección de Diario Dupla que reúne todo lo que conecta al fútbol argentino y brasileño" },
+    update: {},
     create: { name: "La Dupla", slug: "la-dupla", color: "#FFDF00", order: 0, showOnHomepage: true, description: "La sección de Diario Dupla que reúne todo lo que conecta al fútbol argentino y brasileño" },
   })
   await prisma.section.upsert({
@@ -71,18 +71,23 @@ async function main() {
   })
   const brasil = await prisma.section.upsert({
     where: { slug: "brasil" },
-    update: { name: "Fútbol Brasileño", showOnHomepage: true, order: 1, description: "El Brasileirão, los estaduales y la Seleção, contados para el hincha argentino." },
-    create: { name: "Fútbol Brasileño", slug: "brasil", color: "#009C3B", order: 1, showOnHomepage: true, description: "El Brasileirão, los estaduales y la Seleção, contados para el hincha argentino." },
+    update: { name: "Fútbol Brasileño" },
+    create: { name: "Fútbol Brasileño", slug: "brasil", color: "#009C3B", order: 2, showOnHomepage: true, description: "El Brasileirão, los estaduales y la Seleção, contados para el hincha argentino." },
   })
   const argentina = await prisma.section.upsert({
     where: { slug: "argentina" },
-    update: { name: "Fútbol Argentino", order: 2, showOnHomepage: true, description: "Todo lo de la Liga Profesional, el ascenso y la Selección: resultados, tablas, previas y lo que pasa en cada club." },
-    create: { name: "Fútbol Argentino", slug: "argentina", color: "#75AADB", order: 2, showOnHomepage: true, description: "Todo lo de la Liga Profesional, el ascenso y la Selección: resultados, tablas, previas y lo que pasa en cada club." },
+    update: { name: "Fútbol Argentino" },
+    create: { name: "Fútbol Argentino", slug: "argentina", color: "#75AADB", order: 1, showOnHomepage: true, description: "Todo lo de la Liga Profesional, el ascenso y la Selección: resultados, tablas, previas y lo que pasa en cada club." },
+  })
+  await prisma.section.upsert({
+    where: { slug: "futbol-femenino" },
+    update: { name: "Fútbol Femenino" },
+    create: { name: "Fútbol Femenino", slug: "futbol-femenino", color: "#C026D3", order: 3, showOnHomepage: true, description: "El fútbol femenino de Argentina y Brasil: ligas, selecciones y copas, con toda la información." },
   })
   const copas = await prisma.section.upsert({
     where: { slug: "copas" },
-    update: { showOnHomepage: true, order: 3, description: "Libertadores, Sudamericana y todas las competencias donde se cruzan argentinos y brasileños." },
-    create: { name: "Copas", slug: "copas", color: "#D4AF37", order: 3, showOnHomepage: true, description: "Libertadores, Sudamericana y todas las competencias donde se cruzan argentinos y brasileños." },
+    update: {},
+    create: { name: "Copas", slug: "copas", color: "#D4AF37", order: 4, showOnHomepage: true, description: "Libertadores, Sudamericana y todas las competencias donde se cruzan argentinos y brasileños." },
   })
   await prisma.section.upsert({
     where: { slug: "libertadores" },
@@ -105,8 +110,8 @@ async function main() {
   }
   const deporteMotor = await prisma.section.upsert({
     where: { slug: "deporte-motor" },
-    update: { name: "Deporte motor", showOnHomepage: true, order: 4, color: "#DC2626", description: "Todo el deporte motor: carreras, resultados y lo que pasa en las pistas de autos y motos." },
-    create: { name: "Deporte motor", slug: "deporte-motor", color: "#DC2626", order: 4, showOnHomepage: true, description: "Todo el deporte motor: carreras, resultados y lo que pasa en las pistas de autos y motos." },
+    update: { name: "Deporte motor", color: "#DC2626" },
+    create: { name: "Deporte motor", slug: "deporte-motor", color: "#DC2626", order: 5, showOnHomepage: true, description: "Todo el deporte motor: carreras, resultados y lo que pasa en las pistas de autos y motos." },
   })
   await prisma.section.upsert({
     where: { slug: "f1" },
@@ -118,7 +123,12 @@ async function main() {
     update: { color: "#C8A951", parentId: deporteMotor.id },
     create: { name: "MotoGP", slug: "motogp", color: "#C8A951", order: 2, showOnHomepage: false, parentId: deporteMotor.id },
   })
-  console.log("Secciones OK: La Dupla (Clubes, Selecciones), Fútbol Brasileño, Fútbol Argentino, Copas (Libertadores, Sudamericana, Copa Argentina, Copa do Brasil), Deporte motor (F1, MotoGP)")
+  await prisma.section.upsert({
+    where: { slug: "rally" },
+    update: { color: "#7B3F00", parentId: deporteMotor.id },
+    create: { name: "Rally", slug: "rally", color: "#7B3F00", order: 3, showOnHomepage: false, parentId: deporteMotor.id },
+  })
+  console.log("Secciones OK: La Dupla (Clubes, Selecciones), Fútbol Argentino, Fútbol Brasileño, Fútbol Femenino, Copas (Libertadores, Sudamericana), Deporte motor (F1, MotoGP, Rally)")
 
   // Migrate existing articles without sectionId
   const articlesArgentina = await prisma.article.updateMany({
@@ -167,6 +177,7 @@ async function main() {
   if (wrongPrimary.length > 0) {
     console.log(`Corregidos ${wrongPrimary.length} artículos con La Dupla como sección primaria`)
   }
+
 }
 
 main()
