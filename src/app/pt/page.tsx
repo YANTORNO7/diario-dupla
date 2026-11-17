@@ -5,7 +5,6 @@ import Header from "@/components/public/Header"
 import Footer from "@/components/public/Footer"
 import HeroArticle from "@/components/public/HeroArticle"
 import ArticleCard from "@/components/public/ArticleCard"
-import SectionBlock from "@/components/public/SectionBlock"
 import { getNavSectionsPt, getSectionPathPt } from "@/lib/sections-pt"
 import { SITE_URL } from "@/lib/constants"
 import type { Metadata } from "next"
@@ -126,7 +125,7 @@ export default async function PtHomePage() {
             <HeroArticle
               title={featured.translation.titlePt}
               subtitle={featured.translation.subtitlePt}
-              slug={`pt/${getSectionPathPt(featured.primarySection ?? { slug: "", parent: null }).replace(/^\/pt\//, "")}/${featured.translation.slugPt}`}
+              slug={featured.translation.slugPt}
               heroImageUrl={featured.heroImageUrl}
               publishedAt={featured.publishedAt}
               sectionPath={getSectionPathPt(featured.primarySection ?? { slug: "", parent: null })}
@@ -141,7 +140,7 @@ export default async function PtHomePage() {
                 <HeroArticle
                   title={props.title}
                   subtitle={props.subtitle}
-                  slug={`${props.sectionPath}/${a.translation!.slugPt}`}
+                  slug={a.translation!.slugPt}
                   heroImageUrl={a.heroImageUrl}
                   publishedAt={a.publishedAt}
                   sectionPath={props.sectionPath}
@@ -175,7 +174,7 @@ export default async function PtHomePage() {
                       key={article.id}
                       title={article.translation.titlePt}
                       subtitle={article.translation.subtitlePt}
-                      slug={`${sectionPath}/${article.translation.slugPt}`}
+                      slug={article.translation.slugPt}
                       heroImageUrl={article.heroImageUrl}
                       publishedAt={article.publishedAt}
                       authorName=""
@@ -189,21 +188,52 @@ export default async function PtHomePage() {
             </section>
           )}
 
-          {sectionBlocks.map((block) => (
-            <div key={block.sectionPath} className="mt-10">
-              <SectionBlock
-                sectionLabel={block.sectionLabel}
-                sectionPath={block.sectionPath}
-                sectionColor={block.sectionColor}
-                articles={block.articles.map((a) => ({
-                  ...a,
-                  title: (a as typeof a & { translation?: { titlePt: string; subtitlePt?: string | null; slugPt: string } | null }).translation?.titlePt || a.title,
-                  subtitle: (a as typeof a & { translation?: { titlePt: string; subtitlePt?: string | null; slugPt: string } | null }).translation?.subtitlePt ?? a.subtitle,
-                  slug: (a as typeof a & { translation?: { titlePt: string; subtitlePt?: string | null; slugPt: string } | null }).translation?.slugPt || a.slug,
-                }))}
-              />
-            </div>
-          ))}
+          {sectionBlocks.map((block) => {
+            type ArticleWithPt = typeof block.articles[number] & {
+              translation?: { titlePt: string; subtitlePt?: string | null; slugPt: string } | null
+              primarySection: {
+                id: string; name: string; namePt?: string | null
+                slug: string; slugPt?: string | null; color: string
+                parent?: { slug: string; slugPt?: string | null } | null
+              } | null
+            }
+            return (
+              <div key={block.sectionPath} className="mt-10">
+                <section>
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="font-titular text-2xl md:text-3xl flex items-center gap-2">
+                      <span className="w-1 h-6 rounded-full inline-block" style={{ backgroundColor: block.sectionColor }} />
+                      {block.sectionLabel}
+                    </h2>
+                    <a href={block.sectionPath} className="text-sm font-cuerpo font-medium hover:underline" style={{ color: block.sectionColor }}>
+                      Ver tudo
+                    </a>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {(block.articles as ArticleWithPt[]).map((a) => {
+                      if (!a.translation) return null
+                      const ps = a.primarySection
+                      const artPath = ps ? getSectionPathPt(ps) : block.sectionPath
+                      return (
+                        <ArticleCard
+                          key={a.id}
+                          title={a.translation.titlePt}
+                          subtitle={a.translation.subtitlePt}
+                          slug={a.translation.slugPt}
+                          sectionPath={artPath}
+                          sectionLabel={ps?.namePt || ps?.name || block.sectionLabel}
+                          sectionColor={ps?.color || block.sectionColor}
+                          heroImageUrl={a.heroImageUrl}
+                          publishedAt={a.publishedAt}
+                          showSection={false}
+                        />
+                      )
+                    })}
+                  </div>
+                </section>
+              </div>
+            )
+          })}
         </div>
       </main>
       <Footer sections={navSections} />
