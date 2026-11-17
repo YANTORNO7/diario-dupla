@@ -18,13 +18,7 @@ async function main() {
     })
     console.log(`Usuario admin "${username}" creado con éxito.`)
   } else {
-    // Always keep admin name in sync with env var
-    if (existing.name !== name) {
-      await prisma.user.update({ where: { username }, data: { name } })
-      console.log(`Admin "${username}" actualizado: "${existing.name}" → "${name}"`)
-    } else {
-      console.log(`El usuario "${username}" ya existe.`)
-    }
+    console.log(`El usuario "${username}" ya existe.`)
   }
 
   // --- Colaboradores (EDITOR) ---

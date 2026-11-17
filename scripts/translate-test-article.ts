@@ -31,7 +31,7 @@ async function run() {
   console.log("\nBajada ES:")
   console.log(article.subtitle ?? "(sem bajada)")
   console.log("\nBody ES (primeiros 2 parágrafos):")
-  const esParagraphs = article.body.match(/<p>.*?<\/p>/gs) ?? []
+  const esParagraphs = article.body.match(/<p>[\s\S]*?<\/p>/g) ?? []
   console.log(esParagraphs.slice(0, 2).join("\n"))
 
   console.log("\n" + "═".repeat(70))
@@ -39,11 +39,9 @@ async function run() {
   console.log("═".repeat(70))
 
   const result = await translateArticle({
-    articleId: article.id,
     title: article.title,
     subtitle: article.subtitle ?? undefined,
     body: article.body,
-    slug: article.slug,
   })
 
   console.log("\n" + "═".repeat(70))
@@ -57,7 +55,7 @@ async function run() {
   console.log(result.slugPt)
   console.log("\nStatus:", result.status)
   console.log("\nBody PT (primeiros 2 parágrafos):")
-  const ptParagraphs = result.bodyPt.match(/<p>.*?<\/p>/gs) ?? []
+  const ptParagraphs = result.bodyPt.match(/<p>[\s\S]*?<\/p>/g) ?? []
   console.log(ptParagraphs.slice(0, 2).join("\n"))
 
   console.log("\n" + "═".repeat(70))
