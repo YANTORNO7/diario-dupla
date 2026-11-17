@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 import { getToken } from "next-auth/jwt"
 
-const adminOnlyPaths = ["/admin/pendientes", "/admin/estadisticas", "/admin/usuarios"]
+const adminOnlyPaths = ["/admin/pendientes", "/admin/estadisticas", "/admin/usuarios", "/admin/configuracion"]
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
@@ -17,7 +17,27 @@ export async function middleware(req: NextRequest) {
   const isLoggedIn = !!token
   const userRole = token?.role as string | undefined
 
-  // Admin pages (except login)
+  // ── /pt/* routes ───────────────────────────────────────────────────────────
+  if (pathname.startsWith("/pt")) {
+    const ptMode = await fetchPtMode(req)
+
+    if (ptMode === "off") {
+      return NextResponse.rewrite(new URL("/not-found", req.url))
+    }
+
+    if (ptMode === "admin") {
+      // Only logged-in admins/editors can see /pt/ in admin mode
+      if (!isLoggedIn || (userRole !== "ADMIN" && userRole !== "EDITOR")) {
+        // Show 404, not a login redirect
+        return NextResponse.rewrite(new URL("/not-found", req.url))
+      }
+    }
+
+    // mode === "public": pass through
+    return NextResponse.next()
+  }
+
+  // ── Admin pages (except login) ─────────────────────────────────────────────
   if (pathname.startsWith("/admin") && pathname !== "/admin/login") {
     if (!isLoggedIn) {
       return NextResponse.redirect(new URL("/admin/login", req.url))
@@ -26,7 +46,6 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(new URL("/admin/login", req.url))
     }
 
-    // EDITOR não pode acessar rotas exclusivas de ADMIN
     if (userRole === "EDITOR" && adminOnlyPaths.some((p) => pathname.startsWith(p))) {
       return NextResponse.redirect(new URL("/admin", req.url))
     }
@@ -54,6 +73,25 @@ export async function middleware(req: NextRequest) {
   return NextResponse.next()
 }
 
+/**
+ * Fetch pt_mode from the internal site-config API.
+ * Uses Edge-compatible fetch with 60-second revalidation cache.
+ * Falls back to "off" on any error.
+ */
+async function fetchPtMode(req: NextRequest): Promise<string> {
+  try {
+    const url = `${req.nextUrl.origin}/api/admin/site-config?key=pt_mode`
+    const res = await fetch(url, {
+      next: { revalidate: 60 }, // 1-minute edge cache
+    })
+    if (!res.ok) return "off"
+    const data = (await res.json()) as { value?: string }
+    return data.value ?? "off"
+  } catch {
+    return "off"
+  }
+}
+
 export const config = {
-  matcher: ["/admin/:path*", "/api/:path*"],
+  matcher: ["/admin/:path*", "/api/:path*", "/pt/:path*"],
 }

@@ -11,10 +11,13 @@ import TagBadge from "@/components/public/TagBadge"
 import ShareButtons from "@/components/public/ShareButtons"
 import SignupPrompt from "@/components/public/SignupPrompt"
 import WelcomeBanner from "@/components/public/WelcomeBanner"
+import BrazilBanner from "@/components/public/BrazilBanner"
 import { formatDate, formatDateShort } from "@/lib/utils"
 import { getSectionPath, getArticlePath } from "@/lib/sections"
+import { getArticlePathPt } from "@/lib/sections-pt"
 import { SITE_URL, SITE_NAME } from "@/lib/constants"
 import { DIAS_ACTIVIDAD } from "@/lib/section-colors"
+import TennisBall from "@/components/public/TennisBall"
 import type { Metadata } from "next"
 
 const PAGE_SIZE = 18
@@ -61,6 +64,7 @@ async function findArticleInSection(sectionId: string, childIds: string[], artic
       author: { select: { id: true, name: true } },
       primarySection: { include: { parent: true } },
       tags: true,
+      translation: { select: { slugPt: true, status: true } },
     },
   })
 }
@@ -254,6 +258,7 @@ type ArticleWithRelations = {
   author: { id?: string; name: string }
   primarySection: { id: string; name: string; slug: string; color: string; parent?: { slug: string } | null } | null
   tags: { id: string; name: string; slug: string }[]
+  translation?: { slugPt: string; status: string } | null
 }
 
 /* ---------- breadcrumb helper ---------- */
@@ -275,6 +280,17 @@ function Breadcrumb({ section }: { section: SectionWithParent }) {
 }
 
 function SectionTitle({ section }: { section: SectionWithParent }) {
+  if (section.slug === "tenis") {
+    return (
+      <h1 className="font-titular text-4xl md:text-5xl flex items-center gap-3">
+        <span className="w-1.5 h-8 rounded-full inline-block" style={{ backgroundColor: section.color }} />
+        {section.name}
+        <span style={{ marginBottom: "-4px" }}>
+          <TennisBall size={28} />
+        </span>
+      </h1>
+    )
+  }
   if (section.slug === "la-dupla" || section.parent?.slug === "la-dupla") {
     return (
       <>
@@ -552,6 +568,14 @@ function renderArticle(article: ArticleWithRelations, section: SectionWithParent
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: breadcrumbLd }} />
+      {/* BrazilBanner: pure client component, calls /api/geo itself, does NOT affect ISR */}
+      {article.translation && article.translation.status !== "REVIEW" && (
+        <BrazilBanner
+          ptUrl={`${SITE_URL}${getArticlePathPt({ slugPt: article.translation.slugPt, article: { primarySection: article.primarySection } })}`}
+          esUrl={articleUrl}
+        />
+      )}
+
       <article className="max-w-4xl mx-auto px-4 py-8">
         <div className="mb-6">
           <nav className="text-xs font-cuerpo text-gray-400 mb-3 flex items-center gap-1 flex-wrap">

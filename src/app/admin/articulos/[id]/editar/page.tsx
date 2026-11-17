@@ -22,6 +22,7 @@ export default async function EditArticlePage({
       author: { select: { name: true } },
       secondarySections: true,
     },
+    // updatedAt is selected automatically by Prisma (it's a scalar field)
   })
 
   if (!article) notFound()

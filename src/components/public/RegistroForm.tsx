@@ -1,9 +1,14 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 
-export default function RegistroForm() {
+type Props = {
+  volver?: string
+  source?: string
+}
+
+export default function RegistroForm({ volver, source }: Props) {
   const router = useRouter()
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
@@ -22,7 +27,7 @@ export default function RegistroForm() {
       const res = await fetch("/api/subscriber/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, newsletterOptIn }),
+        body: JSON.stringify({ name, email, password, newsletterOptIn, volver, source }),
       })
 
       const data = await res.json()
@@ -40,6 +45,15 @@ export default function RegistroForm() {
     }
   }
 
+  useEffect(() => {
+    if (!success) return
+    const timer = setTimeout(() => {
+      router.push(volver ? `${volver}?welcome=1` : "/cuenta")
+      router.refresh()
+    }, 3000)
+    return () => clearTimeout(timer)
+  }, [success, volver, router])
+
   if (success) {
     return (
       <div className="text-center py-6">
@@ -50,7 +64,10 @@ export default function RegistroForm() {
         </div>
         <h2 className="font-titular text-xl mb-2">¡Cuenta creada!</h2>
         <p className="font-cuerpo text-gray-600 text-sm">
-          Te enviamos un email a <strong>{email}</strong>. Revisá tu bandeja de entrada y hacé clic en el link para verificar tu cuenta.
+          Te enviamos un email a <strong>{email}</strong> para verificar tu cuenta.
+          {volver
+            ? " En un momento te llevamos de vuelta a la nota."
+            : " En un momento te llevamos a tu cuenta."}
         </p>
       </div>
     )

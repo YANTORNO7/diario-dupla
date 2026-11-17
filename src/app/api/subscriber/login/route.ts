@@ -22,6 +22,14 @@ export async function POST(req: Request) {
       )
     }
 
+    // Cuenta creada con Google: no tiene contraseña
+    if (!subscriber.password) {
+      return NextResponse.json(
+        { error: "Esta cuenta usa Google. Ingresá con el botón de Google." },
+        { status: 400 }
+      )
+    }
+
     const valid = await bcrypt.compare(password, subscriber.password)
     if (!valid) {
       return NextResponse.json(

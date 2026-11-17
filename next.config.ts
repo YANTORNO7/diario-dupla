@@ -19,6 +19,16 @@ const nextConfig: NextConfig = {
         destination: "/deporte-motor/:path*",
         permanent: true,
       },
+      {
+        source: "/argentina/vellaneda-para-el-mundo-los-cracks-que-exportaron-racing-e-independiente",
+        destination: "/argentina/avellaneda-para-el-mundo-los-cracks-que-exportaron-racing-e-independiente",
+        permanent: true,
+      },
+      {
+        source: "/la-dupla/instituto-gano-en-varela-y-es-puntero-solitario",
+        destination: "/argentina/instituto-gano-en-varela-y-es-puntero-solitario",
+        permanent: true,
+      },
     ]
   },
   images: {

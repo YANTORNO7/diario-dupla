@@ -13,7 +13,6 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   return {
     title: q ? `Buscar: ${q}` : "Buscar",
     description: "Buscá noticias en Diario Dupla.",
-    robots: { index: false },
   }
 }
 

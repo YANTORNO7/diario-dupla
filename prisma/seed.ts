@@ -128,7 +128,15 @@ async function main() {
     update: { color: "#7B3F00", parentId: deporteMotor.id },
     create: { name: "Rally", slug: "rally", color: "#7B3F00", order: 3, showOnHomepage: false, parentId: deporteMotor.id },
   })
-  console.log("Secciones OK: La Dupla (Clubes, Selecciones), Fútbol Argentino, Fútbol Brasileño, Fútbol Femenino, Copas (Libertadores, Sudamericana), Deporte motor (F1, MotoGP, Rally)")
+  await prisma.section.upsert({
+    where: { slug: "tenis" },
+    update: { name: "Tenis", color: "#D8F23C" },
+    create: { name: "Tenis", slug: "tenis", color: "#D8F23C", order: 6, showOnHomepage: true,
+      description: "Todo el tenis mundial: ATP, WTA, Grand Slams y Copa Davis." },
+  })
+  // Eliminar subsecciones de tenis si existen
+  await prisma.section.deleteMany({ where: { slug: { in: ["atp", "wta", "grand-slams", "copa-davis"] } } })
+  console.log("Secciones OK: La Dupla (Clubes, Selecciones), Fútbol Argentino, Fútbol Brasileño, Fútbol Femenino, Copas (Libertadores, Sudamericana), Deporte motor (F1, MotoGP, Rally), Tenis")
 
   // Migrate existing articles without sectionId
   const articlesArgentina = await prisma.article.updateMany({

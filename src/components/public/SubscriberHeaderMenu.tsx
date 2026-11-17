@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 
 type Subscriber = {
   id: string
@@ -9,6 +10,7 @@ type Subscriber = {
 }
 
 export default function SubscriberHeaderMenu() {
+  const pathname = usePathname()
   const [subscriber, setSubscriber] = useState<Subscriber | null>(null)
   const [loaded, setLoaded] = useState(false)
 
@@ -28,7 +30,7 @@ export default function SubscriberHeaderMenu() {
     return (
       <Link
         href="/cuenta"
-        className="flex items-center gap-1 px-2 py-1 text-[10px] font-cuerpo text-gray-500 hover:text-white transition-colors"
+        className="flex items-center gap-1 px-2 py-1 text-xs font-cuerpo text-white hover:text-[#F2B632] transition-colors"
         title="Mi cuenta"
       >
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -42,8 +44,8 @@ export default function SubscriberHeaderMenu() {
 
   return (
     <Link
-      href="/ingresar"
-      className="px-2 py-1 text-[10px] font-cuerpo text-gray-500 hover:text-white transition-colors"
+      href={`/ingresar?volver=${encodeURIComponent(pathname)}`}
+      className="px-2 py-1 text-xs font-cuerpo font-semibold uppercase tracking-wide text-white hover:text-[#F2B632] transition-colors"
     >
       Ingresar
     </Link>

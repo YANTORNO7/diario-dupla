@@ -155,9 +155,9 @@ export async function POST(request: NextRequest) {
     },
   })
 
-  // Disparar newsletter assincronamente só se realmente publicado (ADMIN)
+  // Disparar newsletter (await para garantir envio antes de fechar a função)
   if (finalStatus === "PUBLISHED") {
-    sendNewsletter(article.id).catch(console.error)
+    await sendNewsletter(article.id)
     pingGoogle(getArticlePath(article)).catch(console.error)
   }
 

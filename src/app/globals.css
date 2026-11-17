@@ -82,3 +82,32 @@ body {
 .prose h3 {
   font-family: var(--font-titular), sans-serif;
 }
+
+/* SignupPrompt slide-up animation */
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.4s ease-out;
+}
+
+@keyframes tennis-ball-bounce {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-4px); }
+}
+@keyframes tennis-shadow-pulse {
+  0%, 100% { transform: scaleX(1);   opacity: 0.25; }
+  50%       { transform: scaleX(0.5); opacity: 0.1;  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .tennis-bounce  { animation: tennis-ball-bounce  1.2s ease-in-out infinite; }
+  .tennis-shadow  { animation: tennis-shadow-pulse 1.2s ease-in-out infinite; }
+}

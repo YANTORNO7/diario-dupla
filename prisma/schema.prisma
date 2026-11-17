@@ -37,6 +37,10 @@ model Section {
   children       Section[] @relation("SectionTree")
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
+  // PT fields — nullable, do not affect ES behavior
+  namePt         String?
+  slugPt         String?   @unique
+  descPt         String?
 
   primaryArticles   Article[] @relation("PrimarySection")
   secondaryArticles Article[] @relation("SecondarySections")
@@ -71,6 +75,7 @@ model Article {
   tags Tag[] @relation("ArticleTags")
 
   newsletterLog NewsletterLog?
+  translation   ArticleTranslation?
 
   @@index([sectionId, status])
   @@index([section, status])
@@ -188,4 +193,51 @@ model CollaboratorReport {
 
   @@index([type, createdAt])
   @@map("collaborator_reports")
+}
+
+// ─── Português / PT support ───────────────────────────────────────────────────
+
+model ArticleTranslation {
+  id           String   @id @default(cuid())
+  articleId    String   @unique
+  article      Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  titlePt      String
+  subtitlePt   String?
+  bodyPt       String
+  slugPt       String   @unique
+  metaTitlePt  String?
+  metaDescPt   String?
+  heroAltPt    String?
+  // status: AUTO = machine-translated, REVIEW = needs human review, REVIEWED = approved
+  status       String   @default("AUTO")
+  translatedAt DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("article_translations")
+}
+
+model GlossaryTerm {
+  id     String @id @default(cuid())
+  esWord String @unique
+  ptWord String
+  // type: GLOSSARY = replace es→pt, NO_TRANSLATE = keep original (wrap with Azure no-translate)
+  type   String @default("GLOSSARY")
+
+  @@map("glossary_terms")
+}
+
+model TranslationUsage {
+  id        String   @id @default(cuid())
+  month     String   @unique   // "2026-11"
+  chars     Int      @default(0)
+  updatedAt DateTime @updatedAt
+
+  @@map("translation_usage")
+}
+
+model SiteConfig {
+  key   String @id
+  value String
+
+  @@map("site_config")
 }

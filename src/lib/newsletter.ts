@@ -51,10 +51,15 @@ function buildEmailHtml(article: {
 
 export async function sendNewsletter(articleId: string) {
   try {
+    console.log(`[newsletter] Iniciando envío para artículo ${articleId}`)
+
     const existing = await prisma.newsletterLog.findUnique({
       where: { articleId },
     })
-    if (existing) return
+    if (existing) {
+      console.log(`[newsletter] Ya enviado para ${articleId}, saltando`)
+      return
+    }
 
     const article = await prisma.article.findUnique({
       where: { id: articleId },
@@ -64,12 +69,16 @@ export async function sendNewsletter(articleId: string) {
         },
       },
     })
-    if (!article || article.status !== "PUBLISHED") return
+    if (!article || article.status !== "PUBLISHED") {
+      console.log(`[newsletter] Artículo no encontrado o no publicado: ${articleId}`)
+      return
+    }
 
     const subscribers = await prisma.subscriber.findMany({
       where: { newsletterOptIn: true, emailVerified: true },
       select: { email: true },
     })
+    console.log(`[newsletter] Suscriptores elegibles: ${subscribers.length}`)
     if (subscribers.length === 0) return
 
     const html = buildEmailHtml(article)
@@ -94,7 +103,8 @@ export async function sendNewsletter(articleId: string) {
     await prisma.newsletterLog.create({
       data: { articleId, sentCount },
     })
+    console.log(`[newsletter] Completado. Enviados: ${sentCount}`)
   } catch (error) {
-    console.error("Error enviando newsletter:", error)
+    console.error("Error enviando newsletter:", JSON.stringify(error, Object.getOwnPropertyNames(error)))
   }
 }
