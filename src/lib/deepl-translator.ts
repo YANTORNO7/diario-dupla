@@ -207,12 +207,24 @@ async function getOrCreateGlossaryId(): Promise<string | null> {
 // ─── Manual glossary fallback ─────────────────────────────────────────────────
 // Used when DeepL glossary API is not available for the language pair.
 
+/**
+ * Match the capitalization of `source` onto `target`.
+ * - source starts with uppercase → capitalize first letter of target
+ * - source starts with lowercase → return target as-is (preserves proper noun casing)
+ */
+function matchCase(source: string, target: string): string {
+  if (!source || !target) return target
+  const isUpperFirst = source[0] === source[0].toUpperCase() && source[0] !== source[0].toLowerCase()
+  if (isUpperFirst) return target[0].toUpperCase() + target.slice(1)
+  return target
+}
+
 function applyGlossaryManually(text: string, glossary: GlossaryMap): string {
   let result = text
   const entries = [...glossary.entries()].sort((a, b) => b[0].length - a[0].length)
   for (const [es, pt] of entries) {
     const escaped = es.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-    result = result.replace(new RegExp(`\\b${escaped}\\b`, "gi"), pt)
+    result = result.replace(new RegExp(`\\b${escaped}\\b`, "gi"), (match) => matchCase(match, pt))
   }
   return result
 }

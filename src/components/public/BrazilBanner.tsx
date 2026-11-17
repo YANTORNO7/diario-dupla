@@ -68,7 +68,8 @@ export default function BrazilBanner({ ptUrl, esUrl }: Props) {
         <div className="p-4 flex items-center justify-between gap-3">
           <div>
             <p className="text-white font-titular text-base leading-tight">DUPLA</p>
-            <p className="text-gray-300 text-xs font-cuerpo mt-0.5">Esta nota está disponível em português</p>
+            <p className="text-gray-300 text-xs font-cuerpo mt-0.5">Este conteúdo está disponível em português.</p>
+            <p className="text-gray-500 text-[10px] font-cuerpo mt-0.5">Tradução automática: algumas palavras podem não estar 100% corretas.</p>
           </div>
           <div className="flex gap-2 flex-shrink-0">
             <button
@@ -95,8 +96,9 @@ export default function BrazilBanner({ ptUrl, esUrl }: Props) {
           <div className="flex-1" style={{ background: "#FFDF00" }} />
           <div className="flex-1" style={{ background: "#009C3B" }} />
         </div>
-        <span className="text-gray-200 text-sm font-cuerpo">
-          Esta nota está disponível em português
+        <span className="font-cuerpo">
+          <span className="text-gray-200 text-sm">Este conteúdo está disponível em português.</span>
+          <span className="text-gray-500 text-xs ml-2">Tradução automática: algumas palavras podem não estar 100% corretas.</span>
         </span>
         <button
           onClick={handlePt}

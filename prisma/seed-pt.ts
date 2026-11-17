@@ -100,7 +100,10 @@ const GLOSSARY: GlossaryEntry[] = [
   { esWord: "Libertadores",     ptWord: "Libertadores",               type: "NO_TRANSLATE" },
   { esWord: "Copa Sudamericana", ptWord: "Copa Sul-Americana",        type: "GLOSSARY" },
   { esWord: "Copa América",     ptWord: "Copa América",               type: "NO_TRANSLATE" },
-  { esWord: "Mundial",          ptWord: "Copa do Mundo",              type: "GLOSSARY" },
+  { esWord: "do Mundial",        ptWord: "da Copa do Mundo",           type: "GLOSSARY" },
+  { esWord: "del Mundial",       ptWord: "da Copa do Mundo",           type: "GLOSSARY" },
+  { esWord: "Mundial",           ptWord: "Copa do Mundo",              type: "GLOSSARY" },
+  { esWord: "Tabla Anual",       ptWord: "Tabela Anual",               type: "GLOSSARY" },
   // Publicação
   { esWord: "Diario Dupla",     ptWord: "Diario Dupla",               type: "NO_TRANSLATE" },
   { esWord: "Maracanã",         ptWord: "Maracanã",                   type: "NO_TRANSLATE" },

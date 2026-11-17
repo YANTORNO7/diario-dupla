@@ -14,7 +14,7 @@ export const PT = {
   noArticles:      "Sem artigos publicados nesta seção.",
   previous:        "← Anterior",
   next:            "Próximo →",
-  translatedFrom:  "Traduzido do espanhol",
+  translatedFrom:  "Traduzido automaticamente do espanhol",
   seeOriginal:     "Ver original",
   by:              "Por",
   share:           "Compartilhar",

@@ -15,6 +15,7 @@ import BrazilBanner from "@/components/public/BrazilBanner"
 import { formatDate, formatDateShort } from "@/lib/utils"
 import { getSectionPath, getArticlePath } from "@/lib/sections"
 import { getArticlePathPt } from "@/lib/sections-pt"
+import { getPtMode } from "@/lib/translation-config"
 import { SITE_URL, SITE_NAME } from "@/lib/constants"
 import { DIAS_ACTIVIDAD } from "@/lib/section-colors"
 import TennisBall from "@/components/public/TennisBall"
@@ -129,32 +130,45 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     })
     if (!parent) return {}
     const childIds = parent.children?.map((c: { id: string }) => c.id) ?? []
-    const article = await findArticleInSection(parent.id, childIds, sectionPath[1])
+    const [article, ptMode] = await Promise.all([
+      findArticleInSection(parent.id, childIds, sectionPath[1]),
+      getPtMode(),
+    ])
     if (!article) return {}
-    return articleMetadata(article, `${SITE_URL}${getArticlePath(article)}`)
+    return articleMetadata(article, `${SITE_URL}${getArticlePath(article)}`, ptMode)
   }
 
   if (sectionPath.length === 3) {
     const section = await resolveSection([sectionPath[0], sectionPath[1]])
     if (!section) return {}
-    const article = await findArticleInSection(section.id, [], sectionPath[2])
+    const [article, ptMode] = await Promise.all([
+      findArticleInSection(section.id, [], sectionPath[2]),
+      getPtMode(),
+    ])
     if (!article) return {}
-    return articleMetadata(article, `${SITE_URL}${getArticlePath(article)}`)
+    return articleMetadata(article, `${SITE_URL}${getArticlePath(article)}`, ptMode)
   }
 
   return {}
 }
 
 function articleMetadata(
-  article: { title: string; subtitle: string | null; heroImageUrl: string | null; publishedAt: Date | null; createdAt: Date; author: { name: string }; primarySection: { name: string } | null; tags: { name: string }[] },
-  articleUrl: string
+  article: { title: string; subtitle: string | null; heroImageUrl: string | null; publishedAt: Date | null; createdAt: Date; author: { name: string }; primarySection: { name: string; slug: string; parent?: { slug: string } | null } | null; tags: { name: string }[]; translation?: { slugPt: string; status: string } | null },
+  articleUrl: string,
+  ptMode?: string
 ): Metadata {
   const pubDate = new Date(article.publishedAt || article.createdAt).toISOString()
   const description = article.subtitle || article.title
+  const ptPath = ptMode === "public" && article.translation && article.translation.status !== "REVIEW"
+    ? getArticlePathPt({ slugPt: article.translation.slugPt, article: { primarySection: article.primarySection } })
+    : null
   return {
     title: article.title,
     description,
-    alternates: { canonical: articleUrl },
+    alternates: {
+      canonical: articleUrl,
+      ...(ptPath ? { languages: { "es-AR": articleUrl, "pt-BR": `${SITE_URL}${ptPath}`, "x-default": articleUrl } } : {}),
+    },
     openGraph: {
       title: article.title,
       description,
