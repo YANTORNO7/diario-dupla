@@ -16,6 +16,7 @@
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "@imgly/background-removal": "^1.7.0",
+    "@neondatabase/serverless": "^1.2.1",
     "@prisma/client": "^6.19.3",
     "@tiptap/extension-image": "^3.31.4",
     "@tiptap/extension-link": "^3.31.4",

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 import { getToken } from "next-auth/jwt"
+import { neon } from "@neondatabase/serverless"
 
 const adminOnlyPaths = ["/admin/pendientes", "/admin/estadisticas", "/admin/usuarios", "/admin/configuracion"]
 
@@ -74,20 +75,23 @@ export async function middleware(req: NextRequest) {
 }
 
 /**
- * Fetch pt_mode from the internal site-config API.
- * Uses Edge-compatible fetch with 60-second revalidation cache.
- * Falls back to "off" on any error.
+ * Read pt_mode directly from the database via Neon HTTP (Edge-compatible).
+ * Does NOT make an HTTP call to the same domain — avoids Vercel SSO blocking.
+ * Falls back to "off" on any error and logs the reason.
  */
-async function fetchPtMode(req: NextRequest): Promise<string> {
+async function fetchPtMode(_req: NextRequest): Promise<string> {
+  const dbUrl = process.env.DATABASE_URL
+  if (!dbUrl) {
+    console.error("[middleware] DATABASE_URL not set — defaulting pt_mode to 'off'")
+    return "off"
+  }
   try {
-    const url = `${req.nextUrl.origin}/api/admin/site-config?key=pt_mode`
-    const res = await fetch(url, {
-      next: { revalidate: 60 }, // 1-minute edge cache
-    })
-    if (!res.ok) return "off"
-    const data = (await res.json()) as { value?: string }
-    return data.value ?? "off"
-  } catch {
+    const sql = neon(dbUrl)
+    const rows = await sql`SELECT value FROM site_config WHERE key = 'pt_mode' LIMIT 1`
+    const value = (rows[0] as { value?: string } | undefined)?.value ?? "off"
+    return value
+  } catch (err) {
+    console.error("[middleware] Failed to read pt_mode from DB:", err)
     return "off"
   }
 }
