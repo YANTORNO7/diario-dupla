@@ -9,6 +9,7 @@ type Article = {
   title: string
   subtitle: string | null
   body: string
+  publishedAt: Date | string | null
   createdAt: Date | string
   updatedAt: Date | string
   author: { id: string; name: string }
@@ -20,18 +21,28 @@ function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim()
 }
 
+function todayStr() {
+  return new Date().toISOString().slice(0, 10)
+}
+
 export default function PendingArticleList({ articles }: { articles: Article[] }) {
   const router = useRouter()
   const [processing, setProcessing] = useState<string | null>(null)
   const [rejectingId, setRejectingId] = useState<string | null>(null)
   const [rejectionNote, setRejectionNote] = useState("")
+  const [publishedDates, setPublishedDates] = useState<Record<string, string>>(() =>
+    Object.fromEntries(articles.map(a => [
+      a.id,
+      a.publishedAt ? new Date(a.publishedAt).toISOString().slice(0, 10) : todayStr(),
+    ]))
+  )
 
   async function handleApprove(id: string) {
     setProcessing(id)
     await fetch(`/api/articles/${id}/review`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "approve" }),
+      body: JSON.stringify({ action: "approve", publishedAt: publishedDates[id] }),
     })
     router.refresh()
     setProcessing(null)
@@ -144,7 +155,16 @@ export default function PendingArticleList({ articles }: { articles: Article[] }
                 </div>
               </div>
             ) : (
-              <div className="flex items-center gap-2 mt-4 border-t pt-4">
+              <div className="flex flex-wrap items-center gap-3 mt-4 border-t pt-4">
+                <div className="flex items-center gap-1.5">
+                  <label className="text-xs text-gray-500 font-cuerpo whitespace-nowrap">Fecha:</label>
+                  <input
+                    type="date"
+                    value={publishedDates[article.id] ?? todayStr()}
+                    onChange={(e) => setPublishedDates(prev => ({ ...prev, [article.id]: e.target.value }))}
+                    className="border rounded px-2 py-1 text-xs font-cuerpo focus:outline-none focus:ring-1 focus:ring-gray-400"
+                  />
+                </div>
                 <Link
                   href={`/admin/articulos/${article.id}/editar`}
                   className="px-3 py-1.5 border border-gray-300 rounded-md text-sm font-cuerpo hover:bg-gray-50 transition-colors"

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { requireAuthAPI } from "@/lib/auth-guard"
 import { slugify } from "@/lib/slugify"
+import { parseDateInput } from "@/lib/utils"
 import { sendNewsletter } from "@/lib/newsletter"
 import { pingGoogle } from "@/lib/ping-google"
 import { getArticlePath } from "@/lib/sections"
@@ -54,6 +55,7 @@ export async function PUT(
     secondarySectionIds,
     status,
     featured,
+    publishedAt,
     tags,
     authorName,
     authorId: newAuthorId,
@@ -135,6 +137,7 @@ export async function PUT(
       ...(finalStatus !== undefined && { status: finalStatus }),
       ...(featured !== undefined && { featured }),
       ...(isPublishing && { publishedAt: new Date() }),
+      ...(userRole === "ADMIN" && publishedAt !== undefined && { publishedAt: parseDateInput(publishedAt) }),
       ...(resolvedStatus === "DRAFT" && wasPublished && { publishedAt: null }),
       // Limpar rejectionNote quando vai para PENDING
       ...(resolvedStatus === "PENDING" && { rejectionNote: null }),
@@ -155,9 +158,9 @@ export async function PUT(
     },
   })
 
-  // Disparar newsletter e ping ao Google assincronamente só se realmente publicado
+  // Disparar newsletter (await para garantir envio antes de fechar a função)
   if (isPublishing) {
-    sendNewsletter(article.id).catch(console.error)
+    await sendNewsletter(article.id)
     pingGoogle(getArticlePath(article)).catch(console.error)
   }
 

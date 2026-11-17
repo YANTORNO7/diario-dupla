@@ -24,7 +24,7 @@ export default async function AdminDashboard() {
       primarySection: { include: { parent: true } },
       secondarySections: true,
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: [{ publishedAt: { sort: "desc", nulls: "last" } }, { createdAt: "desc" }],
   })
 
   const sections = await prisma.section.findMany({

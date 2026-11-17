@@ -18,13 +18,7 @@ async function main() {
     })
     console.log(`Usuario admin "${username}" creado con éxito.`)
   } else {
-    // Always keep admin name in sync with env var
-    if (existing.name !== name) {
-      await prisma.user.update({ where: { username }, data: { name } })
-      console.log(`Admin "${username}" actualizado: "${existing.name}" → "${name}"`)
-    } else {
-      console.log(`El usuario "${username}" ya existe.`)
-    }
+    console.log(`El usuario "${username}" ya existe.`)
   }
 
   // --- Colaboradores (EDITOR) ---
@@ -128,7 +122,15 @@ async function main() {
     update: { color: "#7B3F00", parentId: deporteMotor.id },
     create: { name: "Rally", slug: "rally", color: "#7B3F00", order: 3, showOnHomepage: false, parentId: deporteMotor.id },
   })
-  console.log("Secciones OK: La Dupla (Clubes, Selecciones), Fútbol Argentino, Fútbol Brasileño, Fútbol Femenino, Copas (Libertadores, Sudamericana), Deporte motor (F1, MotoGP, Rally)")
+  await prisma.section.upsert({
+    where: { slug: "tenis" },
+    update: { name: "Tenis", color: "#D8F23C" },
+    create: { name: "Tenis", slug: "tenis", color: "#D8F23C", order: 6, showOnHomepage: true,
+      description: "Todo el tenis mundial: ATP, WTA, Grand Slams y Copa Davis." },
+  })
+  // Eliminar subsecciones de tenis si existen
+  await prisma.section.deleteMany({ where: { slug: { in: ["atp", "wta", "grand-slams", "copa-davis"] } } })
+  console.log("Secciones OK: La Dupla (Clubes, Selecciones), Fútbol Argentino, Fútbol Brasileño, Fútbol Femenino, Copas (Libertadores, Sudamericana), Deporte motor (F1, MotoGP, Rally), Tenis")
 
   // Migrate existing articles without sectionId
   const articlesArgentina = await prisma.article.updateMany({

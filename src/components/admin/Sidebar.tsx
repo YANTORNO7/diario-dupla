@@ -21,6 +21,7 @@ export default function AdminSidebar() {
     { href: "/admin/pendientes", label: "Pendientes", adminOnly: true },
     { href: "/admin/estadisticas", label: "Estadísticas", adminOnly: true },
     { href: "/admin/usuarios", label: "Usuarios", adminOnly: true },
+    { href: "/admin/configuracion", label: "Configuración", adminOnly: true },
   ]
 
   const visibleLinks = links.filter(

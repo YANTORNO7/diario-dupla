@@ -3,7 +3,11 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 
-export default function LoginForm() {
+type Props = {
+  volver?: string
+}
+
+export default function LoginForm({ volver }: Props) {
   const router = useRouter()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -29,7 +33,7 @@ export default function LoginForm() {
         return
       }
 
-      router.push("/cuenta")
+      router.push(volver ? `${volver}?welcome=1` : "/cuenta")
       router.refresh()
     } catch {
       setError("Error de conexión")

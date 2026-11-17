@@ -11,10 +11,14 @@ import TagBadge from "@/components/public/TagBadge"
 import ShareButtons from "@/components/public/ShareButtons"
 import SignupPrompt from "@/components/public/SignupPrompt"
 import WelcomeBanner from "@/components/public/WelcomeBanner"
+import BrazilBanner from "@/components/public/BrazilBanner"
 import { formatDate, formatDateShort } from "@/lib/utils"
 import { getSectionPath, getArticlePath } from "@/lib/sections"
+import { getArticlePathPt } from "@/lib/sections-pt"
+import { getPtMode } from "@/lib/translation-config"
 import { SITE_URL, SITE_NAME } from "@/lib/constants"
 import { DIAS_ACTIVIDAD } from "@/lib/section-colors"
+import TennisBall from "@/components/public/TennisBall"
 import type { Metadata } from "next"
 
 const PAGE_SIZE = 18
@@ -61,6 +65,7 @@ async function findArticleInSection(sectionId: string, childIds: string[], artic
       author: { select: { id: true, name: true } },
       primarySection: { include: { parent: true } },
       tags: true,
+      translation: { select: { slugPt: true, status: true } },
     },
   })
 }
@@ -125,32 +130,45 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     })
     if (!parent) return {}
     const childIds = parent.children?.map((c: { id: string }) => c.id) ?? []
-    const article = await findArticleInSection(parent.id, childIds, sectionPath[1])
+    const [article, ptMode] = await Promise.all([
+      findArticleInSection(parent.id, childIds, sectionPath[1]),
+      getPtMode(),
+    ])
     if (!article) return {}
-    return articleMetadata(article, `${SITE_URL}${getArticlePath(article)}`)
+    return articleMetadata(article, `${SITE_URL}${getArticlePath(article)}`, ptMode)
   }
 
   if (sectionPath.length === 3) {
     const section = await resolveSection([sectionPath[0], sectionPath[1]])
     if (!section) return {}
-    const article = await findArticleInSection(section.id, [], sectionPath[2])
+    const [article, ptMode] = await Promise.all([
+      findArticleInSection(section.id, [], sectionPath[2]),
+      getPtMode(),
+    ])
     if (!article) return {}
-    return articleMetadata(article, `${SITE_URL}${getArticlePath(article)}`)
+    return articleMetadata(article, `${SITE_URL}${getArticlePath(article)}`, ptMode)
   }
 
   return {}
 }
 
 function articleMetadata(
-  article: { title: string; subtitle: string | null; heroImageUrl: string | null; publishedAt: Date | null; createdAt: Date; author: { name: string }; primarySection: { name: string } | null; tags: { name: string }[] },
-  articleUrl: string
+  article: { title: string; subtitle: string | null; heroImageUrl: string | null; publishedAt: Date | null; createdAt: Date; author: { name: string }; primarySection: { name: string; slug: string; parent?: { slug: string } | null } | null; tags: { name: string }[]; translation?: { slugPt: string; status: string } | null },
+  articleUrl: string,
+  ptMode?: string
 ): Metadata {
   const pubDate = new Date(article.publishedAt || article.createdAt).toISOString()
   const description = article.subtitle || article.title
+  const ptPath = ptMode === "public" && article.translation && article.translation.status !== "REVIEW"
+    ? getArticlePathPt({ slugPt: article.translation.slugPt, article: { primarySection: article.primarySection } })
+    : null
   return {
     title: article.title,
     description,
-    alternates: { canonical: articleUrl },
+    alternates: {
+      canonical: articleUrl,
+      ...(ptPath ? { languages: { "es-AR": articleUrl, "pt-BR": `${SITE_URL}${ptPath}`, "x-default": articleUrl } } : {}),
+    },
     openGraph: {
       title: article.title,
       description,
@@ -254,6 +272,7 @@ type ArticleWithRelations = {
   author: { id?: string; name: string }
   primarySection: { id: string; name: string; slug: string; color: string; parent?: { slug: string } | null } | null
   tags: { id: string; name: string; slug: string }[]
+  translation?: { slugPt: string; status: string } | null
 }
 
 /* ---------- breadcrumb helper ---------- */
@@ -275,6 +294,17 @@ function Breadcrumb({ section }: { section: SectionWithParent }) {
 }
 
 function SectionTitle({ section }: { section: SectionWithParent }) {
+  if (section.slug === "tenis") {
+    return (
+      <h1 className="font-titular text-4xl md:text-5xl flex items-center gap-3">
+        <span className="w-1.5 h-8 rounded-full inline-block" style={{ backgroundColor: section.color }} />
+        {section.name}
+        <span style={{ marginBottom: "-4px" }}>
+          <TennisBall size={28} />
+        </span>
+      </h1>
+    )
+  }
   if (section.slug === "la-dupla" || section.parent?.slug === "la-dupla") {
     return (
       <>
@@ -552,6 +582,14 @@ function renderArticle(article: ArticleWithRelations, section: SectionWithParent
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: breadcrumbLd }} />
+      {/* BrazilBanner: pure client component, calls /api/geo itself, does NOT affect ISR */}
+      {article.translation && article.translation.status !== "REVIEW" && (
+        <BrazilBanner
+          ptUrl={`${SITE_URL}${getArticlePathPt({ slugPt: article.translation.slugPt, article: { primarySection: article.primarySection } })}`}
+          esUrl={articleUrl}
+        />
+      )}
+
       <article className="max-w-4xl mx-auto px-4 py-8">
         <div className="mb-6">
           <nav className="text-xs font-cuerpo text-gray-400 mb-3 flex items-center gap-1 flex-wrap">

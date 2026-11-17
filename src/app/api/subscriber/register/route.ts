@@ -8,7 +8,7 @@ import { SITE_NAME, SITE_URL } from "@/lib/constants"
 
 export async function POST(req: Request) {
   try {
-    const { email, password, name, newsletterOptIn } = await req.json()
+    const { email, password, name, newsletterOptIn, volver, source } = await req.json()
 
     if (!email || !password || !name) {
       return NextResponse.json(
@@ -23,6 +23,9 @@ export async function POST(req: Request) {
         { status: 400 }
       )
     }
+
+    const safeVolver = typeof volver === "string" && volver.startsWith("/") ? volver : null
+    const signupSource = source === "popup" ? "popup-email" : "email"
 
     const existing = await prisma.subscriber.findUnique({ where: { email } })
     if (existing) {
@@ -42,11 +45,15 @@ export async function POST(req: Request) {
         name,
         newsletterOptIn: newsletterOptIn ?? true,
         verificationToken,
+        signupSource,
       },
     })
 
-    // Enviar email de verificação
-    const verifyUrl = `${SITE_URL}/api/subscriber/verify?token=${verificationToken}`
+    // Construir URL de verificação com volver opcional
+    const verifyUrl = safeVolver
+      ? `${SITE_URL}/api/subscriber/verify?token=${verificationToken}&volver=${encodeURIComponent(safeVolver)}`
+      : `${SITE_URL}/api/subscriber/verify?token=${verificationToken}`
+
     try {
       await resend.emails.send({
         from: FROM_EMAIL,
@@ -62,9 +69,8 @@ export async function POST(req: Request) {
           </div>
         `,
       })
-    } catch {
-      // Não bloquear registro se email falhar
-      console.error("Error enviando email de verificación")
+    } catch (emailError) {
+      console.error("Error enviando email de verificación:", JSON.stringify(emailError))
     }
 
     const token = await signSubscriberToken({

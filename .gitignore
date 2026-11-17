@@ -47,3 +47,18 @@ prisma/dev.db-journal
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+.env*.local
+
+# video files and local content
+*.mp4
+*.mov
+/dupla-score/
+/f1-saopaulo-2026/
+
+# debug scripts (not needed in repo)
+scripts/debug-*.ts
+scripts/find-*.ts
+scripts/full-body-debug.ts
+scripts/fix-admin-name.ts
+scripts/check-users.ts
+scripts/test-boca-article.ts

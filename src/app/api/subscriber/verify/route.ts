@@ -5,6 +5,8 @@ import { SITE_URL } from "@/lib/constants"
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
   const token = searchParams.get("token")
+  const volver = searchParams.get("volver")
+  const safeVolver = volver?.startsWith("/") ? volver : null
 
   if (!token) {
     return NextResponse.redirect(`${SITE_URL}/verificar?status=error`)
@@ -26,6 +28,10 @@ export async function GET(req: Request) {
     where: { id: subscriber.id },
     data: { emailVerified: true, verificationToken: null },
   })
+
+  if (safeVolver) {
+    return NextResponse.redirect(`${SITE_URL}${safeVolver}?welcome=1`)
+  }
 
   return NextResponse.redirect(SITE_URL)
 }

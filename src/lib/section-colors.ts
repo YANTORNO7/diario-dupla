@@ -9,6 +9,7 @@ export const SUBSECTION_COLORS: Record<string, string> = {
   // La Dupla
   "clubes":          "#75AADB",
   "selecciones":     "#20B2AA",
+
 }
 
 // Días de actividad para mostrar un bloque de subsección en la página de sección
