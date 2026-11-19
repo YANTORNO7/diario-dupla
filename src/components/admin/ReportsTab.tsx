@@ -18,18 +18,36 @@ function getCycleWeeks(): { label: string; monday: string }[] {
   const pad = (n: number) => String(n).padStart(2, "0")
   // Fecha actual en ART (UTC-3)
   const nowART = new Date(Date.now() - 3 * 60 * 60 * 1000)
+
+  // Go back 2 billing cycles (each starts on the 10th of the month)
+  // to find the earliest start date to list weeks from.
+  function cycleStartFor(year: number, month: number): Date {
+    // month is 1-based
+    return new Date(Date.UTC(year, month - 1, 10, 3, 0, 0, 0))
+  }
+
+  function prevCycleStart(year: number, month: number): { year: number; month: number } {
+    month--
+    if (month === 0) { month = 12; year-- }
+    return { year, month }
+  }
+
   const artDay = nowART.getUTCDate()
   let cycleYear = nowART.getUTCFullYear()
   let cycleMonth = nowART.getUTCMonth() + 1
   if (artDay < 10) {
-    cycleMonth--
-    if (cycleMonth === 0) { cycleMonth = 12; cycleYear-- }
+    const prev = prevCycleStart(cycleYear, cycleMonth)
+    cycleYear = prev.year; cycleMonth = prev.month
   }
-  // Inicio del ciclo: día 10 a las 00:00 ART = 03:00 UTC
-  const cycleStart = new Date(Date.UTC(cycleYear, cycleMonth - 1, 10, 3, 0, 0, 0))
-  const dow = cycleStart.getUTCDay()
+
+  // Start from 2 cycles ago
+  const two = prevCycleStart(cycleYear, cycleMonth)
+  const twoStart = cycleStartFor(two.year, two.month)
+
+  // Find first Monday of that cycle
+  const dow = twoStart.getUTCDay()
   const daysToMonday = dow === 1 ? 0 : dow === 0 ? 1 : 8 - dow
-  let monday = new Date(cycleStart.getTime() + daysToMonday * 24 * 60 * 60 * 1000)
+  let monday = new Date(twoStart.getTime() + daysToMonday * 24 * 60 * 60 * 1000)
 
   const weeks: { label: string; monday: string }[] = []
   let weekNum = 1
@@ -42,7 +60,8 @@ function getCycleWeeks(): { label: string; monday: string }[] {
     monday = nextMonday
     weekNum++
   }
-  return weeks
+  // Most recent first
+  return weeks.reverse()
 }
 
 export default function ReportsTab() {
