@@ -272,13 +272,13 @@ export function generateReportHTML(
     : `${pad2(artStart.getUTCDate())}/${pad2(artStart.getUTCMonth() + 1)}/${artStart.getUTCFullYear()} — ${pad2(artEnd.getUTCDate())}/${pad2(artEnd.getUTCMonth() + 1)}/${artEnd.getUTCFullYear()}`
 
   const col2Header = type === "weekly" ? "SEMANA" : "MES"
-  const col3Header = type === "weekly" ? "MES" : "PROM. SEMANAL"
+  const col3Header = type === "monthly" ? "PROM. SEMANAL" : null
 
   const rowsHTML = rows.map(row => {
     const pct = Math.round((row.periodCount / maxCount) * 100)
-    const col3Val = type === "weekly"
-      ? (row.monthCount ?? 0)
-      : (row.weeklyAvg !== undefined ? row.weeklyAvg.toFixed(1) : "—")
+    const col3Val = type === "monthly"
+      ? (row.weeklyAvg !== undefined ? row.weeklyAvg.toFixed(1) : "—")
+      : null
     const badge = row.portadas > 0
       ? `<span style="display:inline-block;background:#F2B632;color:#111;font-size:10px;font-weight:700;padding:2px 7px;border-radius:3px;letter-spacing:0.5px;margin-left:8px;white-space:nowrap">${row.portadas} PORTADA${row.portadas > 1 ? "S" : ""}</span>`
       : ""
@@ -295,7 +295,7 @@ export function generateReportHTML(
             <span style="font-weight:700;font-size:13px;min-width:20px;text-align:right">${row.periodCount}</span>
           </div>
         </td>
-        <td style="padding:10px 14px;text-align:center;font-size:13px;font-weight:600">${col3Val}</td>
+        ${col3Val !== null ? `<td style="padding:10px 14px;text-align:center;font-size:13px;font-weight:600">${col3Val}</td>` : ""}
       </tr>`
   }).join("")
 
@@ -308,7 +308,7 @@ export function generateReportHTML(
           <span style="font-weight:700;font-size:14px;font-family:'Bebas Neue',cursive;min-width:20px;text-align:right">${totalNotes}</span>
         </div>
       </td>
-      <td style="padding:10px 14px;text-align:center;font-size:13px">—</td>
+      ${type === "monthly" ? `<td style="padding:10px 14px;text-align:center;font-size:13px">—</td>` : ""}
     </tr>`
 
   return `<!DOCTYPE html>
@@ -361,7 +361,7 @@ ${adminCount > 0 ? `<!-- NOTA ADMIN -->
       <tr style="background:${type === 'monthly' ? '#0D3321' : '#0B1631'};color:#fff">
         <th style="padding:10px 14px;text-align:left;font-family:'Bebas Neue',cursive;font-size:14px;letter-spacing:1px">COLABORADOR</th>
         <th style="padding:10px 14px;text-align:left;font-family:'Bebas Neue',cursive;font-size:14px;letter-spacing:1px">${col2Header}</th>
-        <th style="padding:10px 14px;text-align:center;font-family:'Bebas Neue',cursive;font-size:14px;letter-spacing:1px">${col3Header}</th>
+        ${col3Header ? `<th style="padding:10px 14px;text-align:center;font-family:'Bebas Neue',cursive;font-size:14px;letter-spacing:1px">${col3Header}</th>` : ""}
       </tr>
     </thead>
     <tbody>
