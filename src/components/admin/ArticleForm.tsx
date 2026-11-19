@@ -140,19 +140,19 @@ export default function ArticleForm({
 
   return (
     <div className="max-w-4xl space-y-6">
-      {/* ── Tab selector ──────────────────────────────────────────────── */}
-      <div className="flex gap-1 border-b">
-        <button
-          onClick={() => setActiveTab("es")}
-          className={`px-4 py-2 text-sm font-cuerpo transition-colors ${
-            activeTab === "es"
-              ? "border-b-2 border-[#111111] font-semibold"
-              : "text-gray-500 hover:text-gray-800"
-          }`}
-        >
-          Español
-        </button>
-        {article && (
+      {/* ── Tab selector: only show when editing an existing article ── */}
+      {article && (
+        <div className="flex gap-1 border-b">
+          <button
+            onClick={() => setActiveTab("es")}
+            className={`px-4 py-2 text-sm font-cuerpo transition-colors ${
+              activeTab === "es"
+                ? "border-b-2 border-[#111111] font-semibold"
+                : "text-gray-500 hover:text-gray-800"
+            }`}
+          >
+            Español
+          </button>
           <button
             onClick={() => setActiveTab("pt")}
             className={`px-4 py-2 text-sm font-cuerpo transition-colors ${
@@ -163,8 +163,8 @@ export default function ArticleForm({
           >
             Português
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* ── Aba PT ───────────────────────────────────────────────────── */}
       {activeTab === "pt" && article && (
