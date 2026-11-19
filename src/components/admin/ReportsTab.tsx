@@ -40,14 +40,14 @@ function getCycleWeeks(): { label: string; monday: string }[] {
     cycleYear = prev.year; cycleMonth = prev.month
   }
 
-  // Start from 2 cycles ago
-  const two = prevCycleStart(cycleYear, cycleMonth)
-  const twoStart = cycleStartFor(two.year, two.month)
+  // Start from 1 cycle ago (previous billing cycle)
+  const prev = prevCycleStart(cycleYear, cycleMonth)
+  const prevStart = cycleStartFor(prev.year, prev.month)
 
   // Find first Monday of that cycle
-  const dow = twoStart.getUTCDay()
+  const dow = prevStart.getUTCDay()
   const daysToMonday = dow === 1 ? 0 : dow === 0 ? 1 : 8 - dow
-  let monday = new Date(twoStart.getTime() + daysToMonday * 24 * 60 * 60 * 1000)
+  let monday = new Date(prevStart.getTime() + daysToMonday * 24 * 60 * 60 * 1000)
 
   const weeks: { label: string; monday: string }[] = []
   let weekNum = 1
