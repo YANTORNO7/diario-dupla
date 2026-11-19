@@ -143,13 +143,12 @@ function generateTitle(type: "weekly" | "monthly", start: Date, end: Date): stri
     const s = utcToARTDate(start)
     const e = utcToARTDate(end)
     const weekNum = getWeekNumberInCycle(s)
-    // Mes del ciclo: si el lunes está antes del 10, pertenece al ciclo del mes anterior
-    const cycleMonthIdx = s.getUTCDate() < 10 ? (s.getUTCMonth() === 0 ? 11 : s.getUTCMonth() - 1) : s.getUTCMonth()
-    const cycleYear = s.getUTCDate() < 10 && s.getUTCMonth() === 0 ? s.getUTCFullYear() - 1 : s.getUTCFullYear()
-    const monthName = MONTHS_ES[cycleMonthIdx]
+    // Usar el mes calendario del lunes (no el ciclo de facturación)
+    const monthName = MONTHS_ES[s.getUTCMonth()]
+    const monthYear = s.getUTCFullYear()
     // El período va de lunes a lunes: mostrar el lunes siguiente al domingo de cierre
     const nextMonday = new Date(Date.UTC(e.getUTCFullYear(), e.getUTCMonth(), e.getUTCDate() + 1))
-    return `SEMANA ${weekNum} · DEL ${pad2(s.getUTCDate())}/${pad2(s.getUTCMonth() + 1)} AL ${pad2(nextMonday.getUTCDate())}/${pad2(nextMonday.getUTCMonth() + 1)} · ${monthName} ${cycleYear}`
+    return `SEMANA ${weekNum} · DEL ${pad2(s.getUTCDate())}/${pad2(s.getUTCMonth() + 1)} AL ${pad2(nextMonday.getUTCDate())}/${pad2(nextMonday.getUTCMonth() + 1)} · ${monthName} ${monthYear}`
   } else {
     const s = utcToARTDate(start)
     return `INFORME MENSUAL · ${MONTHS_ES[s.getUTCMonth()]} ${s.getUTCFullYear()}`
