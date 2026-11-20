@@ -28,21 +28,50 @@ export default function ArticleList({ articles, userRole }: { articles: Article[
   async function handlePromote(id: string, idx: number) {
     if (idx === 0) return
     const above = articles[idx - 1]
-    const aboveDate = new Date(above.publishedAt ?? above.createdAt)
-    // Cap to now: si el artículo de arriba tiene una fecha futura (bug cascada),
-    // no propagamos esa fecha al artículo promovido.
-    const newDate = new Date(aboveDate.getTime() + 1)
+    const twoAbove = idx >= 2 ? articles[idx - 2] : null
+
+    const aboveDate = new Date(above.publishedAt ?? above.createdAt).getTime()
+    const twoAboveDate = twoAbove
+      ? new Date(twoAbove.publishedAt ?? twoAbove.createdAt).getTime()
+      : Infinity
+
+    let newCurrentDate: number
+    let newAboveDate: number | null = null
+
+    if (twoAboveDate > aboveDate + 1) {
+      // Hay lugar: mover current justo por encima de above
+      newCurrentDate = aboveDate + 1
+    } else {
+      // Sin lugar (twoAbove y above comparten fecha): bajar ambos 1ms
+      newCurrentDate = aboveDate - 1
+      newAboveDate = aboveDate - 2
+    }
+
     setPromoting(id)
     try {
-      const res = await fetch(`/api/articles/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ publishedAt: newDate.toISOString() }),
-      })
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        alert(data.error || `Error ${res.status}`)
-        return
+      const calls: Promise<Response>[] = [
+        fetch(`/api/articles/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ publishedAt: new Date(newCurrentDate).toISOString() }),
+        }),
+      ]
+      if (newAboveDate !== null) {
+        calls.push(
+          fetch(`/api/articles/${above.id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ publishedAt: new Date(newAboveDate).toISOString() }),
+          })
+        )
+      }
+      const results = await Promise.all(calls)
+      for (const res of results) {
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}))
+          alert(data.error || `Error ${res.status}`)
+          return
+        }
       }
       router.refresh()
     } catch (e) {
