@@ -56,10 +56,15 @@ export async function GET() {
     }),
   ])
 
+  const me = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { avatarUrl: true },
+  })
+
   const rankingIds = rankingMes.map((r) => r.authorId)
   const rankingUsers = await prisma.user.findMany({
     where: { id: { in: rankingIds } },
-    select: { id: true, name: true },
+    select: { id: true, name: true, avatarUrl: true },
   })
 
   const ranking = rankingMes.map((r) => {
@@ -68,6 +73,7 @@ export async function GET() {
     return {
       userId: r.authorId,
       name: user?.name ?? "—",
+      avatarUrl: user?.avatarUrl ?? null,
       notasMes,
       nivel: getNivelActual(notasMes),
     }
@@ -81,6 +87,7 @@ export async function GET() {
     total,
     estesMes,
     estaSemana,
+    avatarUrl: me?.avatarUrl ?? null,
     nivelActual,
     nivelSiguiente,
     progreso,
