@@ -1,14 +1,23 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -18 200 242" width="200" height="242">
-<defs><linearGradient id="g-diamante-3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7AB8FF"/><stop offset=".55" stop-color="#0055DD"/><stop offset="1" stop-color="#002090"/></linearGradient>
-<linearGradient id="s-diamante-3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity=".5"/><stop offset=".5" stop-color="#FFFFFF" stop-opacity="0"/></linearGradient></defs>
-<path d="M100 8 L184 36 V104 C184 160 146 196 100 216 C54 196 16 160 16 104 V36 Z" fill="#002090"/><path d="M100 8 L184 36 V104 C184 160 146 196 100 216 C54 196 16 160 16 104 V36 Z" fill="url(#g-diamante-3)" transform="translate(0 -3)"/>
-<path d="M100 22 L170 45 V104 C170 151 138 181 100 199 C62 181 30 151 30 104 V45 Z" fill="none" stroke="#000D44" stroke-opacity=".35" stroke-width="3"/>
-<path d="M30 45 L100 22 L170 45 V90 C130 80 70 80 30 100 Z" fill="url(#s-diamante-3)"/>
-<g transform="translate(100 52)"><g transform="skewX(-8)"><rect x="-38" y="-15" width="76" height="28" fill="#FFFFFF"/></g>
-<text x="0" y="8" text-anchor="middle" font-family="Bebas Neue, sans-serif" font-size="25" letter-spacing="1.5" fill="#0B1631">DUPLA</text>
-<rect x="-38" y="13" width="19" height="4" fill="#74ACDF"/><rect x="-19" y="13" width="19" height="4" fill="#FFFFFF"/><rect x="0" y="13" width="19" height="4" fill="#009C3B"/><rect x="19" y="13" width="19" height="4" fill="#F2B632"/></g>
-<path d="M72 99 L83 108 L72 127 L61 108 Z" fill="#FFFFFF" opacity=".92"/><path d="M61 108 H83" stroke="#002090" stroke-width="1.5" fill="none"/>
-<path d="M100 99 L111 108 L100 127 L89 108 Z" fill="#FFFFFF" opacity=".92"/><path d="M89 108 H111" stroke="#002090" stroke-width="1.5" fill="none"/>
-<path d="M128 99 L139 108 L128 127 L117 108 Z" fill="#FFFFFF" opacity=".92"/><path d="M117 108 H139" stroke="#002090" stroke-width="1.5" fill="none"/>
-<path d="M4 144 H196 L186 160 L196 176 H4 L14 160 Z" fill="#0B1631" stroke="#FFFFFF" stroke-width="2.5" stroke-linejoin="round"/>
-<text x="100" y="169" text-anchor="middle" font-family="Bebas Neue, sans-serif" font-size="19" letter-spacing="2" fill="#FFFFFF">DIAMANTE III</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B0D8FF"/><stop offset=".5" stop-color="#4FA6FF"/><stop offset="1" stop-color="#1B4FC9"/></linearGradient></defs>
+<path d="M128 51 L156 100 L128 149 L72 149 L44 100 L72 51 Z" fill="#0A1F5C" transform="translate(2 4)" opacity=".35"/>
+<path d="M156 87 L187 68 L182 81 L193 88 L187 96 L194 100 L187 104 L193 112 L182 119 L187 132 L156 113 Z" fill="#4FA6FF" stroke="#1B4FC9" stroke-width="1.5" stroke-linejoin="round"/>
+<path d="M44 87 L13 68 L18 81 L7 88 L13 96 L6 100 L13 104 L7 112 L18 119 L13 132 L44 113 Z" fill="#4FA6FF" stroke="#1B4FC9" stroke-width="1.5" stroke-linejoin="round"/>
+<path d="M128 51 L156 100 L128 149 L72 149 L44 100 L72 51 Z" fill="url(#g)"/>
+<path d="M72 51 L128 51 L100 100 Z" fill="#FFF" opacity=".28"/>
+<path d="M128 51 L156 100 L100 100 Z" fill="#FFF" opacity=".14"/>
+<path d="M72 51 L44 100 L100 100 Z" fill="#FFF" opacity=".07"/>
+<path d="M72 149 L128 149 L100 100 Z" fill="#000" opacity=".18"/>
+<path d="M44 100 L72 149 L100 100 Z" fill="#000" opacity=".1"/>
+<path d="M128 51 L156 100 L128 149 L72 149 L44 100 L72 51 Z" fill="none" stroke="#1B4FC9" stroke-width="2.5" stroke-opacity=".5"/>
+<path d="M128 51 L156 100 L128 149 L72 149 L44 100 L72 51 Z" fill="none" stroke="#FFF" stroke-width="1" stroke-opacity=".25"/>
+<g transform="translate(100 72)">
+  <rect x="-27" y="-10" width="54" height="20" rx="1" fill="#0A1F5C" opacity=".9"/>
+  <text x="0" y="7" text-anchor="middle" font-family="Bebas Neue, sans-serif" font-size="14" letter-spacing="1" fill="#FFF">DUPLA</text>
+  <rect x="-27" y="10" width="13" height="3" fill="#74ACDF"/>
+  <rect x="-14" y="10" width="14" height="3" fill="#FFF"/>
+  <rect x="0" y="10" width="13" height="3" fill="#009C3B"/>
+  <rect x="13" y="10" width="14" height="3" fill="#F2B632"/>
+</g>
+<text x="100" y="130" text-anchor="middle" font-family="Bebas Neue, sans-serif" font-size="36" fill="#FFF" opacity=".95">III</text>
+</svg>

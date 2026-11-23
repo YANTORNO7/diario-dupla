@@ -1,15 +1,29 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -18 200 242" width="200" height="242">
-<defs><linearGradient id="g-leyenda" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF6C8"/><stop offset=".55" stop-color="#D4AF37"/><stop offset="1" stop-color="#7A5C00"/></linearGradient>
-<linearGradient id="s-leyenda" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity=".5"/><stop offset=".5" stop-color="#FFFFFF" stop-opacity="0"/></linearGradient></defs>
-<path d="M100 8 L184 36 V104 C184 160 146 196 100 216 C54 196 16 160 16 104 V36 Z" fill="#7A5C00"/><path d="M100 8 L184 36 V104 C184 160 146 196 100 216 C54 196 16 160 16 104 V36 Z" fill="url(#g-leyenda)" transform="translate(0 -3)"/>
-<path d="M100 22 L170 45 V104 C170 151 138 181 100 199 C62 181 30 151 30 104 V45 Z" fill="none" stroke="#3D2D00" stroke-opacity=".35" stroke-width="3"/>
-<path d="M30 45 L100 22 L170 45 V90 C130 80 70 80 30 100 Z" fill="url(#s-leyenda)"/>
-<g transform="translate(100 52)"><g transform="skewX(-8)"><rect x="-38" y="-15" width="76" height="28" fill="#FFFFFF"/></g>
-<text x="0" y="8" text-anchor="middle" font-family="Bebas Neue, sans-serif" font-size="25" letter-spacing="1.5" fill="#0B1631">DUPLA</text>
-<rect x="-38" y="13" width="19" height="4" fill="#74ACDF"/><rect x="-19" y="13" width="19" height="4" fill="#FFFFFF"/><rect x="0" y="13" width="19" height="4" fill="#009C3B"/><rect x="19" y="13" width="19" height="4" fill="#F2B632"/></g>
-<path d="M38 128 L38 108 L55 120 L72 82 L86 110 L100 76 L114 110 L128 82 L145 120 L162 108 L162 128 Z" fill="#FFE566" stroke="#956B00" stroke-width="3" stroke-linejoin="round"/>
-<circle cx="72" cy="82" r="6" fill="#E0245E"/>
-<circle cx="100" cy="76" r="8" fill="#FFFFFF"/>
-<circle cx="128" cy="82" r="6" fill="#E0245E"/>
-<path d="M4 144 H196 L186 160 L196 176 H4 L14 160 Z" fill="#7A5C00" stroke="#FFE566" stroke-width="2.5" stroke-linejoin="round"/>
-<text x="100" y="169" text-anchor="middle" font-family="Bebas Neue, sans-serif" font-size="22" letter-spacing="2" fill="#FFE566">LEYENDA</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F8F4D0"/><stop offset=".5" stop-color="#D4AF37"/><stop offset="1" stop-color="#8A6400"/></linearGradient></defs>
+<path d="M128 51 L156 100 L128 149 L72 149 L44 100 L72 51 Z" fill="#4A3200" transform="translate(2 4)" opacity=".35"/>
+<path d="M72 55 L72 40 L82 50 L90 26 L96 42 L100 22 L104 42 L110 26 L118 50 L128 40 L128 55 Z" fill="#FFE566" stroke="#956B00" stroke-width="2" stroke-linejoin="round"/>
+<circle cx="90" cy="26" r="4" fill="#4FA6FF"/>
+<circle cx="100" cy="22" r="5" fill="#E0245E"/>
+<circle cx="110" cy="26" r="4" fill="#4FA6FF"/>
+<path d="M156 87 L187 68 L182 81 L193 88 L187 96 L194 100 L187 104 L193 112 L182 119 L187 132 L156 113 Z" fill="#D4AF37" stroke="#8A6400" stroke-width="1.5" stroke-linejoin="round"/>
+<path d="M44 87 L13 68 L18 81 L7 88 L13 96 L6 100 L13 104 L7 112 L18 119 L13 132 L44 113 Z" fill="#D4AF37" stroke="#8A6400" stroke-width="1.5" stroke-linejoin="round"/>
+<path d="M128 51 L156 100 L128 149 L72 149 L44 100 L72 51 Z" fill="url(#g)"/>
+<path d="M72 51 L128 51 L100 100 Z" fill="#FFF" opacity=".28"/>
+<path d="M128 51 L156 100 L100 100 Z" fill="#FFF" opacity=".14"/>
+<path d="M72 51 L44 100 L100 100 Z" fill="#FFF" opacity=".07"/>
+<path d="M72 149 L128 149 L100 100 Z" fill="#000" opacity=".18"/>
+<path d="M44 100 L72 149 L100 100 Z" fill="#000" opacity=".1"/>
+<path d="M128 51 L156 100 L128 149 L72 149 L44 100 L72 51 Z" fill="none" stroke="#8A6400" stroke-width="2.5" stroke-opacity=".5"/>
+<path d="M128 51 L156 100 L128 149 L72 149 L44 100 L72 51 Z" fill="none" stroke="#FFF" stroke-width="1" stroke-opacity=".25"/>
+<g transform="translate(100 72)">
+  <rect x="-27" y="-10" width="54" height="20" rx="1" fill="#4A3200" opacity=".9"/>
+  <text x="0" y="7" text-anchor="middle" font-family="Bebas Neue, sans-serif" font-size="14" letter-spacing="1" fill="#FFF">DUPLA</text>
+  <rect x="-27" y="10" width="13" height="3" fill="#74ACDF"/>
+  <rect x="-14" y="10" width="14" height="3" fill="#FFF"/>
+  <rect x="0" y="10" width="13" height="3" fill="#009C3B"/>
+  <rect x="13" y="10" width="14" height="3" fill="#F2B632"/>
+</g>
+<path transform="translate(55 93) scale(.24)" d="M50 0 L61 35 L98 35 L68 57 L79 92 L50 70 L21 92 L32 57 L2 35 L39 35 Z" fill="#FFE566" opacity=".95"/>
+<path transform="translate(76 93) scale(.24)" d="M50 0 L61 35 L98 35 L68 57 L79 92 L50 70 L21 92 L32 57 L2 35 L39 35 Z" fill="#FFE566" opacity=".95"/>
+<path transform="translate(97 93) scale(.24)" d="M50 0 L61 35 L98 35 L68 57 L79 92 L50 70 L21 92 L32 57 L2 35 L39 35 Z" fill="#FFE566" opacity=".95"/>
+</svg>

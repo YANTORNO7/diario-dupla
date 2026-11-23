@@ -1,10 +1,23 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -18 200 242" width="200" height="242">
-<defs><linearGradient id="g-idolo-2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFB0CC"/><stop offset=".55" stop-color="#BF0A42"/><stop offset="1" stop-color="#5C0020"/></linearGradient>
-<linearGradient id="s-idolo-2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity=".5"/><stop offset=".5" stop-color="#FFFFFF" stop-opacity="0"/></linearGradient></defs>
-<path d="M100 8 L184 36 V104 C184 160 146 196 100 216 C54 196 16 160 16 104 V36 Z" fill="#5C0020"/><path d="M100 8 L184 36 V104 C184 160 146 196 100 216 C54 196 16 160 16 104 V36 Z" fill="url(#g-idolo-2)" transform="translate(0 -3)"/>
-<path d="M100 22 L170 45 V104 C170 151 138 181 100 199 C62 181 30 151 30 104 V45 Z" fill="none" stroke="#2E0010" stroke-opacity=".35" stroke-width="3"/>
-<path d="M30 45 L100 22 L170 45 V90 C130 80 70 80 30 100 Z" fill="url(#s-idolo-2)"/>
-<g transform="translate(100 52)"><g transform="skewX(-8)"><rect x="-38" y="-15" width="76" height="28" fill="#FFFFFF"/></g>
-<text x="0" y="8" text-anchor="middle" font-family="Bebas Neue, sans-serif" font-size="25" letter-spacing="1.5" fill="#0B1631">DUPLA</text>
-<rect x="-38" y="13" width="19" height="4" fill="#74ACDF"/><rect x="-19" y="13" width="19" height="4" fill="#FFFFFF"/><rect x="0" y="13" width="19" height="4" fill="#009C3B"/><rect x="19" y="13" width="19" height="4" fill="#F2B632"/></g><path transform="translate(77 86) scale(.46)" d="M50 0 L61 35 L98 35 L68 57 L79 92 L50 70 L21 92 L32 57 L2 35 L39 35 Z" fill="#FFD06A" stroke="#8A5A00" stroke-width="6"/><path d="M4 144 H196 L186 160 L196 176 H4 L14 160 Z" fill="#0B1631" stroke="#FFFFFF" stroke-width="2.5" stroke-linejoin="round"/>
-<text x="100" y="169" text-anchor="middle" font-family="Bebas Neue, sans-serif" font-size="22" letter-spacing="2" fill="#FFFFFF">ÍDOLO II</text><g transform="translate(58 -14)"><path d="M0 22 L10 0 L22 14 L42 0 L62 14 L74 0 L84 22 Z" fill="#F2B632" stroke="#7A5200" stroke-width="2.5"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFB0CC"/><stop offset=".5" stop-color="#E0245E"/><stop offset="1" stop-color="#7A0A35"/></linearGradient></defs>
+<path d="M128 51 L156 100 L128 149 L72 149 L44 100 L72 51 Z" fill="#3D0019" transform="translate(2 4)" opacity=".35"/>
+<path d="M156 87 L187 68 L182 81 L193 88 L187 96 L194 100 L187 104 L193 112 L182 119 L187 132 L156 113 Z" fill="#E0245E" stroke="#7A0A35" stroke-width="1.5" stroke-linejoin="round"/>
+<path d="M44 87 L13 68 L18 81 L7 88 L13 96 L6 100 L13 104 L7 112 L18 119 L13 132 L44 113 Z" fill="#E0245E" stroke="#7A0A35" stroke-width="1.5" stroke-linejoin="round"/>
+<path d="M128 51 L156 100 L128 149 L72 149 L44 100 L72 51 Z" fill="url(#g)"/>
+<path d="M72 51 L128 51 L100 100 Z" fill="#FFF" opacity=".28"/>
+<path d="M128 51 L156 100 L100 100 Z" fill="#FFF" opacity=".14"/>
+<path d="M72 51 L44 100 L100 100 Z" fill="#FFF" opacity=".07"/>
+<path d="M72 149 L128 149 L100 100 Z" fill="#000" opacity=".18"/>
+<path d="M44 100 L72 149 L100 100 Z" fill="#000" opacity=".1"/>
+<path d="M128 51 L156 100 L128 149 L72 149 L44 100 L72 51 Z" fill="none" stroke="#7A0A35" stroke-width="2.5" stroke-opacity=".5"/>
+<path d="M128 51 L156 100 L128 149 L72 149 L44 100 L72 51 Z" fill="none" stroke="#FFF" stroke-width="1" stroke-opacity=".25"/>
+<g transform="translate(100 72)">
+  <rect x="-27" y="-10" width="54" height="20" rx="1" fill="#3D0019" opacity=".9"/>
+  <text x="0" y="7" text-anchor="middle" font-family="Bebas Neue, sans-serif" font-size="14" letter-spacing="1" fill="#FFF">DUPLA</text>
+  <rect x="-27" y="10" width="13" height="3" fill="#74ACDF"/>
+  <rect x="-14" y="10" width="14" height="3" fill="#FFF"/>
+  <rect x="0" y="10" width="13" height="3" fill="#009C3B"/>
+  <rect x="13" y="10" width="14" height="3" fill="#F2B632"/>
+</g>
+<text x="100" y="134" text-anchor="middle" font-family="Bebas Neue, sans-serif" font-size="44" fill="#FFF" opacity=".95">II</text>
+</svg>
