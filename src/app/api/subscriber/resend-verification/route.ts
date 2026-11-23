@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import crypto from "crypto"
 import { prisma } from "@/lib/prisma"
 import { getSubscriberFromCookie } from "@/lib/subscriber-auth"
-import { resend, FROM_EMAIL } from "@/lib/resend"
+import { getResend, FROM_EMAIL } from "@/lib/resend"
 import { SITE_NAME, SITE_URL } from "@/lib/constants"
 
 export async function POST() {
@@ -28,7 +28,7 @@ export async function POST() {
 
   const verifyUrl = `${SITE_URL}/api/subscriber/verify?token=${token}`
 
-  await resend.emails.send({
+  await getResend().emails.send({
     from: FROM_EMAIL,
     to: subscriber.email,
     subject: `Verificá tu email — ${SITE_NAME}`,

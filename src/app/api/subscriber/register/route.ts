@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs"
 import crypto from "crypto"
 import { prisma } from "@/lib/prisma"
 import { signSubscriberToken, setSubscriberCookie } from "@/lib/subscriber-auth"
-import { resend, FROM_EMAIL } from "@/lib/resend"
+import { getResend, FROM_EMAIL } from "@/lib/resend"
 import { SITE_NAME, SITE_URL } from "@/lib/constants"
 
 export async function POST(req: Request) {
@@ -55,7 +55,7 @@ export async function POST(req: Request) {
       : `${SITE_URL}/api/subscriber/verify?token=${verificationToken}`
 
     try {
-      await resend.emails.send({
+      await getResend().emails.send({
         from: FROM_EMAIL,
         to: email,
         subject: `Verificá tu email — ${SITE_NAME}`,

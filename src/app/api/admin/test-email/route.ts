@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { requireAdminAPI } from "@/lib/auth-guard"
-import { resend, FROM_EMAIL } from "@/lib/resend"
+import { getResend, FROM_EMAIL } from "@/lib/resend"
 
 export async function POST(req: Request) {
   const session = await requireAdminAPI()
@@ -9,7 +9,7 @@ export async function POST(req: Request) {
   const { to } = await req.json()
   if (!to) return NextResponse.json({ error: "to requerido" }, { status: 400 })
 
-  const result = await resend.emails.send({
+  const result = await getResend().emails.send({
     from: FROM_EMAIL,
     to,
     subject: "Email de prueba — Diario Dupla",

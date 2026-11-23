@@ -1,5 +1,5 @@
 import { prisma } from "./prisma"
-import { resend, FROM_EMAIL } from "./resend"
+import { getResend, FROM_EMAIL } from "./resend"
 import { SITE_NAME, SITE_URL } from "./constants"
 
 function buildEmailHtml(article: {
@@ -89,7 +89,7 @@ export async function sendNewsletter(articleId: string) {
     for (let i = 0; i < subscribers.length; i += batchSize) {
       const batch = subscribers.slice(i, i + batchSize)
       const promises = batch.map((sub) =>
-        resend.emails.send({
+        getResend().emails.send({
           from: FROM_EMAIL,
           to: sub.email,
           subject: `${article.title} — ${SITE_NAME}`,

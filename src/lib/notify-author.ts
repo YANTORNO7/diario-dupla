@@ -1,4 +1,4 @@
-import { resend, FROM_EMAIL } from "./resend"
+import { getResend, FROM_EMAIL } from "./resend"
 import { SITE_NAME } from "./constants"
 
 export async function notifyAuthor(
@@ -58,7 +58,7 @@ export async function notifyAuthor(
 </body>
 </html>`
 
-  await resend.emails.send({
+  await getResend().emails.send({
     from: FROM_EMAIL,
     to: authorEmail,
     subject,
