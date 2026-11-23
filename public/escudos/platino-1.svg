@@ -1,16 +1,36 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
-<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#A0F8EC"/><stop offset=".5" stop-color="#3FC9B0"/><stop offset="1" stop-color="#127766"/></linearGradient></defs>
+<defs>
+  <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#B0F8F0"/>
+    <stop offset=".45" stop-color="#3FC9B0"/>
+    <stop offset="1" stop-color="#0A6655"/>
+  </linearGradient>
+</defs>
+<!-- Sombra -->
 <path d="M128 51 L156 100 L128 149 L72 149 L44 100 L72 51 Z" fill="#063A31" transform="translate(2 4)" opacity=".35"/>
-<path d="M156 93 L183 79 L178 92 L187 100 L178 108 L183 121 L156 107 Z" fill="#3FC9B0" stroke="#127766" stroke-width="1.5" stroke-linejoin="round"/>
-<path d="M44 93 L17 79 L22 92 L13 100 L22 108 L17 121 L44 107 Z" fill="#3FC9B0" stroke="#127766" stroke-width="1.5" stroke-linejoin="round"/>
+<!-- Alas nível 3 -->
+<path d="M158 103 L174 93 L176 103 L160 113 Z" fill="#60DCC8" stroke="#30A898" stroke-width="1"/>
+<path d="M158 97 L177 83 L179 93 L160 107 Z" fill="#60DCC8" stroke="#30A898" stroke-width="1"/>
+<path d="M158 90 L180 72 L182 83 L160 100 Z" fill="#60DCC8" stroke="#30A898" stroke-width="1"/>
+<path d="M42 103 L26 93 L24 103 L40 113 Z" fill="#60DCC8" stroke="#30A898" stroke-width="1"/>
+<path d="M42 97 L23 83 L21 93 L40 107 Z" fill="#60DCC8" stroke="#30A898" stroke-width="1"/>
+<path d="M42 90 L20 72 L18 83 L40 100 Z" fill="#60DCC8" stroke="#30A898" stroke-width="1"/>
+<!-- Hex principal -->
 <path d="M128 51 L156 100 L128 149 L72 149 L44 100 L72 51 Z" fill="url(#g)"/>
-<path d="M72 51 L128 51 L100 100 Z" fill="#FFF" opacity=".28"/>
-<path d="M128 51 L156 100 L100 100 Z" fill="#FFF" opacity=".14"/>
-<path d="M72 51 L44 100 L100 100 Z" fill="#FFF" opacity=".07"/>
-<path d="M72 149 L128 149 L100 100 Z" fill="#000" opacity=".18"/>
-<path d="M44 100 L72 149 L100 100 Z" fill="#000" opacity=".1"/>
-<path d="M128 51 L156 100 L128 149 L72 149 L44 100 L72 51 Z" fill="none" stroke="#127766" stroke-width="2.5" stroke-opacity=".5"/>
+<!-- Facetas de luz -->
+<path d="M72 51 L128 51 L100 100 Z" fill="#FFF" opacity=".38"/>
+<path d="M128 51 L156 100 L100 100 Z" fill="#FFF" opacity=".18"/>
+<path d="M44 100 L72 51 L100 100 Z" fill="#FFF" opacity=".12"/>
+<!-- Facetas de sombra -->
+<path d="M72 149 L128 149 L100 100 Z" fill="#000" opacity=".28"/>
+<path d="M44 100 L72 149 L100 100 Z" fill="#000" opacity=".14"/>
+<path d="M156 100 L128 149 L100 100 Z" fill="#000" opacity=".10"/>
+<!-- Brillo superior -->
+<path d="M76 54 L124 54 L126 60 L74 60 Z" fill="#FFF" opacity=".25"/>
+<!-- Bordes -->
+<path d="M128 51 L156 100 L128 149 L72 149 L44 100 L72 51 Z" fill="none" stroke="#0A5544" stroke-width="3" stroke-opacity=".5"/>
 <path d="M128 51 L156 100 L128 149 L72 149 L44 100 L72 51 Z" fill="none" stroke="#FFF" stroke-width="1" stroke-opacity=".25"/>
+<!-- Banner DUPLA -->
 <g transform="translate(100 72)">
   <rect x="-27" y="-10" width="54" height="20" rx="1" fill="#063A31" opacity=".9"/>
   <text x="0" y="7" text-anchor="middle" font-family="Bebas Neue, sans-serif" font-size="14" letter-spacing="1" fill="#FFF">DUPLA</text>
@@ -19,5 +39,6 @@
   <rect x="0" y="10" width="13" height="3" fill="#009C3B"/>
   <rect x="13" y="10" width="14" height="3" fill="#F2B632"/>
 </g>
-<text x="100" y="134" text-anchor="middle" font-family="Bebas Neue, sans-serif" font-size="50" fill="#FFF" opacity=".95">I</text>
+<!-- Número I -->
+<text x="100" y="134" text-anchor="middle" font-family="Bebas Neue, sans-serif" font-size="48" fill="#FFF" opacity=".95">I</text>
 </svg>
