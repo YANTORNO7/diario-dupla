@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -18 200 242" width="200" height="242">
+<defs><linearGradient id="g-diamante-3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7AB8FF"/><stop offset=".55" stop-color="#0055DD"/><stop offset="1" stop-color="#002090"/></linearGradient>
+<linearGradient id="s-diamante-3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity=".5"/><stop offset=".5" stop-color="#FFFFFF" stop-opacity="0"/></linearGradient></defs>
+<path d="M100 8 L184 36 V104 C184 160 146 196 100 216 C54 196 16 160 16 104 V36 Z" fill="#002090"/><path d="M100 8 L184 36 V104 C184 160 146 196 100 216 C54 196 16 160 16 104 V36 Z" fill="url(#g-diamante-3)" transform="translate(0 -3)"/>
+<path d="M100 22 L170 45 V104 C170 151 138 181 100 199 C62 181 30 151 30 104 V45 Z" fill="none" stroke="#000D44" stroke-opacity=".35" stroke-width="3"/>
+<path d="M30 45 L100 22 L170 45 V90 C130 80 70 80 30 100 Z" fill="url(#s-diamante-3)"/>
+<g transform="translate(100 52)"><g transform="skewX(-8)"><rect x="-38" y="-15" width="76" height="28" fill="#FFFFFF"/></g>
+<text x="0" y="8" text-anchor="middle" font-family="Bebas Neue, sans-serif" font-size="25" letter-spacing="1.5" fill="#0B1631">DUPLA</text>
+<rect x="-38" y="13" width="19" height="4" fill="#74ACDF"/><rect x="-19" y="13" width="19" height="4" fill="#FFFFFF"/><rect x="0" y="13" width="19" height="4" fill="#009C3B"/><rect x="19" y="13" width="19" height="4" fill="#F2B632"/></g>
+<path d="M72 99 L83 108 L72 127 L61 108 Z" fill="#FFFFFF" opacity=".92"/><path d="M61 108 H83" stroke="#002090" stroke-width="1.5" fill="none"/>
+<path d="M100 99 L111 108 L100 127 L89 108 Z" fill="#FFFFFF" opacity=".92"/><path d="M89 108 H111" stroke="#002090" stroke-width="1.5" fill="none"/>
+<path d="M128 99 L139 108 L128 127 L117 108 Z" fill="#FFFFFF" opacity=".92"/><path d="M117 108 H139" stroke="#002090" stroke-width="1.5" fill="none"/>
+<path d="M4 144 H196 L186 160 L196 176 H4 L14 160 Z" fill="#0B1631" stroke="#FFFFFF" stroke-width="2.5" stroke-linejoin="round"/>
+<text x="100" y="169" text-anchor="middle" font-family="Bebas Neue, sans-serif" font-size="19" letter-spacing="2" fill="#FFFFFF">DIAMANTE III</text></svg>

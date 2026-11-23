@@ -17,8 +17,13 @@ export const NIVELES: Nivel[] = [
   { id: "platino-1", nombre: "Platino I",   desde: 85,  escudo: "/escudos/platino-1.svg", color: "#3FC9B0" },
   { id: "platino-2", nombre: "Platino II",  desde: 105, escudo: "/escudos/platino-2.svg", color: "#3FC9B0" },
   { id: "platino-3", nombre: "Platino III", desde: 130, escudo: "/escudos/platino-3.svg", color: "#3FC9B0" },
-  { id: "diamante",  nombre: "Diamante",    desde: 160, escudo: "/escudos/diamante.svg",  color: "#4FA6FF" },
-  { id: "idolo",     nombre: "Ídolo",       desde: 220, escudo: "/escudos/idolo.svg",     color: "#E0245E" },
+  { id: "diamante-1", nombre: "Diamante I",   desde: 160, escudo: "/escudos/diamante-1.svg", color: "#4FA6FF" },
+  { id: "diamante-2", nombre: "Diamante II",  desde: 200, escudo: "/escudos/diamante-2.svg", color: "#2080FF" },
+  { id: "diamante-3", nombre: "Diamante III", desde: 250, escudo: "/escudos/diamante-3.svg", color: "#0055DD" },
+  { id: "idolo-1",    nombre: "Ídolo I",      desde: 300, escudo: "/escudos/idolo-1.svg",    color: "#E0245E" },
+  { id: "idolo-2",    nombre: "Ídolo II",     desde: 360, escudo: "/escudos/idolo-2.svg",    color: "#BF0A42" },
+  { id: "idolo-3",    nombre: "Ídolo III",    desde: 430, escudo: "/escudos/idolo-3.svg",    color: "#960034" },
+  { id: "leyenda",    nombre: "Leyenda",      desde: 500, escudo: "/escudos/leyenda.svg",    color: "#D4AF37" },
 ]
 
 export function getNivelActual(total: number): Nivel {
